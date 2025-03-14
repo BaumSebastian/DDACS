@@ -67,7 +67,7 @@ class BaseFEMDataset(Dataset):
         """Returns the number of data points in the dataset."""
         return self._length
 
-    def __getitem__(self, idx) -> Tuple[np.int64, np.array, str]:
+    def __getitem__(self, idx: int) -> Tuple[np.int64, np.array, str]:
         """
         Retrieves a data point and its corresponding label by index.
 
