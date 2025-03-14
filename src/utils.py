@@ -8,8 +8,6 @@ def download_dataset(url:str, root:str) -> None:
     :type url: str
     :param root: The local directory to save the dataset.
     :type root: str
-
-    :return: The path to the downloaded dataset.
     """
     ds = DarusDataset(url)
     ds.summary()
