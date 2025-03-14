@@ -7,6 +7,9 @@ __pycache__/
 .vscode/*
 .helper/*
 
+# For custom config
+config/config.yaml
+
 # C extensions
 *.so
 

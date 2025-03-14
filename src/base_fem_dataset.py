@@ -1,5 +1,6 @@
 from pathlib import Path
 import pandas as pd
+import yaml
 import numpy as np
 from torch.utils.data import Dataset
 from typing import Tuple
@@ -102,8 +103,12 @@ class BaseFEMDataset(Dataset):
 
 if __name__ == "__main__":
 
-    root = "/mnt/sim_data/darus/"
-    data_dir = "hdf5_fld"
+    config_file_path = r"../config/config.yaml"
+    with open(config_file_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    root = config['root']
+    data_dir = config['data_dir']
 
     ds = BaseFEMDataset(root, data_dir)
 

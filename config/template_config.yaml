@@ -1,0 +1,4 @@
+root: "." # Root directory of the dataset
+data_dir: "data/" # Data directory inside the root directory
+download_dataset: True # Indicates if the dataset should be downloaded
+url: "" # URL of the dataset needed if download = True

@@ -1,4 +1,5 @@
 import numpy as np
+import yaml
 import h5py
 import pandas as pd
 from typing import Tuple
@@ -57,8 +58,12 @@ class PunchDataset(BaseFEMDataset):
 
 if __name__ == "__main__":
 
-    root = "/mnt/sim_data/darus/"
-    data_dir = "hdf5_fld"
+    config_file_path = r"../config/config.yaml"
+    with open(config_file_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    root = config['root']
+    data_dir = config['data_dir']
 
     ds = PunchDataset(root, data_dir)
 
