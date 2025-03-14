@@ -59,11 +59,11 @@ class PunchDataset(BaseFEMDataset):
 if __name__ == "__main__":
 
     config_file_path = r"../config/config.yaml"
-    with open(config_file_path, 'r') as f:
+    with open(config_file_path, "r") as f:
         config = yaml.safe_load(f)
 
-    root = config['root']
-    data_dir = config['data_dir']
+    root = config["root"]
+    data_dir = config["data_dir"]
 
     ds = PunchDataset(root, data_dir)
 

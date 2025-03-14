@@ -1,6 +1,7 @@
 from darus import Dataset as DarusDataset
 
-def download_dataset(url:str, root:str) -> None:
+
+def download_dataset(url: str, root: str) -> None:
     """
     Download a dataset from a given URL and save it to a local directory.
 
