@@ -18,10 +18,10 @@ def main():
     if download:
         download_dataset(url, data_dir)
 
-    bds = SimulationDataset(data_dir, h5_subdir)
-    print(bds)
+    simulation_dataset = SimulationDataset(data_dir, h5_subdir)
+    print(simulation_dataset)
 
-    sim_id, metadata, h5_file_path = next(iter(bds))
+    sim_id, metadata, h5_file_path = next(iter(simulation_dataset))
     print(
         "\n".join(
             [
