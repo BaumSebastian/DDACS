@@ -37,7 +37,7 @@ def main():
     with h5py.File(h5_file_path, "r") as f:
         data = np.array(f["OP10"]["blank"]["node_displacement"])
     print(
-        f"Example of pointcloud of 'blank' gemonetry for all (4) timesteps {data.shape}"
+        f"Example of pointcloud of 'blank' gemonetry for all ({data.shape[0]}) timesteps {data.shape}"
     )
 
 
