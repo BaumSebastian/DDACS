@@ -7,33 +7,33 @@ from typing import Tuple
 import warnings
 
 
-class BaseFEMDataset(Dataset):
+class SimulationDataset(Dataset):
     def __init__(
-        self, root, data_dir="data", metadata_file="metadata.csv", transform=None
+        self, data_dir, h5_subdir="h5", metadata_file="metadata.csv", transform=None
     ):
         """
         Initializes FEM Dataset. The dataset is a basic implementation for getting metadata and hdf5 files.
 
-        :param root: The root directory of the dataset.
-        :type root: str
-        :param data_dir: The directory in the root directory that contains the  h5py files. [Default 'data']
+        :param data_dir: The root directory of the dataset.
         :type data_dir: str
-        :param metadata_file: The name of the metadata file in the root directory. [Default: 'metadata.csv']
+        :param h5_subdir: The relative directory in data_dir that contains the  h5 files. [Default 'data']
+        :type h5_subdir: str
+        :param metadata_file: The name of the metadata file in data_dir. [Default: 'metadata.csv']
         :type metadata_file: str
-        :param transform: The transformation applied the data. [Default: None]
+        :param transform: The transformation applied to the data. [Default: None]
 
         :raise FileNotFoundError: If the metadata file does not exist.
         :raise FileNotFoundError: If the sub directory does not exist.
         """
 
-        self.root = Path(root)
-        self._metadata_file_path = self.root / metadata_file
-        self._data_dir = self.root / data_dir
+        self.data_dir = Path(data_dir)
+        self._metadata_file_path = self.data_dir / metadata_file
+        self._h5_subdir = self.data_dir / h5_subdir
         self.transform = transform
 
-        if not self._data_dir.is_dir():
+        if not self._h5_subdir.is_dir():
             raise FileNotFoundError(
-                f"The data sub directory '{self._data_dir}' does not exist:"
+                f"The data sub directory '{self._h5_subdir}' does not exist:"
             )
 
         self._metadata = pd.read_csv(self._metadata_file_path)
@@ -50,7 +50,7 @@ class BaseFEMDataset(Dataset):
         """
         # Filter for existing h5 files.
         mask = self._metadata["ID"].apply(
-            lambda id: (self._data_dir / f"{id}.h5").is_file()
+            lambda id: (self._h5_subdir / f"{id}.h5").is_file()
         )
         clean_metadata = self._metadata[mask]
         n_origin = len(self._metadata)
@@ -58,7 +58,7 @@ class BaseFEMDataset(Dataset):
 
         if n_origin != n_clean:
             warnings.warn(
-                f"Expected {n_origin} simulations but found {n_clean} in {self._data_dir}. Continues with {n_clean} simulations.",
+                f"Expected {n_origin} simulations but found {n_clean} in {self._h5_subdir}. Continues with {n_clean} simulations.",
                 RuntimeWarning,
             )
 
@@ -78,7 +78,7 @@ class BaseFEMDataset(Dataset):
         :rtype: Tuple[np.int64, np.array, str]
         """
         id = self._metadata["ID"].iat[idx]
-        hdf5_file_path = self._data_dir / f"{id}.h5"
+        hdf5_file_path = self._h5_subdir / f"{id}.h5"
         parameter = self._metadata.iloc[idx].values[
             1:
         ]  # The first entry is the simulation ID.
@@ -89,7 +89,7 @@ class BaseFEMDataset(Dataset):
         """Return a nice string representation of the dataset with tree view."""
         lines = [
             f"Deep Drawing and Cutting Simulations (DDACS) Dataset.",
-            f"  Root directory: {self.root}",
+            f"  Root directory: {self.data_dir}",
             f"  Metadata file: {self._metadata_file_path}",
             f"  Dataset length: {self._length} samples",
         ]
@@ -99,19 +99,3 @@ class BaseFEMDataset(Dataset):
             lines.append(f"    - {key}")
 
         return "\n".join(lines)
-
-
-if __name__ == "__main__":
-
-    config_file_path = r"../config/config.yaml"
-    with open(config_file_path, "r") as f:
-        config = yaml.safe_load(f)
-
-    root = config["root"]
-    data_dir = config["data_dir"]
-
-    ds = BaseFEMDataset(root, data_dir)
-
-    print(ds)
-    id, p, X = next(iter(ds))
-    print("\nSampel data entry.\n" + f"ID: {id}\n" + f"Metadata: {p}\n" + f"Data: {X}")
