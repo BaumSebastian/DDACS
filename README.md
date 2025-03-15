@@ -49,7 +49,7 @@ def main():
     print(
         "\n".join(
             [
-                "Sampel data entry.",
+                "Sample data entry.",
                 f" - ID: {sim_id}",
                 f" - Metadata: {metadata}",
                 f" - h5 file path: {h5_file_path}",
