@@ -1,2 +1,2 @@
-from .base_fem_dataset import BaseFEMDataset
+from .simulation_dataset import SimulationDataset
 from .utils import download_dataset
