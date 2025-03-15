@@ -1,24 +1,24 @@
 import yaml
 import h5py
 import numpy as np
-from src import BaseFEMDataset, download_dataset
+from src import SimulationDataset, download_dataset
 
 
 def main():
 
-    config_file_path = r"./config/config_template.yaml"
+    config_file_path = r"./config/config.yaml"
     with open(config_file_path, "r") as f:
         config = yaml.safe_load(f)
 
     download = config["download_dataset"]
-    root = config["root"]
     data_dir = config["data_dir"]
-    url = config["url"]
+    h5_subdir = config["h5_subdir"]
+    url = config["dataset_url"]
 
     if download:
-        download_dataset(url, root)
+        download_dataset(url, data_dir)
 
-    bds = BaseFEMDataset(root, data_dir)
+    bds = SimulationDataset(data_dir, h5_subdir)
     print(bds)
 
     sim_id, metadata, h5_file_path = next(iter(bds))
