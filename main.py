@@ -5,7 +5,6 @@ from src import SimulationDataset, download_dataset
 
 
 def main():
-
     config_file_path = r"./config/config.yaml"
     with open(config_file_path, "r") as f:
         config = yaml.safe_load(f)
@@ -25,7 +24,7 @@ def main():
     print(
         "\n".join(
             [
-                "Sampel data entry.",
+                "Sample data entry.",
                 f" - ID: {sim_id}",
                 f" - Metadata: {metadata}",
                 f" - h5 file path: {h5_file_path}",
