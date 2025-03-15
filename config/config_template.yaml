@@ -1,4 +1,4 @@
 data_dir: "./data"  # Root directory of the dataset
 h5_subdir: "h5"  # Data directory inside the root directory
-download_dataset: False  # Indicates if the dataset should be downloaded
+download_dataset: True  # Indicates if the dataset should be downloaded
 dataset_url: "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801"  # URL of the dataset needed if download = True
