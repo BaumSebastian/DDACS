@@ -3,16 +3,26 @@ A python example for accessing and processing the [Deep Drawing and Cutting Simu
 It includes functionality for downloading datasets wiht [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) and accessing simulation data with metadata.
 
 ## Installation
-Clone the repository and navigate into. Install the requirements and execute main.py for a basic example. As the dataset is kinda big (~ 1 TB), the download flag is set to `False` (See [config example](./config/config_template.yaml)).
+Clone the repository and navigate into. Install the requirements into your environment.
 ```bash
 git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git simulation_dataset
 cd simulation_dataset
 pip install -r requirements.txt
 ```
 
+## Configuration
+The configugarion is stored in [`./config/config_template.yaml`](./config/config_template.yaml) and should be adjusted before exectuing [`main.py`](./main.py).
+```yaml
+data_dir: "./data"  # Root directory of the dataset
+h5_subdir: "h5"  # Data directory inside the root directory
+download_dataset: True  # Indicates if the dataset should be downloaded
+dataset_url: "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801"  # URL of the dataset needed if download = True
+```
+As the dataset is kinda big (~ 1 TB) make sure to choose an appropriate `data_dir` with enough storage and write permissions. If you want to download the dataset not via [`main.py`](./main.py) but by yourself please read [section below](#download-dataset) or visit the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) for more information.
+
 ## Basic Usage
 
-To interact with the dataset, you can use the [`SimulationDataset`](src/simulation_dataset.py) class. Here’s an example of how to use the [`SimulationDataset`](src/simulation_dataset.py) class in [`main.py`](main.py):
+To interact with the dataset, you can use the [`SimulationDataset`](src/simulation_dataset.py) class. Here’s an example of how to use the class in [`main.py`](main.py):
 
 ```python
 from src import SimulationDataset
@@ -42,7 +52,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-With the h5py package, you can access all simulation data based on the file path. See [main.py](./main.py) for an example to access the 'blank' geoemtry.
+With the h5py package, you can access all simulation data based on the file path. See [`main.py`](./main.py) for an example to access the 'blank' geoemtry.
 
 ### Download Dataset
 
