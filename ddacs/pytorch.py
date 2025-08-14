@@ -68,7 +68,7 @@ class DDACSDataset(Dataset):
         """Number of samples in the dataset."""
         return len(self._metadata)
     
-    def __getitem__(self, idx: int) -> Tuple[int, np.ndarray, Path]:
+    def __getitem__(self, idx: int) -> Tuple[int, np.ndarray, str]:
         """
         Get a sample from the dataset.
         
@@ -86,7 +86,7 @@ class DDACSDataset(Dataset):
         if self.transform:
             metadata_vals = self.transform(metadata_vals)
             
-        return sim_id, metadata_vals, h5_path
+        return sim_id, metadata_vals, str(h5_path)
     
     def __str__(self) -> str:
         """String representation."""
