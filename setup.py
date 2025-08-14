@@ -10,7 +10,7 @@ setup(
     name="ddacs",
     version="1.0.0",
     author="Sebastian Baum",
-    author_email="",  # Add email if desired
+    author_email="Sebastian.Baum@ias.uni-stuttgart.de",
     description="Deep Drawing and Cutting Simulations (DDACS) Dataset - Python interface",
     long_description=long_description,
     long_description_content_type="text/markdown",
