@@ -70,7 +70,7 @@ def main():
         )
     )
 
-    # Access the indvidual entry based on h5 structure.
+    # Access the individual entry based on h5 structure.
     with h5py.File(h5_file_path, "r") as f:
         data = np.array(f["OP10"]["blank"]["node_displacement"])
     print(
@@ -80,7 +80,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-With the h5py package, you can access all simulation data based on the file path. See [`main.py`](./main.py) for an example to access the 'blank' geoemtry.
+With the h5py package, you can access all simulation data based on the file path. See [`main.py`](./main.py) for an example to access the 'blank' geometry.
 
 
 ## License
