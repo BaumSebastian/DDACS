@@ -1,32 +1,49 @@
 # Deep Drawing and Cutting Simulations (DDACS) Dataset
 A python example for accessing and processing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801).
-It includes functionality for downloading datasets wiht [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) and accessing simulation data with metadata.
+It includes functionality for downloading datasets with the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) CLI and accessing simulation data with metadata.
 
 ## Table of Contents
 - [Installation](#installation)
+- [Download Dataset](#download-dataset)
 - [Configuration](#configuration)
 - [Basic Usage](#basic-usage)
-- [Download Dataset](#download-dataset)
 - [License](#license)
 
 ## Installation
-Clone the repository and navigate into. Install the requirements into your environment.
+Clone the repository and navigate into it:
 ```bash
 git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git simulation_dataset
 cd simulation_dataset
+```
+
+### Using pip
+```bash
 pip install -r requirements.txt
 ```
-As pytorch relies on your hardware, please install it by yourself based on [pytorch installation guide](https://pytorch.org/get-started/locally/).
+
+### Using uv
+```bash
+uv pip install -r requirements.txt
+```
+
+This will automatically install the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) which provides the `darus-download` CLI command for downloading datasets.
+
+## Download Dataset
+Download the dataset using the `darus-download` CLI command:
+
+```bash
+darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801"
+```
+
+**Note:** For more download options and advanced usage, see the [`darus` package documentation](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction).
 
 ## Configuration
 The configuration is stored in [`./config/config_template.yaml`](./config/config_template.yaml) and should be adjusted before executing [`main.py`](./main.py).
 ```yaml
-data_dir: "./data"  # Root directory of the dataset
+data_dir: "./data"  # Root directory where you downloaded the dataset
 h5_subdir: "h5"  # Data directory inside the root directory
-download_dataset: True  # Indicates if the dataset should be downloaded
-dataset_url: "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801"  # URL of the dataset needed if download = True
 ```
-As the dataset is quite large (~ 1 TB) make sure to choose an appropriate `data_dir` with enough storage and write permissions. If you want to download the dataset not via [`main.py`](./main.py) but by yourself please read [section below](#download-dataset) or visit the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) for more information.
+Make sure the `data_dir` matches the directory where you downloaded the dataset using the `darus-download` command.
 
 ## Basic Usage
 
@@ -69,27 +86,6 @@ if __name__ == "__main__":
 ```
 With the h5py package, you can access all simulation data based on the file path. See [`main.py`](./main.py) for an example to access the 'blank' geoemtry.
 
-### Download Dataset
-
-Use the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) to download the dataset from DaRUS (See [utils.py](src/utils.py)):
-
-```python
-from darus import Dataset as DarusDataset
-
-
-def download_dataset(dataset_url: str, data_dir: str) -> None:
-    """
-    Download a dataset from a given URL and save it to a local directory.
-
-    :param dataset_url: The url to the dataset on DaRUS.
-    :type dataset_url: str
-    :param data_dir: The root directory to save the dataset.
-    :type data_dir: str
-    """
-    ds = DarusDataset(dataset_url)
-    ds.summary()
-    ds.download(data_dir)
-```
 
 ## License
 
