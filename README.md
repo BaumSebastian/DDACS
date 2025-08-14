@@ -9,7 +9,6 @@ It includes functionality for downloading datasets with the [`darus` package](ht
     - [Using pip](#using-pip)
     - [Using uv](#using-uv)
   - [Download Dataset](#download-dataset)
-  - [Configuration](#configuration)
   - [Basic Usage](#basic-usage)
   - [License](#license)
 
@@ -41,14 +40,6 @@ darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=
 **Important:** The dataset is approximately 1TB in size. Specify the `--path` parameter to choose a directory with sufficient storage space. The download may take several hours depending on your internet connection.
 
 **Note:** For more download options and advanced usage, see the [`darus` package documentation](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction).
-
-## Configuration
-The configuration is stored in [`./config/config_template.yaml`](./config/config_template.yaml) and should be adjusted before executing [`main.py`](./main.py).
-```yaml
-data_dir: "./data"  # Root directory where you downloaded the dataset
-h5_subdir: "h5"  # Data directory inside the root directory
-```
-Make sure the `data_dir` matches the directory where you downloaded the dataset using the `darus-download` command.
 
 ## Basic Usage
 

@@ -1,16 +1,11 @@
-import yaml
 import h5py
 import numpy as np
 from src import SimulationDataset
 
 
 def main():
-    config_file_path = r"./config/config.yaml"
-    with open(config_file_path, "r") as f:
-        config = yaml.safe_load(f)
-
-    data_dir = config["data_dir"]
-    h5_subdir = config["h5_subdir"]
+    data_dir = "./data"
+    h5_subdir = "h5"
 
     simulation_dataset = SimulationDataset(data_dir, h5_subdir)
     print(simulation_dataset)
