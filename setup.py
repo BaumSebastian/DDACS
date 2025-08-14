@@ -37,7 +37,7 @@ setup(
         "pytz>=2025.1",
         "six>=1.17.0",
         "tzdata>=2025.1",
-        "git+https://github.com/BaumSebastian/DaRUS-Dataset-Interaction.git@v1.0.0",
+        "darus @ git+https://github.com/BaumSebastian/DaRUS-Dataset-Interaction.git@v1.0.0",
     ],
     extras_require={
         "examples": [
