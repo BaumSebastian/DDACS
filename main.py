@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from src import SimulationDataset
+from ddacs import SimulationDataset
 
 
 def main():

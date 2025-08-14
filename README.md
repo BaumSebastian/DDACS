@@ -13,32 +13,71 @@ It includes functionality for downloading datasets with the [`darus` package](ht
 - [Deep Drawing and Cutting Simulations (DDACS) Dataset](#deep-drawing-and-cutting-simulations-ddacs-dataset)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
-    - [Using pip](#using-pip)
-    - [Using uv](#using-uv)
+    - [Core Installation (Lightweight)](#core-installation-lightweight)
+    - [PyTorch Installation](#pytorch-installation)
+    - [Examples Installation](#examples-installation)
+    - [Full Installation](#full-installation)
+    - [Adding to Your Project](#adding-to-your-project)
   - [Download Dataset](#download-dataset)
   - [Basic Usage](#basic-usage)
   - [Citation](#citation)
     - [Dataset Citation](#dataset-citation)
     - [Paper Citation](#paper-citation)
-  - [License](#license)
+  - [Development Installation](#development-installation)
 
 ## Installation
-Clone the repository and navigate into it:
+
+**Note:** We recommend using [uv](https://docs.astral.sh/uv/) as a fast Python package installer and resolver. Simply replace `pip` with `uv pip` in the commands below.
+
+### Core Installation (Lightweight)
+For basic dataset access without machine learning dependencies:
 ```bash
-git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git DDACS & cd DDACS
+pip install git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git
 ```
 
-### Using pip
+### PyTorch Installation  
+For machine learning workflows with PyTorch compatibility:
 ```bash
+pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[pytorch]"
+```
+
+### Examples Installation
+For interactive examples and visualization capabilities:
+```bash
+pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[examples]"
+```
+
+### Full Installation
+For all features including development tools:
+```bash
+pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[full]"
+```
+
+### Adding to Your Project
+
+Add DDACS to your existing project's `requirements.txt`:
+
+```txt
+# requirements.txt
+# Your other dependencies...
+numpy>=1.21.0
+torch>=2.0.0
+
+# Add DDACS dataset package
+git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[pytorch]
+```
+
+Or for pip-tools users, add to `requirements.in`:
+```txt
+# requirements.in  
+git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[pytorch]
+```
+
+Then run:
+```bash
+pip-compile requirements.in  # generates requirements.txt
 pip install -r requirements.txt
 ```
-
-### Using uv
-```bash
-uv pip install -r requirements.txt
-```
-
-This will automatically install the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) which provides the `darus-download` CLI command for downloading datasets.
 
 ## Download Dataset
 Download the dataset using the `darus-download` CLI command:
@@ -53,10 +92,10 @@ darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=
 
 ## Basic Usage
 
-To interact with the dataset, you can use the [`SimulationDataset`](src/simulation_dataset.py) class. Here’s an example of how to use the class in [`main.py`](main.py):
+After installing the package, you can easily import and use the dataset classes:
 
 ```python
-from src import SimulationDataset
+from ddacs import SimulationDataset
 
 def main():
 
@@ -90,7 +129,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-With the h5py package, you can access all simulation data based on the file path. See [`main.py`](./main.py) for an example to access the 'blank' geometry.
+With the h5py package, you can access all simulation data based on the file path. See [`main.py`](./main.py) for a simple example and [`examples/`](./examples/) for comprehensive tutorials including visualization and different access patterns.
 
 ## Citation
 
@@ -125,6 +164,16 @@ If you use this dataset or code in your research, please cite both the dataset a
 }
 ```
 
-## License
+## Development Installation
 
-This project is licensed under the MIT License.
+For developers who want to contribute to this project:
+
+```bash
+git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git DDACS
+cd DDACS
+
+# Install in editable mode with development dependencies
+uv pip install -e ".[dev]"  # or pip install -e ".[dev]"
+```
+
+This automatically installs the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) which provides the `darus-download` CLI command.
