@@ -38,7 +38,7 @@ class DDACSIterator:
     def _filter_existing_files(self) -> pd.DataFrame:
         """Filter metadata to only include entries with existing H5 files."""
         mask = self._metadata["ID"].apply(
-            lambda sim_id: (self._h5_dir / f"{sim_id}.h5").exists()
+            lambda sim_id: (self._h5_dir / f"{int(sim_id)}.h5").exists()
         )
         filtered = self._metadata[mask]
         
@@ -59,7 +59,7 @@ class DDACSIterator:
     def __iter__(self) -> Generator[Tuple[int, np.ndarray, Path], None, None]:
         """Iterate over all simulations."""
         for _, row in self._metadata.iterrows():
-            sim_id = row["ID"]
+            sim_id = int(row["ID"])
             h5_path = self._h5_dir / f"{sim_id}.h5"
             metadata_vals = row.values[1:]  # Exclude ID column
             yield sim_id, metadata_vals, h5_path
@@ -71,15 +71,16 @@ class DDACSIterator:
             return None
         
         row = row.iloc[0]
-        h5_path = self._h5_dir / f"{sim_id}.h5"
+        sim_id_int = int(row["ID"])
+        h5_path = self._h5_dir / f"{sim_id_int}.h5"
         metadata_vals = row.values[1:]  # Exclude ID column
-        return sim_id, metadata_vals, h5_path
+        return sim_id_int, metadata_vals, h5_path
     
     def sample(self, n: int = 1) -> Generator[Tuple[int, np.ndarray, Path], None, None]:
         """Randomly sample n simulations."""
         sampled = self._metadata.sample(n=min(n, len(self._metadata)))
         for _, row in sampled.iterrows():
-            sim_id = row["ID"]
+            sim_id = int(row["ID"])
             h5_path = self._h5_dir / f"{sim_id}.h5"
             metadata_vals = row.values[1:]  # Exclude ID column
             yield sim_id, metadata_vals, h5_path

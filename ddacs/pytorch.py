@@ -50,7 +50,7 @@ class DDACSDataset(Dataset):
     def _filter_existing_files(self) -> pd.DataFrame:
         """Filter metadata to only include entries with existing H5 files."""
         mask = self._metadata["ID"].apply(
-            lambda sim_id: (self._h5_dir / f"{sim_id}.h5").exists()
+            lambda sim_id: (self._h5_dir / f"{int(sim_id)}.h5").exists()
         )
         filtered = self._metadata[mask]
         
@@ -79,7 +79,7 @@ class DDACSDataset(Dataset):
             Tuple of (simulation_id, metadata_values, h5_file_path)
         """
         row = self._metadata.iloc[idx]
-        sim_id = row["ID"]
+        sim_id = int(row["ID"])
         h5_path = self._h5_dir / f"{sim_id}.h5"
         metadata_vals = row.values[1:]  # Exclude ID column
         
