@@ -6,7 +6,7 @@ from typing import Tuple
 import warnings
 
 
-class SimulationDataset(Dataset):
+class DDACSDataset(Dataset):
     def __init__(
         self, data_dir, h5_subdir="h5", metadata_file="metadata.csv", transform=None
     ):

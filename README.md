@@ -89,14 +89,14 @@ darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=
 After installing the package, you can easily import and use the dataset classes:
 
 ```python
-from ddacs import SimulationDataset
+from ddacs import DDACSDataset
 
 def main():
 
     data_dir = "./data" # The root directory of the dataset.
     h5_subdir = "h5" # The sub directory that contains the h5 files.
 
-    simulation_dataset = SimulationDataset(data_dir, h5_subdir)
+    simulation_dataset = DDACSDataset(data_dir, h5_subdir)
     print(simulation_dataset)
 
     # Fetch a sample from the dataset
@@ -123,7 +123,7 @@ def main():
 if __name__ == "__main__":
     main()
 ```
-With the h5py package, you can access all simulation data based on the file path. See [`main.py`](./main.py) for a simple example and [`examples/`](./examples/) for comprehensive tutorials including visualization and different access patterns.
+With the h5py package, you can access all simulation data based on the file path. See [`examples/`](./examples/) for comprehensive tutorials including visualization and different access patterns with `DDACSDataset`, `DDACSIterator`, and `iter_ddacs()`.
 
 ## Citation
 

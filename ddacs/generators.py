@@ -5,10 +5,10 @@ from typing import Generator, Tuple, Union, Optional
 import warnings
 
 
-def iter_simulations(data_dir: Union[str, Path], h5_subdir: str = "h5", 
+def iter_ddacs(data_dir: Union[str, Path], h5_subdir: str = "h5", 
                     metadata_file: str = "metadata.csv") -> Generator[Tuple[np.int64, np.ndarray, Path], None, None]:
     """
-    Fast generator that yields simulation data without PyTorch dependency.
+    Fast generator that yields DDACS simulation data without PyTorch dependency.
     
     :param data_dir: The root directory of the dataset.
     :param h5_subdir: The sub directory that contains the h5 files.
@@ -56,16 +56,16 @@ def iter_h5_files(data_dir: Union[str, Path], h5_subdir: str = "h5") -> Generato
         yield h5_file
 
 
-class SimulationIterator:
+class DDACSIterator:
     """
-    Lightweight iterator for simulation data without PyTorch dependency.
-    Provides similar interface to SimulationDataset but with generator-based access.
+    Lightweight iterator for DDACS simulation data without PyTorch dependency.
+    Provides similar interface to DDACSDataset but with generator-based access.
     """
     
     def __init__(self, data_dir: Union[str, Path], h5_subdir: str = "h5", 
                  metadata_file: str = "metadata.csv"):
         """
-        Initialize the simulation iterator.
+        Initialize the DDACS iterator.
         
         :param data_dir: The root directory of the dataset.
         :param h5_subdir: The sub directory that contains the h5 files.
@@ -136,7 +136,7 @@ class SimulationIterator:
     def __str__(self) -> str:
         """Return a string representation of the iterator."""
         lines = [
-            f"Simulation Iterator (Lightweight)",
+            f"DDACS Iterator (Lightweight)",
             f"  Root directory: {self.data_dir}",
             f"  Metadata file: {self._metadata_path}",
             f"  Available simulations: {len(self)} samples",
