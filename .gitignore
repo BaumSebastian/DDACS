@@ -7,6 +7,9 @@ __pycache__/
 .vscode/*
 .helper/*
 
+# Dataset directory (large files)
+data/
+
 # For custom config
 config/config.yaml
 
