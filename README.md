@@ -3,17 +3,20 @@ A python example for accessing and processing the [Deep Drawing and Cutting Simu
 It includes functionality for downloading datasets with the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) CLI and accessing simulation data with metadata.
 
 ## Table of Contents
-- [Installation](#installation)
-- [Download Dataset](#download-dataset)
-- [Configuration](#configuration)
-- [Basic Usage](#basic-usage)
-- [License](#license)
+- [Deep Drawing and Cutting Simulations (DDACS) Dataset](#deep-drawing-and-cutting-simulations-ddacs-dataset)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+    - [Using pip](#using-pip)
+    - [Using uv](#using-uv)
+  - [Download Dataset](#download-dataset)
+  - [Configuration](#configuration)
+  - [Basic Usage](#basic-usage)
+  - [License](#license)
 
 ## Installation
 Clone the repository and navigate into it:
 ```bash
-git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git simulation_dataset
-cd simulation_dataset
+git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git DDACS & cd DDACS
 ```
 
 ### Using pip
@@ -32,8 +35,10 @@ This will automatically install the [`darus` package](https://github.com/BaumSeb
 Download the dataset using the `darus-download` CLI command:
 
 ```bash
-darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801"
+darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801" --path "./data"
 ```
+
+**Important:** The dataset is approximately 1TB in size. Specify the `--path` parameter to choose a directory with sufficient storage space. The download may take several hours depending on your internet connection.
 
 **Note:** For more download options and advanced usage, see the [`darus` package documentation](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction).
 
