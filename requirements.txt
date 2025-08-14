@@ -6,4 +6,4 @@ pytz==2025.1
 PyYAML==6.0.2
 six==1.17.0
 tzdata==2025.1
-darus @ git+https://github.com/BaumSebastian/DaRUS-Dataset-Interaction.git@0.2.0
+git+https://github.com/BaumSebastian/DaRUS-Dataset-Interaction.git@v1.0.0

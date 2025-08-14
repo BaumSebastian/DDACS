@@ -1,7 +1,7 @@
 import yaml
 import h5py
 import numpy as np
-from src import SimulationDataset, download_dataset
+from src import SimulationDataset
 
 
 def main():
@@ -9,13 +9,8 @@ def main():
     with open(config_file_path, "r") as f:
         config = yaml.safe_load(f)
 
-    download = config["download_dataset"]
     data_dir = config["data_dir"]
     h5_subdir = config["h5_subdir"]
-    url = config["dataset_url"]
-
-    if download:
-        download_dataset(url, data_dir)
 
     simulation_dataset = SimulationDataset(data_dir, h5_subdir)
     print(simulation_dataset)
