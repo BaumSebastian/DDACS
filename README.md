@@ -1,4 +1,11 @@
 # Deep Drawing and Cutting Simulations (DDACS) Dataset
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![DaRUS Repository](https://img.shields.io/badge/repository-DaRUS-green.svg)](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801)
+[![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801)
+[![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
+
 A python example for accessing and processing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801).
 It includes functionality for downloading datasets with the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) CLI and accessing simulation data with metadata.
 
@@ -10,6 +17,9 @@ It includes functionality for downloading datasets with the [`darus` package](ht
     - [Using uv](#using-uv)
   - [Download Dataset](#download-dataset)
   - [Basic Usage](#basic-usage)
+  - [Citation](#citation)
+    - [Dataset Citation](#dataset-citation)
+    - [Paper Citation](#paper-citation)
   - [License](#license)
 
 ## Installation
@@ -82,6 +92,38 @@ if __name__ == "__main__":
 ```
 With the h5py package, you can access all simulation data based on the file path. See [`main.py`](./main.py) for an example to access the 'blank' geometry.
 
+## Citation
+
+If you use this dataset or code in your research, please cite both the dataset and the paper:
+
+### Dataset Citation
+```bibtex
+@dataset{baum2025ddacs,
+  title={Deep Drawing and Cutting Simulations Dataset},
+  subtitle={FEM Simulations of a deep drawn and cut dual phase steel part},
+  author={Baum, Sebastian and Heinzelmann, Pascal},
+  year={2025},
+  version={1.0},
+  publisher={DaRUS},
+  doi={10.18419/DARUS-4801},
+  license={CC BY 4.0},
+  url={https://doi.org/10.18419/DARUS-4801}
+}
+```
+
+### Paper Citation
+```bibtex
+@article{heinzelmann2025benchmark,
+  title={A Comprehensive Benchmark Dataset for Sheet Metal Forming: Advancing Machine Learning and Surrogate Modelling in Process Simulations},
+  author={Heinzelmann, Pascal and Baum, Sebastian and Riedmüller, Kim Rouven and Liewald, Mathias and Weyrich, Michael},
+  journal={MATEC Web of Conferences},
+  volume={408},
+  year={2025},
+  pages={01090},
+  doi={10.1051/matecconf/202540801090},
+  url={https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html}
+}
+```
 
 ## License
 
