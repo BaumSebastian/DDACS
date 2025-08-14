@@ -4,9 +4,7 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-# Read requirements
-with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+# Dependencies are defined in install_requires below
 
 setup(
     name="ddacs",
@@ -42,20 +40,15 @@ setup(
         "git+https://github.com/BaumSebastian/DaRUS-Dataset-Interaction.git@v1.0.0",
     ],
     extras_require={
-        "pytorch": [
-            "torch>=2.0.0",
-        ],
-        "visualization": [
-            "matplotlib>=3.5.0",
-            "seaborn>=0.11.0",
-        ],
         "examples": [
+            "torch>=2.0.0",
             "jupyter>=1.0.0",
             "matplotlib>=3.5.0",
             "seaborn>=0.11.0",
             "plotly>=5.0.0",
         ],
         "dev": [
+            "torch>=2.0.0",
             "pytest>=7.0.0",
             "black>=22.0.0",
             "ruff>=0.0.250",

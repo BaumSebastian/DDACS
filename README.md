@@ -35,20 +35,14 @@ For basic dataset access without machine learning dependencies:
 pip install git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git
 ```
 
-### PyTorch Installation  
-For machine learning workflows with PyTorch compatibility:
-```bash
-pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[pytorch]"
-```
-
-### Examples Installation
-For interactive examples and visualization capabilities:
+### Examples Installation (Recommended)
+For interactive examples with PyTorch and visualization capabilities:
 ```bash
 pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[examples]"
 ```
 
-### Full Installation
-For all features including development tools:
+### Full Installation (Development)
+For all features including development and testing tools:
 ```bash
 pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[full]"
 ```
