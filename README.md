@@ -13,13 +13,14 @@ It includes functionality for downloading datasets with the [`darus` package](ht
 - [Deep Drawing and Cutting Simulations (DDACS) Dataset](#deep-drawing-and-cutting-simulations-ddacs-dataset)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
-    - [Core Installation (Lightweight)](#core-installation-lightweight)
-    - [PyTorch Installation](#pytorch-installation)
+    - [Core Installation](#core-installation)
+    - [Pytorch Installation](#pytorch-installation)
     - [Examples Installation](#examples-installation)
-    - [Full Installation](#full-installation)
-    - [Adding to Your Project](#adding-to-your-project)
+    - [Full Installation (Development)](#full-installation-development)
   - [Download Dataset](#download-dataset)
   - [Basic Usage](#basic-usage)
+    - [Core Usage](#core-usage)
+    - [PyTorch Usage](#pytorch-usage)
   - [Citation](#citation)
     - [Dataset Citation](#dataset-citation)
     - [Paper Citation](#paper-citation)
@@ -27,53 +28,42 @@ It includes functionality for downloading datasets with the [`darus` package](ht
 
 ## Installation
 
-**Note:** We recommend using [uv](https://docs.astral.sh/uv/) as a fast Python package installer and resolver. Simply replace `pip` with `uv pip` in the commands below.
+**Note:** I recommend using [uv](https://docs.astral.sh/uv/) as a fast Python package installer and resolver. Simply replace `pip` with `uv pip` in the commands below.
 
-### Core Installation (Lightweight)
-For basic dataset access without machine learning dependencies:
+### Core Installation
+
+For basic dataset access without high weight module dependencies:
+
 ```bash
 pip install git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git
 ```
 
-### Examples Installation (Recommended)
-For interactive examples with PyTorch and visualization capabilities:
+### Pytorch Installation
+
+For examples with PyTorch and visualization capabilities:
+
+```bash
+pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[torch]"
+```
+
+### Examples Installation
+
+For examples with PyTorch and visualization capabilities:
+
 ```bash
 pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[examples]"
 ```
 
 ### Full Installation (Development)
+
 For all features including development and testing tools:
+
 ```bash
 pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[full]"
 ```
 
-### Adding to Your Project
-
-Add DDACS to your existing project's `requirements.txt`:
-
-```txt
-# requirements.txt
-# Your other dependencies...
-numpy>=1.21.0
-torch>=2.0.0
-
-# Add DDACS dataset package
-git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[pytorch]
-```
-
-Or for pip-tools users, add to `requirements.in`:
-```txt
-# requirements.in  
-git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[pytorch]
-```
-
-Then run:
-```bash
-pip-compile requirements.in  # generates requirements.txt
-pip install -r requirements.txt
-```
-
 ## Download Dataset
+
 Download the dataset using the `darus-download` CLI command:
 
 ```bash
@@ -86,50 +76,60 @@ darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=
 
 ## Basic Usage
 
-After installing the package, you can easily import and use the dataset classes:
+### Core Usage
+
+For basic dataset iteration:
 
 ```python
-from ddacs import DDACSDataset
+import h5py
+import numpy as np
+from ddacs.core import DDACSIterator
 
-def main():
+# Initialize iterator
+iterator = DDACSIterator("./data")
+print(iterator)
 
-    data_dir = "./data" # The root directory of the dataset.
-    h5_subdir = "h5" # The sub directory that contains the h5 files.
-
-    simulation_dataset = DDACSDataset(data_dir, h5_subdir)
-    print(simulation_dataset)
-
-    # Fetch a sample from the dataset
-    sim_id, metadata, h5_file_path = next(iter(simulation_dataset))
+# Iterate over first few samples
+for i, (sim_id, metadata, h5_file_path) in enumerate(iterator):
+    print(f"Sample {i+1}: ID={sim_id}, Path={h5_file_path}")
     
-    print(
-        "\n".join(
-            [
-                "Sample data entry.",
-                f" - ID: {sim_id}",
-                f" - Metadata: {metadata}",
-                f" - h5 file path: {h5_file_path}",
-            ]
-        )
-    )
-
-    # Access the individual entry based on h5 structure.
+    # Access simulation data
     with h5py.File(h5_file_path, "r") as f:
         data = np.array(f["OP10"]["blank"]["node_displacement"])
-    print(
-        f"Example of pointcloud of 'blank' geometry for all ({data.shape[0]}) timesteps {data.shape}"
-    )
-
-if __name__ == "__main__":
-    main()
+        print(f"Data shape: {data.shape}")
+    
+    if i >= 2:  # Show first 3 samples
+        break
 ```
-With the h5py package, you can access all simulation data based on the file path. See [`examples/`](./examples/) for comprehensive tutorials including visualization and different access patterns with `DDACSDataset`, `DDACSIterator`, and `iter_ddacs()`.
+
+### PyTorch Usage
+
+For PyTorch-compatible dataset with DataLoader support:
+
+```python
+from ddacs.pytorch import DDACSDataset
+from torch.utils.data import DataLoader
+
+# Create dataset
+dataset = DDACSDataset("./data")
+dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
+
+# Use in training loop
+for batch_idx, (sim_ids, metadata_batch, h5_paths) in enumerate(dataloader):
+    print(f"Batch {batch_idx}: {len(sim_ids)} samples")
+    # Your training code here
+    if batch_idx >= 2:  # Show first 3 batches
+        break
+```
+
+See [`examples/`](./examples/) for comprehensive tutorials including visualization and advanced usage patterns.
 
 ## Citation
 
 If you use this dataset or code in your research, please cite both the dataset and the paper:
 
 ### Dataset Citation
+
 ```bibtex
 @dataset{baum2025ddacs,
   title={Deep Drawing and Cutting Simulations Dataset},
@@ -145,6 +145,7 @@ If you use this dataset or code in your research, please cite both the dataset a
 ```
 
 ### Paper Citation
+
 ```bibtex
 @article{heinzelmann2025benchmark,
   title={A Comprehensive Benchmark Dataset for Sheet Metal Forming: Advancing Machine Learning and Surrogate Modelling in Process Simulations},
@@ -167,7 +168,7 @@ git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-
 cd DDACS
 
 # Install in editable mode with development dependencies
-uv pip install -e ".[dev]"  # or pip install -e ".[dev]"
+pip install -e ".[dev]"  # or pip install -e ".[dev]"
 ```
 
 This automatically installs the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) which provides the `darus-download` CLI command.

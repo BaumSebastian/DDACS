@@ -40,6 +40,9 @@ setup(
         "darus @ git+https://github.com/BaumSebastian/DaRUS-Dataset-Interaction.git@v1.0.0",
     ],
     extras_require={
+        "torch": [
+            "torch>=2.0.0",
+        ],
         "examples": [
             "torch>=2.0.0",
             "jupyter>=1.0.0",
