@@ -21,14 +21,26 @@ def extract_point_cloud(h5_path: Union[str, Path],
     Extract point cloud coordinates from H5 simulation file.
     
     Args:
-        h5_path: Path to H5 file
-        component: Component name ('binder', 'blank', 'die', 'punch')
-        timestep: Timestep index (0=initial, -1=final)
-                 Note: Tools (die, binder, punch) may have different timestep 
-                 structures than the blank (workpiece)
+        h5_path: Path to the H5 simulation file.
+        component: Component name ('binder', 'blank', 'die', 'punch').
+        timestep: Timestep index (default: 0). Use 0 for initial state,
+                 -1 for final state. Tools may have different timestep
+                 structures than the workpiece.
     
     Returns:
-        Coordinates array (n_nodes, 3)
+        np.ndarray: Deformed coordinates array with shape (n_nodes, 3).
+                   Coordinates include both initial position and displacement.
+        
+    Raises:
+        FileNotFoundError: If the H5 file does not exist.
+        KeyError: If the specified component is not found in the file.
+        
+    Examples:
+        >>> coords = extract_point_cloud('simulation_001.h5', 'blank', timestep=0)
+        >>> print(f"Initial blank shape: {coords.shape}")
+        
+        >>> final_coords = extract_point_cloud('simulation_001.h5', 'blank', timestep=-1)
+        >>> print(f"Final deformed shape: {final_coords.shape}")
         
     Note:
         Different components may have different displacement data structures:
@@ -57,13 +69,31 @@ def extract_mesh(h5_path: Union[str, Path],
     Extract mesh data for matplotlib visualization.
     
     Args:
-        h5_path: Path to H5 file
-        component: Component name ('binder', 'blank', 'die', 'punch')  
-        timestep: Timestep index (0=initial, -1=final)
-                 Note: Tools may have different timestep structures than blank
+        h5_path: Path to the H5 simulation file.
+        component: Component name ('binder', 'blank', 'die', 'punch').
+        timestep: Timestep index (default: 0). Use 0 for initial state,
+                 -1 for final state.
     
     Returns:
-        (vertices, triangles) - vertices (n_nodes, 3), triangles (n_faces, 3)
+        Tuple[np.ndarray, np.ndarray]: A tuple containing:
+            - vertices: Node coordinates array with shape (n_nodes, 3)
+            - triangles: Triangle connectivity array with shape (n_faces, 3)
+                        Each row contains indices of triangle vertices
+                        
+    Raises:
+        FileNotFoundError: If the H5 file does not exist.
+        KeyError: If the specified component is not found in the file.
+        
+    Examples:
+        >>> vertices, triangles = extract_mesh('simulation_001.h5', 'blank')
+        >>> print(f"Mesh has {len(vertices)} vertices and {len(triangles)} triangles")
+        
+        >>> # Extract final deformed mesh
+        >>> vertices, triangles = extract_mesh('simulation_001.h5', 'blank', timestep=-1)
+        
+    Note:
+        Quad elements are automatically converted to triangles by splitting
+        each quad into two triangles.
     """
     with h5py.File(h5_path, 'r') as f:
         comp_group = f[f'OP10/{component}']
@@ -94,8 +124,31 @@ def display_structure(h5_path: Union[str, Path], max_depth: int = None) -> None:
     Display the complete hierarchical structure of an HDF5 file in tree format.
     
     Args:
-        h5_path: Path to H5 file
-        max_depth: Maximum depth to display (None for unlimited)
+        h5_path: Path to the H5 file to analyze.
+        max_depth: Maximum depth to display (default: None for unlimited depth).
+                  Useful for limiting output when files have deep nesting.
+    
+    Returns:
+        None: Prints the structure directly to stdout.
+        
+    Raises:
+        FileNotFoundError: If the H5 file does not exist.
+        
+    Examples:
+        >>> display_structure('simulation_001.h5')
+        HDF5 Structure: simulation_001.h5
+        ============================================================
+        OP10/ (Group)
+          blank/ (Group)
+            node_coordinates (Dataset: shape=(1024, 3), dtype=float64)
+            ...
+        
+        >>> # Limit depth for large files
+        >>> display_structure('simulation_001.h5', max_depth=2)
+        
+    Note:
+        Displays groups, datasets, and their attributes in a hierarchical
+        tree format. Shows dataset shapes, data types, and any HDF5 attributes.
     """
     def _print_structure(name, obj, depth=0, prefix=""):
         if max_depth is not None and depth > max_depth:

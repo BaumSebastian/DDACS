@@ -1,3 +1,9 @@
+"""
+PyTorch integration for DDACS dataset.
+
+This module provides PyTorch-compatible Dataset class for machine learning
+workflows with DDACS simulation data.
+"""
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -48,7 +54,14 @@ class DDACSDataset(Dataset):
         self._metadata = self._filter_existing_files()
         
     def _filter_existing_files(self) -> pd.DataFrame:
-        """Filter metadata to only include entries with existing H5 files."""
+        """Filter metadata to only include entries with existing H5 files.
+        
+        Returns:
+            pd.DataFrame: Filtered metadata containing only simulations with existing H5 files.
+            
+        Warns:
+            UserWarning: If some simulations in metadata don't have corresponding H5 files.
+        """
         mask = self._metadata["ID"].apply(
             lambda sim_id: (self._h5_dir / f"{int(sim_id)}.h5").exists()
         )
@@ -65,7 +78,11 @@ class DDACSDataset(Dataset):
         return filtered
         
     def __len__(self) -> int:
-        """Number of samples in the dataset."""
+        """Return the number of samples in the dataset.
+        
+        Returns:
+            int: Number of available simulation samples.
+        """
         return len(self._metadata)
     
     def __getitem__(self, idx: int) -> Tuple[int, np.ndarray, str]:
@@ -89,7 +106,12 @@ class DDACSDataset(Dataset):
         return sim_id, metadata_vals, str(h5_path)
     
     def __str__(self) -> str:
-        """String representation."""
+        """Return a formatted string representation of the dataset.
+        
+        Returns:
+            str: Multi-line string showing dataset directory, number of samples,
+                and metadata column names.
+        """
         lines = [
             f"DDACS Dataset (PyTorch)",
             f"  Directory: {self.data_dir}",

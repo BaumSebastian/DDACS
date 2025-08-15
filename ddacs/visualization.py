@@ -1,3 +1,9 @@
+"""
+3D visualization tools for DDACS simulation data.
+
+This module provides matplotlib-based visualization functions for plotting
+deep drawing simulation geometries and components.
+"""
 import numpy as np
 from pathlib import Path
 from typing import Union, Optional, List, Tuple, Dict, Any
@@ -122,13 +128,22 @@ def create_surface_plot(ax, coords: np.ndarray, elements: Optional[np.ndarray] =
     Create a 3D surface plot from coordinates and element connectivity.
     
     Args:
-        ax: Matplotlib 3D axis
-        coords: Node coordinates array (n_nodes, 3)
-        elements: Element connectivity array (n_elements, 4) or None
-        color: Surface color
-        alpha: Transparency level
-        max_elements: Maximum elements to plot (for performance)
-        point_size: Point size for scatter plot fallback
+        ax: Matplotlib 3D axis object to plot on.
+        coords: Node coordinates array with shape (n_nodes, 3).
+        elements: Element connectivity array with shape (n_elements, 4)
+                 or None for scatter plot fallback.
+        color: Surface color name or hex code (default: 'blue').
+        alpha: Transparency level between 0.0 and 1.0 (default: 0.7).
+        max_elements: Maximum number of elements to plot for performance
+                     (default: 2000).
+        point_size: Point size for scatter plot fallback (default: 10).
+    
+    Returns:
+        None: Modifies the provided axis object in-place.
+        
+    Note:
+        If element connectivity is provided, creates a solid surface mesh.
+        Otherwise falls back to scatter plot visualization.
     """
     if elements is not None and len(elements) > 0:
         # Create surface using element connectivity
@@ -159,8 +174,19 @@ def create_surface_plot(ax, coords: np.ndarray, elements: Optional[np.ndarray] =
         _create_scatter_plot(ax, coords, color, alpha, point_size)
 
 
-def _create_scatter_plot(ax, coords: np.ndarray, color: str, alpha: float, point_size: int):
-    """Create scatter plot fallback."""
+def _create_scatter_plot(ax, coords: np.ndarray, color: str, alpha: float, point_size: int) -> None:
+    """Create scatter plot fallback for components without element connectivity.
+    
+    Args:
+        ax: Matplotlib 3D axis object.
+        coords: Node coordinates array with shape (n_nodes, 3).
+        color: Point color name or hex code.
+        alpha: Transparency level between 0.0 and 1.0.
+        point_size: Size of scatter plot points.
+        
+    Returns:
+        None: Modifies the axis object in-place.
+    """
     x, y, z = coords[:, 0], coords[:, 1], coords[:, 2]
     ax.scatter(x, y, z, c=color, alpha=alpha, s=point_size)
 
@@ -184,6 +210,18 @@ def plot_geometries(sim_id: Union[int, str, Path],
     
     Returns:
         Matplotlib figure object
+        
+    Examples:
+        >>> fig = plot_geometries(12345)  # Plot by simulation ID
+        >>> fig = plot_geometries('simulation_001.h5')  # Plot by filename
+        >>> fig = plot_geometries('/path/to/sim.h5', timestep=-1)  # Final state
+        
+        >>> # Custom colors and components
+        >>> colors = {'blank': 'red', 'die': 'blue'}
+        >>> fig = plot_geometries(12345, components=['blank', 'die'], colors=colors)
+        
+        >>> # Save the plot
+        >>> fig = plot_geometries(12345, save_path='simulation_plot.png')
     """
     
     # Handle different input types for sim_id
@@ -290,6 +328,11 @@ def plot_component(sim_id: Union[int, str, Path],
     
     Returns:
         Matplotlib figure object
+        
+    Examples:
+        >>> fig = plot_component(12345, 'blank')  # Plot blank component
+        >>> fig = plot_component('sim.h5', 'die', timestep=-1)  # Final die state
+        >>> fig = plot_component('/path/to/sim.h5', 'punch', color='green')
     """
     
     # Handle input path
@@ -339,15 +382,45 @@ def plot_component(sim_id: Union[int, str, Path],
 
 # Convenience functions
 def plot_blank(sim_id: Union[int, str, Path], timestep: int = 0, **kwargs) -> plt.Figure:
-    """Plot only the blank (sheet metal) component."""
+    """Plot only the blank (sheet metal) component.
+    
+    Args:
+        sim_id: Simulation ID, filename, or full path to H5 file.
+        timestep: Timestep to visualize (default: 0).
+        **kwargs: Additional keyword arguments passed to plot_component.
+        
+    Returns:
+        plt.Figure: Matplotlib figure object containing the plot.
+    """
     return plot_component(sim_id, 'blank', timestep, color='orange', **kwargs)
 
 
 def plot_setup(sim_id: Union[int, str, Path], timestep: int = 0, **kwargs) -> plt.Figure:
-    """Plot complete forming setup (all components)."""
+    """Plot complete forming setup (all components).
+    
+    Args:
+        sim_id: Simulation ID, filename, or full path to H5 file.
+        timestep: Timestep to visualize (default: 0).
+        **kwargs: Additional keyword arguments passed to plot_geometries.
+        
+    Returns:
+        plt.Figure: Matplotlib figure object containing the complete setup plot.
+    """
     return plot_geometries(sim_id, timestep, **kwargs)
 
 
 def plot_springback(sim_id: Union[int, str, Path], **kwargs) -> plt.Figure:
-    """Plot blank after springback (timestep 3, tools removed)."""
+    """Plot blank after springback (final deformed state).
+    
+    Args:
+        sim_id: Simulation ID, filename, or full path to H5 file.
+        **kwargs: Additional keyword arguments passed to plot_component.
+        
+    Returns:
+        plt.Figure: Matplotlib figure object showing the springback result.
+        
+    Note:
+        Uses timestep 3 which typically represents the final state after
+        springback analysis with forming tools removed.
+    """
     return plot_component(sim_id, 'blank', timestep=3, color='orange', **kwargs)

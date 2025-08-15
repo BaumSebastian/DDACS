@@ -1,3 +1,9 @@
+"""
+Core DDACS dataset access functionality.
+
+This module provides the main DDACSIterator class for accessing DDACS simulation
+data in a pure Python environment without ML framework dependencies.
+"""
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -9,6 +15,21 @@ class DDACSIterator:
     """
     Lightweight iterator for DDACS simulation data.
     Pure Python implementation with no external ML dependencies.
+    
+    Examples:
+        >>> iterator = DDACSIterator('/path/to/dataset')
+        >>> print(f"Found {len(iterator)} simulations")
+        >>> for sim_id, metadata, h5_path in iterator:
+        ...     print(f"Processing simulation {sim_id}")
+        
+        >>> # Get specific simulation
+        >>> sim_data = iterator.get_by_id(12345)
+        >>> if sim_data:
+        ...     sim_id, metadata, h5_path = sim_data
+        
+        >>> # Random sampling
+        >>> for sim_id, metadata, h5_path in iterator.sample(5):
+        ...     print(f"Sampled simulation {sim_id}")
     """
     
     def __init__(self, data_dir: Union[str, Path], h5_subdir: str = "h5", 
@@ -20,6 +41,13 @@ class DDACSIterator:
             data_dir: Root directory of the dataset
             h5_subdir: Subdirectory containing H5 files (default: "h5")
             metadata_file: Name of metadata CSV file (default: "metadata.csv")
+            
+        Examples:
+            >>> iterator = DDACSIterator('/data/ddacs_dataset')
+            >>> iterator = DDACSIterator('/data/ddacs_dataset', h5_subdir='simulations')
+            
+        Raises:
+            FileNotFoundError: If the H5 directory or metadata file doesn't exist.
         """
         self.data_dir = Path(data_dir)
         self._h5_dir = self.data_dir / h5_subdir
@@ -36,7 +64,14 @@ class DDACSIterator:
         self._metadata = self._filter_existing_files()
         
     def _filter_existing_files(self) -> pd.DataFrame:
-        """Filter metadata to only include entries with existing H5 files."""
+        """Filter metadata to only include entries with existing H5 files.
+        
+        Returns:
+            pd.DataFrame: Filtered metadata containing only simulations with existing H5 files.
+            
+        Warns:
+            UserWarning: If some simulations in metadata don't have corresponding H5 files.
+        """
         mask = self._metadata["ID"].apply(
             lambda sim_id: (self._h5_dir / f"{int(sim_id)}.h5").exists()
         )
@@ -53,11 +88,19 @@ class DDACSIterator:
         return filtered
     
     def __len__(self) -> int:
-        """Number of available simulations."""
+        """Return the number of available simulations.
+        
+        Returns:
+            int: Number of simulations with existing H5 files.
+        """
         return len(self._metadata)
     
     def __iter__(self) -> Generator[Tuple[int, np.ndarray, Path], None, None]:
-        """Iterate over all simulations."""
+        """Iterate over all available simulations.
+        
+        Yields:
+            Tuple[int, np.ndarray, Path]: Simulation ID, metadata values, and H5 file path.
+        """
         for _, row in self._metadata.iterrows():
             sim_id = int(row["ID"])
             h5_path = self._h5_dir / f"{sim_id}.h5"
@@ -65,7 +108,15 @@ class DDACSIterator:
             yield sim_id, metadata_vals, h5_path
     
     def get_by_id(self, sim_id: int) -> Optional[Tuple[int, np.ndarray, Path]]:
-        """Get simulation by ID."""
+        """Retrieve a specific simulation by its ID.
+        
+        Args:
+            sim_id: The simulation ID to retrieve.
+            
+        Returns:
+            Optional[Tuple[int, np.ndarray, Path]]: Simulation data if found, None otherwise.
+                Tuple contains (simulation_id, metadata_values, h5_file_path).
+        """
         row = self._metadata[self._metadata["ID"] == sim_id]
         if row.empty:
             return None
@@ -77,7 +128,15 @@ class DDACSIterator:
         return sim_id_int, metadata_vals, h5_path
     
     def sample(self, n: int = 1) -> Generator[Tuple[int, np.ndarray, Path], None, None]:
-        """Randomly sample n simulations."""
+        """Randomly sample simulations from the dataset.
+        
+        Args:
+            n: Number of simulations to sample (default: 1).
+               If n exceeds available simulations, returns all available.
+               
+        Yields:
+            Tuple[int, np.ndarray, Path]: Simulation ID, metadata values, and H5 file path.
+        """
         sampled = self._metadata.sample(n=min(n, len(self._metadata)))
         for _, row in sampled.iterrows():
             sim_id = int(row["ID"])
@@ -86,7 +145,12 @@ class DDACSIterator:
             yield sim_id, metadata_vals, h5_path
     
     def __str__(self) -> str:
-        """String representation."""
+        """Return a formatted string representation of the iterator.
+        
+        Returns:
+            str: Multi-line string showing dataset directory, available simulations,
+                and metadata column names.
+        """
         lines = [
             f"DDACS Iterator",
             f"  Directory: {self.data_dir}",
