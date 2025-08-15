@@ -6,3 +6,15 @@ try:
     from .pytorch import DDACSDataset
 except ImportError:
     pass
+
+# Optional visualization module (only if matplotlib is available)
+try:
+    from . import visualization
+except ImportError:
+    pass
+
+# Utils module (optional import based on h5py availability)
+try:
+    from . import utils
+except ImportError:
+    pass
