@@ -33,6 +33,7 @@ setup(
         "h5py>=3.13.0",
         "numpy>=2.2.0",
         "pandas>=2.2.0",
+        "matplotlib>=3.5.0",
         "python-dateutil>=2.9.0",
         "pytz>=2025.1",
         "six>=1.17.0",
