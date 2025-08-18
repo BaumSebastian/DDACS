@@ -24,6 +24,9 @@ def iter_ddacs(data_dir: Union[str, Path], h5_subdir: str = "h5",
         Tuple[int, np.ndarray, Path]: Simulation ID, metadata values array,
             and path to corresponding H5 file.
             
+    Raises:
+        FileNotFoundError: If the H5 directory or individual H5 files don't exist.
+            
     Examples:
         >>> for sim_id, metadata, h5_path in iter_ddacs('/data/ddacs'):
         ...     print(f"Simulation {sim_id}: {h5_path}")
@@ -31,15 +34,14 @@ def iter_ddacs(data_dir: Union[str, Path], h5_subdir: str = "h5",
         >>> # Custom subdirectory
         >>> for sim_id, metadata, h5_path in iter_ddacs('/data/ddacs', h5_subdir='results'):
         ...     print(f"Processing {sim_id}")
-            
-    Note:
-        Only yields simulations that have existing H5 files. Missing files
-        are silently skipped.
     """
     data_dir = Path(data_dir)
     metadata_path = data_dir / metadata_file
     h5_dir = data_dir / h5_subdir
-    
+
+    if not h5_dir.exists():
+        raise FileNotFoundError(f"H5 directory not found: {h5_dir}")
+
     metadata = pd.read_csv(metadata_path)
     
     for _, row in metadata.iterrows():
@@ -49,6 +51,8 @@ def iter_ddacs(data_dir: Union[str, Path], h5_subdir: str = "h5",
         if h5_path.exists():
             metadata_vals = row.values[1:]  # Skip ID
             yield sim_id, metadata_vals, h5_path
+        else:
+            raise FileNotFoundError(f"H5 file not found: {h5_path}")
 
 
 def iter_h5_files(data_dir: Union[str, Path], h5_subdir: str = "h5") -> Generator[Path, None, None]:
@@ -62,6 +66,9 @@ def iter_h5_files(data_dir: Union[str, Path], h5_subdir: str = "h5") -> Generato
     Yields:
         Path: Absolute path to each H5 file found in the specified directory.
         
+    Raises:
+        FileNotFoundError: If the H5 directory doesn't exist.
+        
     Examples:
         >>> for h5_path in iter_h5_files('/data/ddacs'):
         ...     print(f"Found H5 file: {h5_path.name}")
@@ -74,5 +81,9 @@ def iter_h5_files(data_dir: Union[str, Path], h5_subdir: str = "h5") -> Generato
         Yields all .h5 files found in the directory, regardless of metadata.
     """
     h5_dir = Path(data_dir) / h5_subdir
+    
+    if not h5_dir.exists():
+        raise FileNotFoundError(f"H5 directory not found: {h5_dir}")
+    
     for h5_file in h5_dir.glob("*.h5"):
         yield h5_file
