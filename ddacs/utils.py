@@ -118,6 +118,54 @@ def extract_mesh(
     return vertices, np.array(triangles)
 
 
+def extract_element_thickness(
+    h5_path: Union[str, Path], component: str, timestep: int = 0
+) -> np.ndarray:
+    """
+    Extract element thickness data from H5 simulation file.
+
+    Args:
+        h5_path: Path to the H5 simulation file.
+        component: Component name ('binder', 'blank', 'die', 'punch').
+        timestep: Timestep index (default: 0). Use 0 for initial state,
+                 -1 for final state.
+
+    Returns:
+        np.ndarray: Element thickness array with shape (n_elements,).
+                   Each value represents the thickness of one element.
+
+    Raises:
+        FileNotFoundError: If the H5 file does not exist.
+        KeyError: If the specified component or thickness data is not found.
+
+    Examples:
+        >>> thickness = extract_element_thickness('simulation_001.h5', 'blank', timestep=0)
+        >>> print(f"Initial thickness range: {thickness.min():.3f} - {thickness.max():.3f}")
+
+        >>> # Compare initial vs final thickness
+        >>> t0 = extract_element_thickness('simulation_001.h5', 'blank', timestep=0)
+        >>> t_final = extract_element_thickness('simulation_001.h5', 'blank', timestep=-1)
+        >>> thinning = (t0 - t_final) / t0 * 100
+        >>> print(f"Maximum thinning: {thinning.max():.1f}%")
+
+    Note:
+        Thickness data shows how the material thickness changes during forming.
+        This is particularly useful for analyzing thinning in deep drawing processes.
+        Can be used with matplotlib's color mapping on mesh visualizations.
+    """
+    with h5py.File(h5_path, "r") as f:
+        comp_group = f[f"OP10/{component}"]
+        thickness_data = comp_group["element_shell_thickness"]
+
+        # Handle negative timestep indexing
+        if timestep == -1:
+            timestep = thickness_data.shape[0] - 1
+
+        thickness = np.array(thickness_data[timestep], copy=True)
+
+    return thickness
+
+
 def display_structure(h5_path: Union[str, Path], max_depth: int = None) -> None:
     """
     Display the complete hierarchical structure of an HDF5 file in tree format.
