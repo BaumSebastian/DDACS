@@ -7,9 +7,11 @@ workflows with DDACS simulation data.
 
 from pathlib import Path
 from typing import Tuple, Union
-import warnings
+import logging
 import pandas as pd
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 try:
     from torch.utils.data import Dataset
@@ -99,9 +101,8 @@ class DDACSDataset(Dataset):
         n_original = len(self._metadata)
         n_filtered = len(filtered)
         if n_original != n_filtered:
-            warnings.warn(
-                f"Found {n_filtered}/{n_original} simulations with existing H5 files",
-                UserWarning,
+            logger.info(
+                f"Found {n_filtered}/{n_original} simulations with existing H5 files"
             )
 
         return filtered
