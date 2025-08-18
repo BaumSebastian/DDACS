@@ -1,10 +1,12 @@
 """Test configuration and fixtures for DDACS tests."""
 
 import pytest
+import os
 from pathlib import Path
 
 # Configure this to point to your real dataset location
-REAL_DATASET_PATH = Path("data")
+# Can be overridden with DDACS_TEST_DATA environment variable
+REAL_DATASET_PATH = Path(os.environ.get("DDACS_TEST_DATA", "data"))
 
 
 @pytest.fixture

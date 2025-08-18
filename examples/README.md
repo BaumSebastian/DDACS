@@ -11,9 +11,7 @@ This directory contains examples and tutorials for using the DDACS dataset.
   - Data visualizations with matplotlib
   - ML workflow examples
 
-- `quick_start.py` - Simple Python script for basic usage
-- `performance_comparison.py` - Benchmarking different access methods
-- `visualization_examples.py` - Matplotlib/seaborn plotting examples
+- `quick_start.py` - Simple Python script for basic dataset exploration
 
 ## Installation
 
@@ -39,5 +37,9 @@ jupyter notebook examples/dataset_demo.ipynb
 
 ### Run Python examples
 ```bash
+# Basic dataset exploration
 python examples/quick_start.py
+
+# Or with custom data directory
+python examples/quick_start.py /path/to/your/data
 ```

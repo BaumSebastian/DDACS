@@ -9,8 +9,8 @@ updated: 2025-08-13
 
 Deep drawing is a manufacturing process that transforms flat metal sheets into 3D parts by pressing them through a die. Think of shaping aluminum foil with a muffin tin, but with precise control over forces and material flow.
 
-![[Pasted image 20250326120029.png]]
-*Simulation showing the four main components: binder (top), punch (moving down), blank (metal sheet), and die (bottom)*
+![Thickness Distribution Example](images/thickness_simulation.gif)
+*Example showing thickness distribution changes during deep drawing simulation*
 
 **Process Overview:**
 1. **Blank** (metal sheet) is placed between tools
@@ -107,10 +107,41 @@ Each simulation is stored as an HDF5 file containing:
 - **OP20 (2 steps)**: Tool removal analysis → Final springback state
 
 ### Key Data Types
-- **Coordinates**: Node positions defining geometry
-- **Displacements**: How each point moves during forming
-- **Stress/Strain**: Material response and deformation
-- **Forces**: Applied loads and reactions
+- **Coordinates**: Node positions defining geometry (millimeters, global coordinate system)
+- **Displacements**: How each point moves during forming (millimeters from initial position)
+- **Stress/Strain**: Material response and deformation (stress in Pa, strain dimensionless)
+- **Forces**: Applied loads and reactions (Newtons)
+
+### Understanding the Data
+
+#### Units and Coordinate System
+- **Length**: Millimeters (mm) - coordinates, displacements, dimensions
+- **Stress**: Pascals (Pa) - typically 100-800 MPa for steel forming
+- **Force**: Newtons (N) - blank holder forces range 100,000-500,000 N
+- **Time**: Dimensionless simulation time (0.0 to 1.0 represents full process)
+- **Coordinates**: Global system with Z-axis as forming direction
+
+#### Typical Value Ranges
+| Data Type | Typical Range | Critical Values |
+|-----------|---------------|-----------------|
+| **Stress (σ)** | 100-800 MPa | >600 MPa indicates high deformation |
+| **Strain (ε)** | 0.0-0.3 | >0.2 suggests significant stretching |
+| **Thickness** | 0.8-1.0 mm | <0.9 mm shows material thinning |
+| **Displacement** | 0-35 mm | Final depth ~30 mm for successful forming |
+
+#### Data Quality Indicators
+- **Successful simulations**: Smooth stress/strain curves, thickness >0.8 mm
+- **Failed simulations**: Excessive thinning (<0.7 mm), stress spikes >900 MPa
+- **Springback**: Compare OP10 final vs OP20 final geometries
+
+#### Common Use Cases
+| Use Case | Recommended Data | Key Timesteps |
+|----------|------------------|---------------|
+| **ML Training** | Stress, strain, thickness from blank component | Final timestep (t=-1) |
+| **Process Optimization** | All OP10 data, compare parameters | All timesteps |
+| **Failure Prediction** | Thickness, effective plastic strain | Progressive through timesteps |
+| **Geometry Analysis** | Node coordinates, displacements | Initial (t=0) vs final (t=-1) |
+| **Springback Study** | OP10 final vs OP20 final coordinates | Compare operations |
 
 ---
 
@@ -127,6 +158,20 @@ Each simulation is stored as an HDF5 file containing:
 ### Geometry Parameters
 - **GEO**: Shape type (R=Rectangular, V=Concave, X=Convex)
 - **RAD**: Characteristic radius [30-150 mm]
+
+#### Parameter Effects on Forming
+| Parameter | Low Value Effect | High Value Effect | Physical Impact |
+|-----------|------------------|-------------------|-----------------|
+| **SHTK** (0.95 mm) | More prone to tearing | (1.0 mm) Better formability | Thicker sheets resist thinning |
+| **FC** (0.05) | Easy sliding, more wrinkles | (0.15) Restricted flow, higher forces | Friction controls material flow |
+| **BF** (100k N) | Insufficient holding, wrinkles | (500k N) Excessive restraint, tearing | Blank holder prevents/causes defects |
+| **RAD** (30 mm) | Sharp corners, stress concentration | (150 mm) Gentle forming, lower stress | Radius controls stress levels |
+
+#### Selecting Data for Analysis
+- **Beginners**: Start with `blank/node_displacement` and `blank/element_shell_thickness`
+- **Stress analysis**: Focus on `element_shell_stress` with stress concentration areas
+- **Material scientists**: Use `element_shell_strain` and `effective_plastic_strain`
+- **Process engineers**: Compare different parameter combinations in metadata
 
 ---
 

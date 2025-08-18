@@ -14,7 +14,7 @@ It includes functionality for downloading datasets with the [`darus` package](ht
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
     - [Core Installation](#core-installation)
-    - [Pytorch Installation](#pytorch-installation)
+    - [PyTorch Installation](#pytorch-installation)
     - [Examples Installation](#examples-installation)
     - [Full Installation (Development)](#full-installation-development)
   - [Download Dataset](#download-dataset)
@@ -38,9 +38,9 @@ For basic dataset access without high weight module dependencies:
 pip install git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git
 ```
 
-### Pytorch Installation
+### PyTorch Installation
 
-For examples with PyTorch and visualization capabilities:
+For PyTorch integration without visualization dependencies:
 
 ```bash
 pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[torch]"
@@ -48,7 +48,7 @@ pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simul
 
 ### Examples Installation
 
-For examples with PyTorch and visualization capabilities:
+For examples with PyTorch, Jupyter, and visualization capabilities:
 
 ```bash
 pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[examples]"
@@ -122,7 +122,7 @@ for batch_idx, (sim_ids, metadata_batch, h5_paths) in enumerate(dataloader):
         break
 ```
 
-See [`examples/`](./examples/) for comprehensive tutorials including visualization and advanced usage patterns.
+See [`examples/dataset_demo.ipynb`](./examples/dataset_demo.ipynb) for a comprehensive tutorial including visualization and advanced usage patterns.
 
 ## Citation
 
@@ -168,7 +168,7 @@ git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-
 cd DDACS
 
 # Install in editable mode with development dependencies
-pip install -e ".[dev]"  # or pip install -e ".[dev]"
+pip install -e ".[dev]"
 ```
 
 This automatically installs the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) which provides the `darus-download` CLI command.
