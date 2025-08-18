@@ -43,17 +43,19 @@ This dataset contains 32,071 finite element simulations of deep drawing processe
 ## Quick Start
 
 ```python
-from ddacs.core import DDACSIterator
+from ddacs import iter_ddacs
 from ddacs.utils import display_structure
 
-# Load dataset
-dataset = DDACSIterator("data/")
-print(f"Available simulations: {len(dataset)}")
+# Count available simulations  
+from ddacs import count_available_simulations
+count = count_available_simulations("data/")
+print(f"Available simulations: {count}")
 # Output: Available simulations: 32071
 
-# Explore HDF5 structure
-sim_id, metadata, h5_path = next(iter(dataset))
-display_structure(h5_path)
+# Iterate through data
+for sim_id, metadata, h5_path in iter_ddacs("data/"):
+    display_structure(h5_path)
+    break  # Just show first one
 ```
 
 **Example output:**

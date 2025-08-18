@@ -83,14 +83,14 @@ For basic dataset iteration:
 ```python
 import h5py
 import numpy as np
-from ddacs.core import DDACSIterator
+from ddacs import iter_ddacs, count_available_simulations
 
-# Initialize iterator
-iterator = DDACSIterator("./data")
-print(iterator)
+# Count available simulations
+count = count_available_simulations("./data")
+print(f"Available simulations: {count}")
 
 # Iterate over first few samples
-for i, (sim_id, metadata, h5_file_path) in enumerate(iterator):
+for i, (sim_id, metadata, h5_file_path) in enumerate(iter_ddacs("./data")):
     print(f"Sample {i+1}: ID={sim_id}, Path={h5_file_path}")
     
     # Access simulation data
