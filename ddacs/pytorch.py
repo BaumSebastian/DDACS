@@ -120,10 +120,10 @@ class DDACSDataset(Dataset):
 
     def get_metadata_columns(self) -> list[str]:
         """Get list of metadata column names (excluding ID).
-        
+
         Returns:
             list[str]: Column names from metadata CSV, excluding the ID column.
-            
+
         Examples:
             >>> dataset = DDACSDataset('/data/ddacs')
             >>> columns = dataset.get_metadata_columns()
@@ -133,10 +133,10 @@ class DDACSDataset(Dataset):
 
     def get_metadata_descriptions(self) -> dict[str, str]:
         """Get explanations for abbreviated metadata column names.
-        
+
         Returns:
             dict[str, str]: Mapping of column abbreviations to their descriptions.
-            
+
         Examples:
             >>> dataset = DDACSDataset('/data/ddacs')
             >>> descriptions = dataset.get_metadata_descriptions()
@@ -144,16 +144,18 @@ class DDACSDataset(Dataset):
             ...     print(f"{col}: {desc}")
         """
         descriptions = {
-            'SHTK': 'Sheet thickness [0.95-1.0 mm]',
-            'MAT': 'Material scaling factor [0.9-1.1]', 
-            'FC': 'Friction coefficient [0.05-0.15]',
-            'BF': 'Blank holder force [100,000-500,000 N]',
-            'GEO': 'Shape type (R=Rectangular, V=Concave, X=Convex)',
-            'RAD': 'Characteristic radius [30-150 mm]'
+            "SHTK": "Sheet thickness [0.95-1.0 mm]",
+            "MAT": "Material scaling factor [0.9-1.1]",
+            "FC": "Friction coefficient [0.05-0.15]",
+            "BF": "Blank holder force [100,000-500,000 N]",
+            "GEO": "Shape type (R=Rectangular, V=Concave, X=Convex)",
+            "RAD": "Characteristic radius [30-150 mm]",
         }
-        
+
         available_columns = self.get_metadata_columns()
-        return {col: descriptions.get(col, 'Unknown parameter') for col in available_columns}
+        return {
+            col: descriptions.get(col, "Unknown parameter") for col in available_columns
+        }
 
     def __getitem__(self, idx: int) -> Tuple[int, np.ndarray, str]:
         """
