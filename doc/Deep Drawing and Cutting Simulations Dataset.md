@@ -157,6 +157,18 @@ Each simulation is stored as an HDF5 file containing:
 - **GEO**: Shape type (R=Rectangular, V=Concave, X=Convex)
 - **RAD**: Characteristic radius [30-150 mm]
 
+#### Metadata Structure (metadata.csv)
+The metadata file contains process parameters for each simulation:
+- **ID**: Simulation identifier matching HDF5 filename
+- **GEO_R**: Rectangular geometry flag (1=rectangular, 0=other)
+- **GEO_V**: Concave geometry flag (1=concave, 0=other)  
+- **GEO_X**: Convex geometry flag (1=convex, 0=other)
+- **RAD**: Characteristic radius [30-150 mm]
+- **MAT**: Material scaling factor [0.9-1.1]
+- **FC**: Friction coefficient [0.05-0.15]
+- **SHTK**: Sheet thickness [0.95-1.0 mm]
+- **BF**: Blank holder force [100,000-500,000 N]
+
 #### Parameter Effects on Forming
 | Parameter | Low Value Effect | High Value Effect | Physical Impact |
 |-----------|------------------|-------------------|-----------------|
@@ -212,6 +224,80 @@ Each simulation is stored as an HDF5 file containing:
 | `element_shell_internal_energy` | (t, m) | Energy absorbed by deformation (U) |
 
 *Where: m=surface patches, n=points, t=timesteps, layers=through thickness*
+
+### Complete Field Reference by Component
+
+#### Blank Component (OP10/blank/) - 4 timesteps
+**Geometry and Connectivity**
+- `node_ids` (n,): Unique ID numbers for each node point
+- `node_coordinates` (n, 3): Initial XYZ positions of nodes [mm]
+- `element_shell_ids` (m,): Unique ID numbers for each shell element
+- `element_shell_node_ids` (m, 4): Node IDs forming each quadrilateral element
+
+**Motion Data**
+- `node_displacement` (4, n, 3): Node displacement vectors [mm]
+- `node_velocity` (4, n, 3): Node velocity vectors [mm/s]
+- `node_acceleration` (4, n, 3): Node acceleration vectors [mm/s²]
+
+**Element Stress Data**
+- `element_shell_stress` (4, m, 3, 6): Stress tensor components [Pa]
+  - Layer 0: Bottom surface, Layer 1: Mid-surface, Layer 2: Top surface
+  - Components: [σxx, σyy, σzz, τxy, τyz, τzx]
+- `element_shell_strain` (4, m, 2, 6): Strain tensor components [dimensionless]
+  - Layer 0: Bottom surface, Layer 1: Top surface
+  - Components: [εxx, εyy, εzz, γxy, γyz, γzx]
+
+**Material Properties**
+- `element_shell_thickness` (4, m): Current thickness of each element [mm]
+- `element_shell_effective_plastic_strain` (4, m, 3): Effective plastic strain [dimensionless]
+
+**Forces and Energy**
+- `element_shell_bending_moment` (4, m, 3): Bending moments [N⋅mm]
+- `element_shell_normal_force` (4, m, 3): Normal forces [N]
+- `element_shell_shear_force` (4, m, 2): Shear forces [N]
+- `element_shell_internal_energy` (4, m): Internal energy [mJ]
+
+#### Tool Components (OP10/die/, OP10/punch/, OP10/binder/) - 3 timesteps
+**Geometry and Connectivity**
+- `node_ids` (n,): Unique node ID numbers
+- `node_coordinates` (n, 3): Initial node positions [mm]
+- `element_shell_ids` (m,): Unique element ID numbers
+- `element_shell_node_ids` (m, 4): Node connectivity for elements
+
+**Motion Data**
+- `node_displacement` (3, n, 3): Prescribed tool motion [mm]
+- `node_velocity` (3, n, 3): Tool velocity [mm/s]
+- `node_acceleration` (3, n, 3): Tool acceleration [mm/s²]
+
+**Contact Forces** (available for contact elements)
+- `element_shell_normal_force` (3, m, 3): Contact normal forces [N]
+- `element_shell_shear_force` (3, m, 2): Contact friction forces [N]
+
+#### General Data (OP10/general/)
+**Energy Conservation**
+- `glstat_kinetic_energy` (4,): Total kinetic energy [mJ]
+- `glstat_internal_energy` (4,): Total internal energy [mJ]
+- `glstat_total_energy` (4,): Total system energy [mJ]
+
+**Mass and Velocity**
+- `glstat_system_mass` (4,): Total system mass [kg]
+- `glstat_x_velocity` (4,): System center of mass X velocity [mm/s]
+- `glstat_y_velocity` (4,): System center of mass Y velocity [mm/s]
+- `glstat_z_velocity` (4,): System center of mass Z velocity [mm/s]
+
+**Timestep Information**
+- `global_timesteps` (4,): Simulation time values [dimensionless, 0.0-1.0]
+
+#### Springback Analysis (OP20/blank/) - 2 timesteps
+**Post-Forming Geometry**
+- `node_ids` (n,): Node ID numbers (same as OP10)
+- `node_coordinates` (n, 3): Initial coordinates before springback [mm]
+- `node_displacement` (2, n, 3): Springback displacement [mm]
+
+**Residual Stress and Strain**
+- `element_shell_stress` (2, m, 3, 6): Residual stress after tool removal [Pa]
+- `element_shell_strain` (2, m, 2, 6): Residual strain after springback [dimensionless]
+- `element_shell_thickness` (2, m): Final thickness after springback [mm]
 
 ### OP10 - Forming Operation
 
