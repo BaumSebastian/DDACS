@@ -6,9 +6,9 @@ DDACS simulation data without class overhead.
 """
 
 from pathlib import Path
+from typing import Generator, Tuple, Union
 import pandas as pd
 import numpy as np
-from typing import Generator, Tuple, Union
 
 
 def iter_ddacs(
