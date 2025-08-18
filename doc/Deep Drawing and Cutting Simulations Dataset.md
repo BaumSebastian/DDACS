@@ -9,8 +9,6 @@ updated: 2025-08-13
 
 Deep drawing is a manufacturing process that transforms flat metal sheets into 3D parts by pressing them through a die. Think of shaping aluminum foil with a muffin tin, but with precise control over forces and material flow.
 
-![Thickness Distribution Example](images/thickness_simulation.gif)
-*Example showing thickness distribution changes during deep drawing simulation*
 
 **Process Overview:**
 1. **Blank** (metal sheet) is placed between tools

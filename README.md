@@ -9,6 +9,14 @@
 A python example for accessing and processing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801).
 It includes functionality for downloading datasets with the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) CLI and accessing simulation data with metadata.
 
+<div align="center">
+
+![Thickness Distribution Example](doc/images/thickness_simulation.gif)
+
+*Example: Thickness distribution changes during deep drawing simulation showing material thinning and deformation patterns*
+
+</div>
+
 ## Table of Contents
 - [Deep Drawing and Cutting Simulations (DDACS) Dataset](#deep-drawing-and-cutting-simulations-ddacs-dataset)
   - [Table of Contents](#table-of-contents)
