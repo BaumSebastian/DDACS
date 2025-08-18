@@ -101,8 +101,8 @@ class DDACSDataset(Dataset):
         n_original = len(self._metadata)
         n_filtered = len(filtered)
         if n_original != n_filtered:
-            logger.info(
-                f"Found {n_filtered}/{n_original} simulations with existing H5 files"
+            logger.warning(
+                f"WARNING: Found {n_filtered}/{n_original} simulations with existing H5 files"
             )
 
         return filtered
