@@ -145,12 +145,14 @@ class DDACSDataset(Dataset):
             ...     print(f"{col}: {desc}")
         """
         descriptions = {
-            "SHTK": "Sheet thickness [0.95-1.0 mm]",
+            "GEO_R": "Rectangular geometry (1=yes, 0=no)",
+            "GEO_V": "Concave geometry (1=yes, 0=no)", 
+            "GEO_X": "Convex geometry (1=yes, 0=no)",
+            "RAD": "Characteristic radius [30-150 mm]",
             "MAT": "Material scaling factor [0.9-1.1]",
             "FC": "Friction coefficient [0.05-0.15]",
+            "SHTK": "Sheet thickness [0.95-1.0 mm]",
             "BF": "Blank holder force [100,000-500,000 N]",
-            "GEO": "Shape type (R=Rectangular, V=Concave, X=Convex)",
-            "RAD": "Characteristic radius [30-150 mm]",
         }
 
         available_columns = self.get_metadata_columns()
