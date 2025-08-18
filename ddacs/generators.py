@@ -49,8 +49,8 @@ def iter_ddacs(data_dir: Union[str, Path], h5_subdir: str = "h5",
         h5_path = h5_dir / f"{sim_id}.h5"
         
         if h5_path.exists():
-            metadata_vals = row.values[1:]  # Skip ID
-            yield sim_id, metadata_vals, h5_path
+            metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip ID, no copy
+            yield sim_id, metadata_vals, h5_path 
         else:
             raise FileNotFoundError(f"H5 file not found: {h5_path}")
 
