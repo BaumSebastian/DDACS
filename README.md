@@ -100,12 +100,12 @@ print(f"Available simulations: {count}")
 # Iterate over first few samples
 for i, (sim_id, metadata, h5_file_path) in enumerate(iter_ddacs("./data")):
     print(f"Sample {i+1}: ID={sim_id}, Path={h5_file_path}")
-    
+
     # Access simulation data
     with h5py.File(h5_file_path, "r") as f:
         data = np.array(f["OP10"]["blank"]["node_displacement"])
         print(f"Data shape: {data.shape}")
-    
+
     if i >= 2:  # Show first 3 samples
         break
 ```
