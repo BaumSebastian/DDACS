@@ -15,7 +15,7 @@ from typing import Union, Tuple
 
 
 def extract_point_cloud(
-    h5_path: Union[str, Path], component: str, timestep: int = 0
+    h5_path: Union[str, Path], component: str, timestep: int = 0, operation: int = 10
 ) -> np.ndarray:
     """
     Extract point cloud coordinates from H5 simulation file.
@@ -26,6 +26,8 @@ def extract_point_cloud(
         timestep: Timestep index (default: 0). Use 0 for initial state,
                  -1 for final state. Tools may have different timestep
                  structures than the workpiece.
+        operation: Operation index (default: 10). Use 10 for deep drawing
+                 process and 20 for cutting process.
 
     Returns:
         np.ndarray: Node coordinates array with shape (n_nodes, 3).
@@ -33,7 +35,7 @@ def extract_point_cloud(
 
     Raises:
         FileNotFoundError: If the H5 file does not exist.
-        KeyError: If the specified component is not found in the file.
+        KeyError: If the specified component or operation is not found in the file.
 
     Examples:
         >>> coords = extract_point_cloud('simulation_001.h5', 'blank', timestep=0)
@@ -42,23 +44,27 @@ def extract_point_cloud(
         >>> final_coords = extract_point_cloud('simulation_001.h5', 'blank', timestep=-1)
         >>> print(f"Final deformed shape: {final_coords.shape}")
 
+        >>> cutting_coords = extract_point_cloud('simulation_001.h5', 'blank', timestep=0, operation=20)
+        >>> print(f"Cutting shape: {cutting_coords.shape}")
+
     Note:
         The function reads from node_displacement which contains actual
         node coordinates at each timestep. Timestep structure differs by component:
         - blank: 4 timesteps (0: initial, 1-2: forming, 3: springback after tool removal)
         - tools (die, punch, binder): 3 timesteps (0: initial, 1-2: forming positions)
         Tools are removed at the final blank timestep, so timestep=3 or timestep=-1
-        only exists for the blank component.
+        only exists for the blank component. The cutting operation (operation=20)
+        only contains the blank component.
     """
     with h5py.File(h5_path, "r") as f:
-        comp_group = f[f"OP10/{component}"]
+        comp_group = f[f"OP{operation}/{component}"]
         coords = np.array(comp_group["node_displacement"], copy=True)[timestep]
 
     return coords
 
 
 def extract_mesh(
-    h5_path: Union[str, Path], component: str, timestep: int = 0
+    h5_path: Union[str, Path], component: str, timestep: int = 0, operation: int = 10
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Extract mesh data for matplotlib visualization.
@@ -68,6 +74,8 @@ def extract_mesh(
         component: Component name ('binder', 'blank', 'die', 'punch').
         timestep: Timestep index (default: 0). Use 0 for initial state,
                  -1 for final state.
+        operation: Operation index (default: 10). Use 10 for deep drawing
+                 process and 20 for cutting process.
 
     Returns:
         Tuple[np.ndarray, np.ndarray]: A tuple containing:
@@ -77,7 +85,7 @@ def extract_mesh(
 
     Raises:
         FileNotFoundError: If the H5 file does not exist.
-        KeyError: If the specified component is not found in the file.
+        KeyError: If the specified component or operation is not found in the file.
 
     Examples:
         >>> vertices, triangles = extract_mesh('simulation_001.h5', 'blank')
@@ -91,10 +99,12 @@ def extract_mesh(
         each quad into two triangles.
     """
     with h5py.File(h5_path, "r") as f:
-        comp_group = f[f"OP10/{component}"]
+        comp_group = f[f"OP{operation}/{component}"]
 
         # Get vertices
-        vertices = extract_point_cloud(h5_path, component, timestep)
+        vertices = extract_point_cloud(
+            h5_path, component, timestep, operation=operation
+        )
 
         # Get element connectivity
         element_node_ids = np.array(comp_group["element_shell_node_ids"])
@@ -119,7 +129,7 @@ def extract_mesh(
 
 
 def extract_element_thickness(
-    h5_path: Union[str, Path], component: str, timestep: int = 0
+    h5_path: Union[str, Path], component: str, timestep: int = 0, operation: int = 10
 ) -> np.ndarray:
     """
     Extract element thickness data from H5 simulation file.
@@ -129,6 +139,8 @@ def extract_element_thickness(
         component: Component name ('binder', 'blank', 'die', 'punch').
         timestep: Timestep index (default: 0). Use 0 for initial state,
                  -1 for final state.
+        operation: Operation index (default: 10). Use 10 for deep drawing
+                 process and 20 for cutting process.
 
     Returns:
         np.ndarray: Element thickness array with shape (n_elements,).
@@ -136,7 +148,7 @@ def extract_element_thickness(
 
     Raises:
         FileNotFoundError: If the H5 file does not exist.
-        KeyError: If the specified component or thickness data is not found.
+        KeyError: If the specified component, operation or thickness data is not found.
 
     Examples:
         >>> thickness = extract_element_thickness('simulation_001.h5', 'blank', timestep=0)
@@ -154,7 +166,7 @@ def extract_element_thickness(
         Can be used with matplotlib's color mapping on mesh visualizations.
     """
     with h5py.File(h5_path, "r") as f:
-        comp_group = f[f"OP10/{component}"]
+        comp_group = f[f"OP{operation}/{component}"]
         thickness_data = comp_group["element_shell_thickness"]
 
         # Handle negative timestep indexing
