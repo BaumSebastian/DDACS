@@ -172,6 +172,61 @@ def extract_element_thickness(
     return thickness
 
 
+def extract_point_springback(
+    h5_path: Union[str, Path], operation: int = 10
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Extract springback data for the blank component.
+
+    Springback is calculated as the difference between the last timestep
+    and the second-to-last timestep, representing the material's elastic
+    recovery after tool removal.
+
+    Args:
+        h5_path: Path to the H5 simulation file.
+        operation: Operation index (default: 10). Use 10 for deep drawing
+                 process and 20 for cutting process.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: A tuple containing:
+            - final_coords: Node coordinates after springback with shape (n_nodes, 3)
+            - displacement_vectors: Springback displacement vectors with shape (n_nodes, 3)
+                                  Each row contains [x, y, z] displacement due to springback
+
+    Raises:
+        FileNotFoundError: If the H5 file does not exist.
+        KeyError: If the specified operation or blank component is not found.
+
+    Examples:
+        >>> final_coords, displacement = extract_point_springback('simulation_001.h5')
+        >>> magnitude = np.linalg.norm(displacement, axis=1)
+        >>>
+        >>> # Visualize final shape colored by springback magnitude
+        >>> plt.scatter(final_coords[:, 0], final_coords[:, 1], c=magnitude)
+        >>> plt.colorbar(label='Springback magnitude [mm]')
+        >>>
+        >>> # Show springback vectors
+        >>> plt.quiver(final_coords[:, 0], final_coords[:, 1],
+        ...           displacement[:, 0], displacement[:, 1])
+
+    Note:
+        - For OP10 (forming): Compares timestep -1 (final springback) vs timestep -2 (max forming)
+        - For OP20 (cutting): Compares timestep -1 (final) vs timestep 0 (initial cutting state)
+        - Only works for the blank component as tools are removed before springback occurs
+    """
+    with h5py.File(h5_path, "r") as f:
+        comp_group = f[f"OP{operation}/blank"]
+        coords_data = np.array(comp_group["node_displacement"])
+
+        coords_final = coords_data[-1]
+        coords_before = coords_data[-2]
+
+        # Calculate springback displacement vectors
+        displacement_vectors = coords_final - coords_before
+
+    return coords_final, displacement_vectors
+
+
 def display_structure(h5_path: Union[str, Path], max_depth: int = None) -> None:
     """
     Display the complete hierarchical structure of an HDF5 file in tree format.
