@@ -101,31 +101,26 @@ def extract_mesh(
     with h5py.File(h5_path, "r") as f:
         comp_group = f[f"OP{operation}/{component}"]
 
-        # Get vertices
         vertices = extract_point_cloud(
             h5_path, component, timestep, operation=operation
         )
 
-        # Get element connectivity
-        element_node_ids = np.array(comp_group["element_shell_node_ids"])
         node_ids = np.array(comp_group["node_ids"])
-
-        # Map node IDs to indices
-        id_to_index = {node_id: idx for idx, node_id in enumerate(node_ids)}
+        node_ids -= node_ids.min()
+        element_node_ids = np.array(comp_group["element_shell_node_indexes"])
+        element_node_ids -= element_node_ids.min()
 
         # Convert quads to triangles
         triangles = []
-        for elem_nodes in element_node_ids:
-            indices = [id_to_index[nid] for nid in elem_nodes if nid in id_to_index]
-            if len(indices) == 4:
-                triangles.extend(
-                    [
-                        [indices[0], indices[1], indices[2]],
-                        [indices[0], indices[2], indices[3]],
-                    ]
-                )
+        for indices in element_node_ids:
+            triangles.extend(
+                [
+                    [indices[0], indices[1], indices[2]],
+                    [indices[0], indices[2], indices[3]],
+                ]
+            )
 
-    return vertices, np.array(triangles)
+    return vertices, np.array(triangles, dtype=int)
 
 
 def extract_element_thickness(
