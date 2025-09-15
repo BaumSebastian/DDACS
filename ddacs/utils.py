@@ -124,14 +124,13 @@ def extract_mesh(
 
 
 def extract_element_thickness(
-    h5_path: Union[str, Path], component: str, timestep: int = 0, operation: int = 10
+    h5_path: Union[str, Path], timestep: int = 0, operation: int = 10
 ) -> np.ndarray:
     """
     Extract element thickness data from H5 simulation file.
 
     Args:
         h5_path: Path to the H5 simulation file.
-        component: Component name ('binder', 'blank', 'die', 'punch').
         timestep: Timestep index (default: 0). Use 0 for initial state,
                  -1 for final state.
         operation: Operation index (default: 10). Use 10 for deep drawing
@@ -146,12 +145,12 @@ def extract_element_thickness(
         KeyError: If the specified component, operation or thickness data is not found.
 
     Examples:
-        >>> thickness = extract_element_thickness('simulation_001.h5', 'blank', timestep=0)
+        >>> thickness = extract_element_thickness('simulation_001.h5',  timestep=0)
         >>> print(f"Initial thickness range: {thickness.min():.3f} - {thickness.max():.3f}")
 
         >>> # Compare initial vs final thickness
-        >>> t0 = extract_element_thickness('simulation_001.h5', 'blank', timestep=0)
-        >>> t_final = extract_element_thickness('simulation_001.h5', 'blank', timestep=-1)
+        >>> t0 = extract_element_thickness('simulation_001.h5',  timestep=0)
+        >>> t_final = extract_element_thickness('simulation_001.h5', timestep=-1)
         >>> thinning = (t0 - t_final) / t0 * 100
         >>> print(f"Maximum thinning: {thinning.max():.1f}%")
 
@@ -161,7 +160,7 @@ def extract_element_thickness(
         Can be used with matplotlib's color mapping on mesh visualizations.
     """
     with h5py.File(h5_path, "r") as f:
-        comp_group = f[f"OP{operation}/{component}"]
+        comp_group = f[f"OP{operation}/blank"]
         thickness_data = comp_group["element_shell_thickness"]
 
         # Handle negative timestep indexing
