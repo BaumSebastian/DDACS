@@ -161,13 +161,7 @@ def extract_element_thickness(
     """
     with h5py.File(h5_path, "r") as f:
         comp_group = f[f"OP{operation}/blank"]
-        thickness_data = comp_group["element_shell_thickness"]
-
-        # Handle negative timestep indexing
-        if timestep == -1:
-            timestep = thickness_data.shape[0] - 1
-
-        thickness = np.array(thickness_data[timestep], copy=True)
+        thickness = np.array(comp_group["element_shell_thickness"], copy=True)[timestep]
 
     return thickness
 
