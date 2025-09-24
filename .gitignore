@@ -3,12 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# For environment 
+# For environment
 .vscode/*
 .helper/*
 
 # Dataset directory (large files)
 data/
+
+# Issues directory - code to reproduce issues
+issues/
 
 # For custom config
 config/config.yaml
