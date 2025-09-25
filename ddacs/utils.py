@@ -105,20 +105,13 @@ def extract_mesh(
             h5_path, component, timestep, operation=operation
         )
 
-        node_ids = np.array(comp_group["node_ids"])
-        node_ids -= node_ids.min()
         element_node_ids = np.array(comp_group["element_shell_node_indexes"])
         element_node_ids -= element_node_ids.min()
 
-        # Convert quads to triangles
-        triangles = []
-        for indices in element_node_ids:
-            triangles.extend(
-                [
-                    [indices[0], indices[1], indices[2]],
-                    [indices[0], indices[2], indices[3]],
-                ]
-            )
+        triangles = np.concatenate([
+            element_node_ids[:, [0, 1, 2]],
+            element_node_ids[:, [0, 2, 3]]
+        ])
 
     return vertices, np.array(triangles, dtype=int)
 
