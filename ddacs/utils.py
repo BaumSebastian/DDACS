@@ -155,7 +155,8 @@ def extract_element_thickness(
     with h5py.File(h5_path, "r") as f:
         comp_group = f[f"OP{operation}/blank"]
         thickness = np.array(comp_group["element_shell_thickness"], copy=True)[timestep]
-
+    # Scale up according to fit the triangles conversion
+    thickness = np.tile(thickness, 2)
     return thickness
 
 
