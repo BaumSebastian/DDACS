@@ -159,6 +159,36 @@ def extract_element_thickness(
     return thickness
 
 
+def non_degenerate_mask(triangles : np.ndarray) -> np.ndarray:
+    """
+    Return boolean mask identifying non-degenerate triangles.
+
+    Args:
+        triangles: Array of triangle vertex indices where each row represents one triangle with three vertex indices.
+
+    Returns:
+        np.ndarray: Boolean mask where True indicates a valid (non-degenerate) triangle
+        and False indicates a degenerate triangle with duplicate vertices.
+
+    Examples:
+        >>> triangles = np.array([[0, 1, 2],      # Valid triangle
+        ...                       [3, 3, 4],      # Degenerate (vertices 3,3)
+        ...                       [5, 6, 7],      # Valid triangle
+        ...                       [8, 9, 8]])     # Degenerate (vertices 8,8)
+        >>> mask = non_degenerate_mask(triangles)
+        >>> mask
+        array([ True, False,  True, False])
+        >>> valid_triangles = triangles[mask]
+        >>> valid_triangles
+        array([[0, 1, 2],
+            [5, 6, 7]])
+    Note:
+        The function only checks for vertex uniqueness, not geometric validity (e.g., collinear vertices that form zero-area triangles).
+    """
+    return ((triangles[:, 0] != triangles[:, 1]) & 
+            (triangles[:, 1] != triangles[:, 2]) &
+            (triangles[:, 0] != triangles[:, 2]))
+
 def extract_point_springback(
     h5_path: Union[str, Path], operation: int = 10
 ) -> Tuple[np.ndarray, np.ndarray]:
