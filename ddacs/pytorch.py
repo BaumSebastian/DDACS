@@ -146,7 +146,7 @@ class DDACSDataset(Dataset):
         """
         descriptions = {
             "GEO_R": "Rectangular geometry (1=yes, 0=no)",
-            "GEO_V": "Concave geometry (1=yes, 0=no)", 
+            "GEO_V": "Concave geometry (1=yes, 0=no)",
             "GEO_X": "Convex geometry (1=yes, 0=no)",
             "RAD": "Characteristic radius [30-150 mm]",
             "MAT": "Material scaling factor [0.9-1.1]",
