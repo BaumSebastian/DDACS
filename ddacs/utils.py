@@ -108,10 +108,9 @@ def extract_mesh(
         element_node_ids = np.array(comp_group["element_shell_node_indexes"])
         element_node_ids -= element_node_ids.min()
 
-        triangles = np.concatenate([
-            element_node_ids[:, [0, 1, 2]],
-            element_node_ids[:, [0, 2, 3]]
-        ])
+        triangles = np.concatenate(
+            [element_node_ids[:, [0, 1, 2]], element_node_ids[:, [0, 2, 3]]]
+        )
 
     return vertices, np.array(triangles, dtype=int)
 
@@ -160,7 +159,7 @@ def extract_element_thickness(
     return thickness
 
 
-def non_degenerate_mask(triangles : np.ndarray) -> np.ndarray:
+def non_degenerate_mask(triangles: np.ndarray) -> np.ndarray:
     """
     Return boolean mask identifying non-degenerate triangles.
 
@@ -186,9 +185,12 @@ def non_degenerate_mask(triangles : np.ndarray) -> np.ndarray:
     Note:
         The function only checks for vertex uniqueness, not geometric validity (e.g., collinear vertices that form zero-area triangles).
     """
-    return ((triangles[:, 0] != triangles[:, 1]) & 
-            (triangles[:, 1] != triangles[:, 2]) &
-            (triangles[:, 0] != triangles[:, 2]))
+    return (
+        (triangles[:, 0] != triangles[:, 1])
+        & (triangles[:, 1] != triangles[:, 2])
+        & (triangles[:, 0] != triangles[:, 2])
+    )
+
 
 def extract_point_springback(
     h5_path: Union[str, Path], operation: int = 10
