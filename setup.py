@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="ddacs",
-    version="1.0.1",
+    version="1.0.2",
     author="Sebastian Baum",
     author_email="Sebastian.Baum@ias.uni-stuttgart.de",
     description="Deep Drawing and Cutting Simulations (DDACS) Dataset - Python interface",
