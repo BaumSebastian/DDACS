@@ -13,6 +13,9 @@ data/
 # Issues directory - code to reproduce issues
 issues/
 
+# Scripts directory - data generation and dataset classes
+scripts/
+
 # For custom config
 config/config.yaml
 
