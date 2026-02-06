@@ -27,6 +27,7 @@ from rich.progress import (
     DownloadColumn,
     Progress,
     TextColumn,
+    TimeRemainingColumn,
     TransferSpeedColumn,
 )
 from rich.prompt import Confirm
@@ -268,6 +269,7 @@ def cmd_download(args: argparse.Namespace) -> None:
         "[progress.percentage]{task.percentage:>3.1f}%",
         DownloadColumn(),
         TransferSpeedColumn(),
+        TimeRemainingColumn(),
         console=console,
     ) as progress:
         for f in selected_files:
@@ -312,6 +314,7 @@ def cmd_download(args: argparse.Namespace) -> None:
                 TextColumn("[bold blue]{task.description}", justify="right"),
                 BarColumn(bar_width=40),
                 "[progress.percentage]{task.percentage:>3.1f}%",
+                TimeRemainingColumn(),
                 TextColumn("{task.fields[current_file]}"),
                 console=console,
             ) as progress:
