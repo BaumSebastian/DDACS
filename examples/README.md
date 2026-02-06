@@ -95,7 +95,7 @@ Use the examples as templates for your own research:
 
 ## Requirements
 
-- **Python**: 3.8+
+- **Python**: 3.10+
 - **Storage**: ~1TB for full dataset
 - **Memory**: 8GB+ RAM recommended for large-scale analysis
 - **Optional**: GPU for PyTorch acceleration
