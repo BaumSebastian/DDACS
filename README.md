@@ -1,7 +1,7 @@
 # Deep Drawing and Cutting Simulations (DDACS) Dataset
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![DaRUS Repository](https://img.shields.io/badge/repository-DaRUS-green.svg)](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801)
 [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801)
 [![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
@@ -97,6 +97,15 @@ ddacs info
 | `--no-extract` | Skip extraction of zip files |
 | `--keep-zip` | Keep zip files after extraction |
 | `-y, --yes` | Skip confirmation prompt |
+
+### Versioning
+
+The package version aligns with the dataset version on DaRUS. Running `ddacs download` will download dataset version 2.0 by default.
+
+```bash
+# Check available versions
+ddacs info
+```
 
 ## Basic Usage
 
