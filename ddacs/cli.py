@@ -5,7 +5,7 @@ DDACS (Deep Drawing and Cutting Simulations) dataset hosted on DaRUS.
 
 Usage:
     ddacs info                      # Show dataset info and versions
-    ddacs download                  # Download all files, extract, ready to use
+    ddacs download                  # Download dataset v2.0, extract, ready to use
     ddacs download --small          # Download small test set for demos
     ddacs download --files a.zip    # Download specific files
     ddacs download --no-extract     # Download without extracting
@@ -126,7 +126,8 @@ def cmd_info(args: argparse.Namespace) -> None:
     table.add_column("State", style="yellow")
     table.add_column("Release Date", style="green")
     table.add_column("Files", justify="right")
-    table.add_column("Changes", max_width=50)
+    table.add_column("Changes", max_width=40)
+    table.add_column("Notes", max_width=40)
 
     version_list = list(version_files.keys())
     for i, v in enumerate(versions):
@@ -137,6 +138,7 @@ def cmd_info(args: argparse.Namespace) -> None:
             release_date = release_date[:10]
 
         file_count = v.get("fileCount", len(v.get("files", [])))
+        version_note = v.get("versionNote", "-")
 
         if state == "RELEASED":
             state_str = "[green]Released[/green]"
@@ -153,13 +155,13 @@ def cmd_info(args: argparse.Namespace) -> None:
             changes = ["initial release"]
 
         table.add_row(
-            version_num, state_str, release_date, str(file_count), "\n".join(changes)
+            version_num, state_str, release_date, str(file_count), "\n".join(changes), version_note
         )
 
     console.print()
     console.print(table)
     console.print()
-    console.print("Use 'download --dataset-version <version>' to download a specific version")
+    console.print("Use 'ddacs download <version>' to download the dataset")
 
 
 def cmd_download(args: argparse.Namespace) -> None:
@@ -168,7 +170,7 @@ def cmd_download(args: argparse.Namespace) -> None:
 
     with console.status("[bold blue]Fetching dataset metadata..."):
         data = _api_get(
-            f"datasets/:persistentId/versions/{args.dataset_version}?persistentId={DDACS_DOI}",
+            f"datasets/:persistentId/versions/{args.version}?persistentId={DDACS_DOI}",
             headers,
         )
         if not data:
@@ -372,7 +374,7 @@ def main() -> None:
         description="Download DDACS dataset files from DaRUS repository.",
     )
     dl_parser.add_argument(
-        "--dataset-version", default=":latest", help="Dataset version (default: :latest)"
+        "version", nargs="?", default="2.0", help="Dataset version (default: 2.0)"
     )
     dl_parser.add_argument("--files", nargs="+", help="Specific filenames to download")
     dl_parser.add_argument(

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ddacs"
-version = "1.1.0"
+version = "2.0.0"
 description = "Deep Drawing and Cutting Simulations (DDACS) Dataset - Python interface"
 readme = "README.md"
 license = {text = "MIT"}
