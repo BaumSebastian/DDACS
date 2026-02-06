@@ -190,7 +190,7 @@ def cmd_download(args: argparse.Namespace) -> None:
         version_str += " [yellow](Draft)[/yellow]"
 
     dataset_info = (
-        f"[bold]URL:[/bold] {dataset_url}\n"
+        f"[bold]URL:[/bold] [link={dataset_url}]{dataset_url}[/link]\n"
         f"[bold]Persistent ID:[/bold] {DDACS_DOI}\n"
         f"[bold]Version:[/bold] {version_str}\n"
         f"[bold]Last Update:[/bold] {last_update}\n"
