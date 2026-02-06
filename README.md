@@ -6,8 +6,8 @@
 [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801)
 [![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
 
-A python example for accessing and processing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801).
-It includes functionality for downloading datasets with the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) CLI and accessing simulation data with metadata.
+A Python package for accessing and processing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801).
+It includes a CLI for downloading datasets from DaRUS and a Python API for accessing simulation data with metadata.
 
 <div align="center">
 
@@ -18,6 +18,7 @@ It includes functionality for downloading datasets with the [`darus` package](ht
 </div>
 
 ## Table of Contents
+
 - [Deep Drawing and Cutting Simulations (DDACS) Dataset](#deep-drawing-and-cutting-simulations-ddacs-dataset)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
@@ -72,15 +73,30 @@ pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simul
 
 ## Download Dataset
 
-Download the dataset using the `darus-download` CLI command:
+Download the dataset using the `ddacs` CLI:
 
 ```bash
-darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801" --path "./data"
+# Download full dataset (requires ~1TB storage)
+ddacs download
+
+# Download small test set for quick demos (requires ~50GB storage)
+ddacs download --small
+
+# Show dataset info and available versions
+ddacs info
 ```
 
-**Important:** The dataset is approximately 1TB in size. Specify the `--path` parameter to choose a directory with sufficient storage space. The download may take several hours depending on your internet connection.
+**Important:** The full dataset is approximately 1TB in size. Ensure you have sufficient storage space. The download may take several hours depending on your internet connection.
 
-**Note:** For more download options and advanced usage, see the [`darus` package documentation](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction).
+**Options:**
+| Flag | Description |
+
+| ------ | ------------- |
+| `--small` | Download small test set for demos |
+| `--out ./path` | Custom output directory (default: `./data`) |
+| `--no-extract` | Skip extraction of zip files |
+| `--keep-zip` | Keep zip files after extraction |
+| `-y, --yes` | Skip confirmation prompt |
 
 ## Basic Usage
 
@@ -179,4 +195,4 @@ cd DDACS
 pip install -e ".[dev]"
 ```
 
-This automatically installs the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) which provides the `darus-download` CLI command.
+This installs the package with the `ddacs` CLI command and all development tools.
