@@ -306,26 +306,37 @@ def cmd_download(args: argparse.Namespace) -> None:
 
     if not args.no_extract and downloaded_files:
         console.print()
-        with console.status("[bold blue]Extracting zip files..."):
-            for local_path in downloaded_files:
-                if local_path.endswith(".zip"):
+        zip_files = [p for p in downloaded_files if p.endswith(".zip")]
+        if zip_files:
+            with Progress(
+                TextColumn("[bold blue]{task.description}", justify="right"),
+                BarColumn(bar_width=40),
+                "[progress.percentage]{task.percentage:>3.1f}%",
+                TextColumn("{task.fields[current_file]}"),
+                console=console,
+            ) as progress:
+                for local_path in zip_files:
+                    zip_name = os.path.basename(local_path)
                     try:
                         extract_dir = os.path.dirname(local_path)
                         with zipfile.ZipFile(local_path, "r") as zf:
-                            zf.extractall(extract_dir)
-                        console.print(
-                            f"[green]Extracted:[/green] {os.path.basename(local_path)}"
-                        )
+                            members = zf.namelist()
+                            task = progress.add_task(
+                                f"Extracting {zip_name[:20]}",
+                                total=len(members),
+                                current_file="",
+                            )
+                            for member in members:
+                                progress.update(task, current_file=os.path.basename(member)[:30])
+                                zf.extract(member, extract_dir)
+                                progress.advance(task)
+                        console.print(f"[green]Extracted:[/green] {zip_name}")
                         if not args.keep_zip:
                             os.remove(local_path)
-                            console.print(
-                                f"[dim]Removed:[/dim] {os.path.basename(local_path)}"
-                            )
+                            console.print(f"[dim]Removed:[/dim] {zip_name}")
                     except Exception as e:
-                        failed_extractions.append((os.path.basename(local_path), str(e)))
-                        console.print(
-                            f"[red]Failed to extract {os.path.basename(local_path)}:[/red] {e}"
-                        )
+                        failed_extractions.append((zip_name, str(e)))
+                        console.print(f"[red]Failed to extract {zip_name}:[/red] {e}")
 
     console.print()
     success_count = len(downloaded_files)
