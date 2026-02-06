@@ -1,4 +1,7 @@
-# Deep Drawing and Cutting Simulations (DDACS) Dataset
+<div align="center">
+  <img src="doc/images/icon/DDACS.png" width="150"/>
+  <h1>Deep Drawing and Cutting Simulations (DDACS) Dataset</h1>
+</div>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
@@ -19,21 +22,21 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
 
 ## Table of Contents
 
-- [Deep Drawing and Cutting Simulations (DDACS) Dataset](#deep-drawing-and-cutting-simulations-ddacs-dataset)
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-    - [Core Installation](#core-installation)
-    - [PyTorch Installation](#pytorch-installation)
-    - [Examples Installation](#examples-installation)
-    - [Full Installation (Development)](#full-installation-development)
-  - [Download Dataset](#download-dataset)
-  - [Basic Usage](#basic-usage)
-    - [Core Usage](#core-usage)
-    - [PyTorch Usage](#pytorch-usage)
-  - [Citation](#citation)
-    - [Dataset Citation](#dataset-citation)
-    - [Paper Citation](#paper-citation)
-  - [Development Installation](#development-installation)
+- [Table of Contents](#table-of-contents)
+- [Installation](#installation)
+  - [Core Installation](#core-installation)
+  - [PyTorch Installation](#pytorch-installation)
+  - [Examples Installation](#examples-installation)
+  - [Full Installation (Development)](#full-installation-development)
+- [Download Dataset](#download-dataset)
+  - [Versioning](#versioning)
+- [Basic Usage](#basic-usage)
+  - [Core Usage](#core-usage)
+  - [PyTorch Usage](#pytorch-usage)
+- [Citation](#citation)
+  - [Dataset Citation](#dataset-citation)
+  - [Paper Citation](#paper-citation)
+- [Development Installation](#development-installation)
 
 ## Installation
 
@@ -90,7 +93,6 @@ ddacs info
 
 **Options:**
 | Flag | Description |
-
 | ------ | ------------- |
 | `--small` | Download small test set for demos |
 | `--out ./path` | Custom output directory (default: `./data`) |
