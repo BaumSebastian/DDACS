@@ -99,8 +99,9 @@ def cmd_info(args: argparse.Namespace) -> None:
     license_name = latest.get("license", {}).get("name", "Unknown")
 
     info = (
-        f"[bold]URL:[/bold] {dataset_url}\n"
+        f"[bold]URL:[/bold] [link={dataset_url}]{dataset_url}[/link]\n"
         f"[bold]Persistent ID:[/bold] {DDACS_DOI}\n"
+        f"[bold]Authors:[/bold] Sebastian Baum, Pascal Heinzelmann\n"
         f"[bold]License:[/bold] {license_name}"
     )
     console.print()
@@ -120,7 +121,7 @@ def cmd_info(args: argparse.Namespace) -> None:
                 version_files[ver_str] = _get_version_files(ver_str, headers)
 
     table = Table(
-        title="Available Versions", show_header=True, header_style="bold cyan"
+        title="Available Versions", show_header=True, header_style="bold cyan", show_lines=True
     )
     table.add_column("Version", style="white")
     table.add_column("State", style="yellow")
