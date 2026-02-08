@@ -1,4 +1,5 @@
-"""DDACS dataset CLI for downloading data from DaRUS.
+"""
+DDACS dataset CLI for downloading data from DaRUS.
 
 Provides commands to view dataset information and download files from the
 DDACS (Deep Drawing and Cutting Simulations) dataset hosted on DaRUS.
@@ -17,6 +18,7 @@ __version__ = "2.0.0"
 import argparse
 import os
 import zipfile
+from typing import Optional
 
 import requests
 from humanfriendly import format_size
@@ -35,14 +37,24 @@ from rich.table import Table
 
 console = Console()
 
+# DaRUS repository configuration
 DARUS_URL = "https://darus.uni-stuttgart.de"
 DDACS_DOI = "doi:10.18419/darus-4801"
 DDACS_NAME = "DDACS"
 SMALL_TEST_FILES = ["metadata.csv", "403926_406296.zip"]
 
 
-def _api_get(endpoint: str, headers: dict) -> dict | None:
-    """Make GET request to DaRUS API, return data or None on error."""
+def _api_get(endpoint: str, headers: dict[str, str]) -> Optional[dict]:
+    """
+    Make GET request to DaRUS API.
+
+    Args:
+        endpoint: API endpoint path (without base URL).
+        headers: HTTP headers including optional API token.
+
+    Returns:
+        Response data dict if successful, None on error.
+    """
     try:
         r = requests.get(f"{DARUS_URL}/api/{endpoint}", headers=headers)
         r.raise_for_status()
@@ -52,26 +64,51 @@ def _api_get(endpoint: str, headers: dict) -> dict | None:
         return None
 
 
-def _get_version_files(version: str, headers: dict) -> set[str]:
-    """Fetch filenames for a specific dataset version."""
-    data = _api_get(
-        f"datasets/:persistentId/versions/{version}?persistentId={DDACS_DOI}", headers
-    )
+def _get_version_files(version: str, headers: dict[str, str]) -> set[str]:
+    """
+    Fetch filenames for a specific dataset version.
+
+    Args:
+        version: Dataset version string (e.g., "2.0").
+        headers: HTTP headers for API authentication.
+
+    Returns:
+        Set of filenames in the specified version.
+    """
+    data = _api_get(f"datasets/:persistentId/versions/{version}?persistentId={DDACS_DOI}", headers)
     if data:
         return {f["dataFile"]["filename"] for f in data.get("files", [])}
     return set()
 
 
-def _get_file_info(f: dict, original: bool = True) -> tuple[str, int]:
-    """Get filename and size from file metadata (original or transformed)."""
-    df = f["dataFile"]
+def _get_file_info(file_meta: dict, original: bool = True) -> tuple[str, int]:
+    """
+    Extract filename and size from DaRUS file metadata.
+
+    Args:
+        file_meta: File metadata dict from DaRUS API.
+        original: If True, prefer original filename over transformed.
+
+    Returns:
+        Tuple of (filename, file_size_bytes).
+    """
+    df = file_meta["dataFile"]
     if original and "originalFileName" in df:
         return df["originalFileName"], df.get("originalFileSize", df["filesize"])
     return df["filename"], df["filesize"]
 
 
 def _compute_changes(current_files: set[str], previous_files: set[str]) -> list[str]:
-    """Compute file changes between two versions."""
+    """
+    Compute file changes between two dataset versions.
+
+    Args:
+        current_files: Set of filenames in current version.
+        previous_files: Set of filenames in previous version.
+
+    Returns:
+        List of change descriptions with Rich markup for display.
+    """
     added = current_files - previous_files
     removed = previous_files - current_files
 
@@ -85,13 +122,16 @@ def _compute_changes(current_files: set[str], previous_files: set[str]) -> list[
 
 
 def cmd_info(args: argparse.Namespace) -> None:
-    """Display dataset information and available versions."""
+    """
+    Display dataset information and available versions.
+
+    Args:
+        args: Parsed command-line arguments containing optional token.
+    """
     headers = {"X-Dataverse-key": args.token} if args.token else {}
 
     with console.status("[bold blue]Fetching dataset information..."):
-        versions = _api_get(
-            f"datasets/:persistentId/versions?persistentId={DDACS_DOI}", headers
-        )
+        versions = _api_get(f"datasets/:persistentId/versions?persistentId={DDACS_DOI}", headers)
         if not versions:
             return
 
@@ -115,9 +155,7 @@ def cmd_info(args: argparse.Namespace) -> None:
             ver_minor = v.get("versionMinorNumber", "0")
             ver_str = f"{ver_num}.{ver_minor}"
             if "files" in v:
-                version_files[ver_str] = {
-                    f["dataFile"]["filename"] for f in v.get("files", [])
-                }
+                version_files[ver_str] = {f["dataFile"]["filename"] for f in v.get("files", [])}
             else:
                 version_files[ver_str] = _get_version_files(ver_str, headers)
 
@@ -167,7 +205,16 @@ def cmd_info(args: argparse.Namespace) -> None:
 
 
 def cmd_download(args: argparse.Namespace) -> None:
-    """Download dataset files from DaRUS."""
+    """
+    Download dataset files from DaRUS repository.
+
+    Handles file selection, download with progress display, and optional
+    extraction of zip archives.
+
+    Args:
+        args: Parsed command-line arguments containing version, output path,
+              and download options (files, small, no_extract, keep_zip, yes).
+    """
     headers = {"X-Dataverse-key": args.token} if args.token else {}
 
     with console.status("[bold blue]Fetching dataset metadata..."):
@@ -352,9 +399,7 @@ def cmd_download(args: argparse.Namespace) -> None:
         if failed_extractions:
             summary_lines.append(f"[red]Failed extractions: {len(failed_extractions)}[/red]")
         console.print(
-            Panel(
-                "\n".join(summary_lines), title="Complete with errors", border_style="yellow"
-            )
+            Panel("\n".join(summary_lines), title="Complete with errors", border_style="yellow")
         )
     else:
         console.print(
@@ -397,13 +442,9 @@ def main() -> None:
         action="store_true",
         help="Download small test set for demos/testing",
     )
-    dl_parser.add_argument(
-        "--out", default="./data", help="Output directory (default: ./data)"
-    )
+    dl_parser.add_argument("--out", default="./data", help="Output directory (default: ./data)")
     dl_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
-    dl_parser.add_argument(
-        "--no-extract", action="store_true", help="Skip extraction of zip files"
-    )
+    dl_parser.add_argument("--no-extract", action="store_true", help="Skip extraction of zip files")
     dl_parser.add_argument(
         "--keep-zip", action="store_true", help="Keep zip files after extraction"
     )
