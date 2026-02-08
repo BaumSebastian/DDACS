@@ -67,12 +67,18 @@ dev = [
     "bumpver>=2023.1129",
     "pre-commit>=3.6.0",
 ]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
+]
 
 [project.scripts]
 ddacs = "ddacs.cli:main"
 
 [project.urls]
 Repository = "https://github.com/BaumSebastian/DDACS"
+Documentation = "https://ddacs.readthedocs.io"
 Dataset = "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801"
 Paper = "https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html"
 
