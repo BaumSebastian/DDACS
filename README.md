@@ -16,7 +16,7 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
 
 ![Thickness Distribution Example](https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/simulation_overview.gif)
 
-*Simulation with the tool geometries and various additional information like sheet metal thinning, stress and strain. The gif has been interpolated for a more fluid display (the simulation contains 3 to 4 timesteps).*
+*Simulation with the tool geometries and various additional information like sheet metal thinning, stress and strain.*
 
 </div>
 
@@ -29,7 +29,7 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
   - [Core Usage](#core-usage)
   - [PyTorch Usage](#pytorch-usage)
 - [Citation](#citation)
-- [Development Installation](#development-installation)
+- [Development](#development)
 
 ## Installation
 
