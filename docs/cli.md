@@ -37,6 +37,9 @@ ddacs download [VERSION] [OPTIONS]
 | `--keep-zip` | Keep zip files after extraction |
 | `-y, --yes` | Skip confirmation prompt |
 
+!!! note "Download Size"
+    The displayed download size refers to the compressed zip files. By default, files are extracted after download, resulting in larger disk usage than shown.
+
 **Examples:**
 
 ```bash
