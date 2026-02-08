@@ -114,7 +114,7 @@ for batch_idx, (sim_ids, metadata_batch, h5_paths) in enumerate(dataloader):
         break
 ```
 
-See [`examples/dataset_demo.ipynb`](./examples/dataset_demo.ipynb) for a comprehensive tutorial including visualization and advanced usage patterns.
+See [`notebooks/dataset_demo.ipynb`](./notebooks/dataset_demo.ipynb) for a comprehensive tutorial including visualization and advanced usage patterns.
 
 ## Citation
 
