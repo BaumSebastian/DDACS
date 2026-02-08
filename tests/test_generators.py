@@ -95,6 +95,60 @@ class TestMetadataValsTypeSafety:
             break
 
 
+class TestSkipMissing:
+    """Tests for skip_missing parameter in iter_ddacs."""
+
+    def test_skip_missing_false_raises_error(self, tmp_path):
+        """Test that skip_missing=False raises FileNotFoundError for missing files."""
+        metadata_data = {"ID": [1, 2, 3], "param": [0.1, 0.2, 0.3]}
+        metadata_df = pd.DataFrame(metadata_data)
+
+        h5_dir = tmp_path / "h5"
+        h5_dir.mkdir()
+        metadata_df.to_csv(tmp_path / "metadata.csv", index=False)
+
+        # Only create file for ID 1, not 2 or 3
+        (h5_dir / "1.h5").touch()
+
+        with pytest.raises(FileNotFoundError):
+            list(iter_ddacs(tmp_path, skip_missing=False))
+
+    def test_skip_missing_true_skips_files(self, tmp_path):
+        """Test that skip_missing=True skips missing files."""
+        metadata_data = {"ID": [1, 2, 3], "param": [0.1, 0.2, 0.3]}
+        metadata_df = pd.DataFrame(metadata_data)
+
+        h5_dir = tmp_path / "h5"
+        h5_dir.mkdir()
+        metadata_df.to_csv(tmp_path / "metadata.csv", index=False)
+
+        # Only create files for ID 1 and 3
+        (h5_dir / "1.h5").touch()
+        (h5_dir / "3.h5").touch()
+
+        results = list(iter_ddacs(tmp_path, skip_missing=True))
+
+        assert len(results) == 2
+        assert results[0][0] == 1
+        assert results[1][0] == 3
+
+    def test_skip_missing_default_is_false(self, tmp_path):
+        """Test that default skip_missing=False."""
+        metadata_data = {"ID": [1, 2], "param": [0.1, 0.2]}
+        metadata_df = pd.DataFrame(metadata_data)
+
+        h5_dir = tmp_path / "h5"
+        h5_dir.mkdir()
+        metadata_df.to_csv(tmp_path / "metadata.csv", index=False)
+
+        # Only create file for ID 1
+        (h5_dir / "1.h5").touch()
+
+        # Default should raise error
+        with pytest.raises(FileNotFoundError):
+            list(iter_ddacs(tmp_path))
+
+
 class TestGeneratorFunctions:
     """Basic functionality tests for generator functions."""
 
