@@ -57,9 +57,10 @@ def plot_mesh(
     colorbar_label: str | None = None,
     title: str | None = None,
     axis_limits: list[float] | None = None,
-    show_edges: bool = True,
+    show_edges: bool = False,
     edge_color: str = "black",
     edge_linewidth: float = 0.1,
+    shade: bool = True,
 ):
     """
     Plot 3D mesh with optional per-face coloring.
@@ -78,9 +79,10 @@ def plot_mesh(
         colorbar_label: Label for the colorbar (e.g., "Thickness [mm]").
         title: Plot title.
         axis_limits: Axis limits as [min, max]. Defaults to [0, 110].
-        show_edges: Whether to show mesh edges.
+        show_edges: Whether to show mesh edges (default: False).
         edge_color: Color of mesh edges.
         edge_linewidth: Width of mesh edges.
+        shade: Whether to apply lighting/shading to faces (default: True).
 
     Returns:
         If values is None: matplotlib axis object.
@@ -119,12 +121,19 @@ def plot_mesh(
         norm = Normalize(vmin=vmin, vmax=vmax)
         face_colors = plt.cm.get_cmap(cmap)(norm(values))
 
+        # Use face colors for edges if edge_color is "face" or edges are hidden
+        if edge_color == "face" or not show_edges:
+            edge_colors = face_colors
+        else:
+            edge_colors = edge_color
+
         collection = Poly3DCollection(
             face_vertices,
             facecolors=face_colors,
-            edgecolors=edge_color if show_edges else face_colors,
+            edgecolors=edge_colors,
             linewidth=edge_linewidth if show_edges else 0,
             alpha=1,
+            shade=shade,
         )
         ax.add_collection3d(collection)
 
@@ -136,11 +145,18 @@ def plot_mesh(
             cbar.set_label(colorbar_label)
 
     else:
+        # Use face color for edges if edge_color is "face" or edges are hidden
+        if edge_color == "face" or not show_edges:
+            edge_colors = color
+        else:
+            edge_colors = edge_color
+
         collection = Poly3DCollection(
             face_vertices,
-            facecolor=color,
-            edgecolor=edge_color if show_edges else color,
+            facecolors=color,
+            edgecolors=edge_colors,
             linewidth=edge_linewidth if show_edges else 0,
+            shade=shade,
         )
         ax.add_collection3d(collection)
 
