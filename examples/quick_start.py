@@ -5,10 +5,11 @@ Quick start example for DDACS dataset.
 This script demonstrates basic usage of the DDACS dataset without heavy dependencies.
 """
 
-from ddacs import iter_ddacs, count_available_simulations
-from ddacs.utils import display_structure
 import sys
 from pathlib import Path
+
+from ddacs import count_available_simulations, iter_ddacs
+from ddacs.utils import display_structure
 
 
 def main():
@@ -25,7 +26,7 @@ def main():
         print("Usage: python quick_start.py [data_directory]")
         return
 
-    print(f"DDACS Dataset Quick Start")
+    print("DDACS Dataset Quick Start")
     print(f"Data directory: {data_dir}")
     print("-" * 50)
 
@@ -60,8 +61,8 @@ def main():
         if i >= 2:
             break
 
-    print(f"\nBasic exploration complete!")
-    print(f"See dataset_demo.ipynb for advanced examples with visualization.")
+    print("\nBasic exploration complete!")
+    print("See dataset_demo.ipynb for advanced examples with visualization.")
 
 
 if __name__ == "__main__":

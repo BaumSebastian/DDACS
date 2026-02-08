@@ -8,14 +8,14 @@ The DDACS dataset contains deep drawing simulations with:
 - Operations: OP10 (forming), OP20 (springback analysis)
 """
 
-import numpy as np
-import h5py
 from pathlib import Path
-from typing import Union, Tuple
+
+import h5py
+import numpy as np
 
 
 def extract_point_cloud(
-    h5_path: Union[str, Path], component: str, timestep: int = 0, operation: int = 10
+    h5_path: str | Path, component: str, timestep: int = 0, operation: int = 10
 ) -> np.ndarray:
     """
     Extract point cloud coordinates from H5 simulation file.
@@ -64,8 +64,8 @@ def extract_point_cloud(
 
 
 def extract_mesh(
-    h5_path: Union[str, Path], component: str, timestep: int = 0, operation: int = 10
-) -> Tuple[np.ndarray, np.ndarray]:
+    h5_path: str | Path, component: str, timestep: int = 0, operation: int = 10
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Extract mesh data for matplotlib visualization.
 
@@ -101,22 +101,18 @@ def extract_mesh(
     with h5py.File(h5_path, "r") as f:
         comp_group = f[f"OP{operation}/{component}"]
 
-        vertices = extract_point_cloud(
-            h5_path, component, timestep, operation=operation
-        )
+        vertices = extract_point_cloud(h5_path, component, timestep, operation=operation)
 
         element_node_ids = np.array(comp_group["element_shell_node_indexes"])
         element_node_ids -= element_node_ids.min()
 
-        triangles = np.concatenate(
-            [element_node_ids[:, [0, 1, 2]], element_node_ids[:, [0, 2, 3]]]
-        )
+        triangles = np.concatenate([element_node_ids[:, [0, 1, 2]], element_node_ids[:, [0, 2, 3]]])
 
     return vertices, np.array(triangles, dtype=int)
 
 
 def extract_element_thickness(
-    h5_path: Union[str, Path], timestep: int = 0, operation: int = 10
+    h5_path: str | Path, timestep: int = 0, operation: int = 10
 ) -> np.ndarray:
     """
     Extract element thickness data from H5 simulation file.
@@ -159,6 +155,126 @@ def extract_element_thickness(
     return thickness
 
 
+def compute_von_mises(stress: np.ndarray) -> np.ndarray:
+    """
+    Compute Von Mises equivalent stress from stress tensor in Voigt notation.
+
+    The Von Mises stress is a scalar value used to predict yielding of materials
+    under complex loading conditions based on the distortion energy theory.
+
+    Args:
+        stress: Stress tensor array in Voigt notation with shape (..., 6).
+               Components are ordered as [σxx, σyy, σzz, σxy, σyz, σxz].
+
+    Returns:
+        np.ndarray: Von Mises stress values with shape (...).
+
+    Examples:
+        >>> # Single stress state
+        >>> stress = np.array([100, 50, 0, 25, 0, 0])  # MPa
+        >>> vm = compute_von_mises(stress)
+        >>> print(f"Von Mises stress: {vm:.1f} MPa")
+
+        >>> # Batch of stress states
+        >>> stresses = np.random.randn(100, 6) * 100
+        >>> vm_batch = compute_von_mises(stresses)
+        >>> print(f"Max Von Mises: {vm_batch.max():.1f} MPa")
+
+    Note:
+        Formula: σ_vm = √(0.5 * [(σxx-σyy)² + (σyy-σzz)² + (σzz-σxx)² + 6(σxy² + σyz² + σxz²)])
+    """
+    sxx, syy, szz = stress[..., 0], stress[..., 1], stress[..., 2]
+    sxy, syz, sxz = stress[..., 3], stress[..., 4], stress[..., 5]
+
+    von_mises = np.sqrt(
+        0.5
+        * ((sxx - syy) ** 2 + (syy - szz) ** 2 + (szz - sxx) ** 2 + 6 * (sxy**2 + syz**2 + sxz**2))
+    )
+    return von_mises
+
+
+def extract_element_stress(
+    h5_path: str | Path, timestep: int = 0, operation: int = 10, integration_point: int = 0
+) -> np.ndarray:
+    """
+    Extract Von Mises stress for shell elements.
+
+    Args:
+        h5_path: Path to the H5 simulation file.
+        timestep: Timestep index (default: 0). Use -1 for final state.
+        operation: Operation index (default: 10). Use 10 for forming, 20 for cutting.
+        integration_point: Through-thickness integration point (default: 0 for top).
+                          Shell elements typically have multiple integration points
+                          through the thickness (0=top, 1=middle, 2=bottom).
+
+    Returns:
+        np.ndarray: Von Mises stress array with shape (n_triangles,).
+                   Values are duplicated to match triangle mesh conversion.
+
+    Raises:
+        FileNotFoundError: If the H5 file does not exist.
+        KeyError: If stress data is not found in the file.
+
+    Examples:
+        >>> stress = extract_element_stress('simulation_001.h5', timestep=-1)
+        >>> print(f"Max stress: {stress.max():.1f} MPa")
+
+        >>> # Compare top vs bottom surface stress
+        >>> stress_top = extract_element_stress('sim.h5', integration_point=0)
+        >>> stress_bot = extract_element_stress('sim.h5', integration_point=2)
+        >>> print(f"Stress difference: {(stress_top - stress_bot).mean():.1f} MPa")
+
+    Note:
+        Stress is computed from the full stress tensor using Von Mises criterion.
+        The result is scaled to match the triangle mesh from extract_mesh().
+    """
+    with h5py.File(h5_path, "r") as f:
+        stress_tensor = np.array(f[f"OP{operation}/blank/element_shell_stress"])[
+            timestep, :, integration_point, :
+        ]
+        von_mises = compute_von_mises(stress_tensor)
+    return np.tile(von_mises, 2)
+
+
+def extract_element_strain(
+    h5_path: str | Path, timestep: int = 0, operation: int = 10, integration_point: int = 0
+) -> np.ndarray:
+    """
+    Extract effective plastic strain for shell elements.
+
+    Args:
+        h5_path: Path to the H5 simulation file.
+        timestep: Timestep index (default: 0). Use -1 for final state.
+        operation: Operation index (default: 10). Use 10 for forming, 20 for cutting.
+        integration_point: Through-thickness integration point (default: 0 for top).
+
+    Returns:
+        np.ndarray: Effective plastic strain array with shape (n_triangles,).
+                   Values are duplicated to match triangle mesh conversion.
+
+    Raises:
+        FileNotFoundError: If the H5 file does not exist.
+        KeyError: If strain data is not found in the file.
+
+    Examples:
+        >>> strain = extract_element_strain('simulation_001.h5', timestep=-1)
+        >>> print(f"Max plastic strain: {strain.max():.3f}")
+
+        >>> # Find elements with high plastic deformation
+        >>> high_strain_mask = strain > 0.1
+        >>> print(f"Elements with >10% strain: {high_strain_mask.sum()}")
+
+    Note:
+        Effective plastic strain is a scalar measure of accumulated plastic
+        deformation. Values > 0 indicate permanent deformation has occurred.
+    """
+    with h5py.File(h5_path, "r") as f:
+        strain = np.array(f[f"OP{operation}/blank/element_shell_effective_plastic_strain"])[
+            timestep, :, integration_point
+        ]
+    return np.tile(strain, 2)
+
+
 def non_degenerate_mask(triangles: np.ndarray) -> np.ndarray:
     """
     Return boolean mask identifying non-degenerate triangles.
@@ -193,8 +309,8 @@ def non_degenerate_mask(triangles: np.ndarray) -> np.ndarray:
 
 
 def extract_point_springback(
-    h5_path: Union[str, Path], operation: int = 10
-) -> Tuple[np.ndarray, np.ndarray]:
+    h5_path: str | Path, operation: int = 10
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Extract springback data for the blank component.
 
@@ -247,7 +363,7 @@ def extract_point_springback(
     return coords_final, displacement_vectors
 
 
-def display_structure(h5_path: Union[str, Path], max_depth: int = None) -> None:
+def display_structure(h5_path: str | Path, max_depth: int = None) -> None:
     """
     Display the complete hierarchical structure of an HDF5 file in tree format.
 
@@ -295,16 +411,13 @@ def display_structure(h5_path: Union[str, Path], max_depth: int = None) -> None:
         if isinstance(obj, h5py.Group):
             print(f"{prefix}{indent}{name}/ (Group){attrs_info}")
             items = list(obj.items())
-            for i, (key, item) in enumerate(items):
-                is_last = i == len(items) - 1
+            for key, item in items:
                 child_prefix = prefix + ("  " if depth == 0 else "  ")
                 _print_structure(key, item, depth + 1, child_prefix)
         elif isinstance(obj, h5py.Dataset):
             shape_str = f"shape={obj.shape}" if obj.shape else "scalar"
             dtype_str = f"dtype={obj.dtype}"
-            print(
-                f"{prefix}{indent}{name} (Dataset: {shape_str}, {dtype_str}){attrs_info}"
-            )
+            print(f"{prefix}{indent}{name} (Dataset: {shape_str}, {dtype_str}){attrs_info}")
 
     h5_path = Path(h5_path)
     if not h5_path.exists():

@@ -21,26 +21,34 @@ uv pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Si
 Before running examples, ensure you have downloaded the dataset:
 
 ```bash
-# Download dataset (requires ~1TB storage)
-darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801" --path "./data"
+# Download full dataset (requires ~1TB storage)
+ddacs download
+
+# Or download small test set for quick demos
+ddacs download --small
 ```
 
 ## Files
 
 ### `quick_start.py`
+
 Basic command-line script for dataset exploration:
+
 - Count available simulations
 - Display HDF5 file structure
 - Show metadata examples
 - Simple data extraction
 
 **Usage:**
+
 ```bash
 python examples/quick_start.py [data_directory]
 ```
 
-### `dataset_demo.ipynb` 
+### `dataset_demo.ipynb`
+
 Comprehensive Jupyter notebook covering:
+
 - **Data Loading**: Multiple access patterns (PyTorch, generators, direct HDF5)
 - **Visualization**: Stress/strain plots, geometry visualization, thickness maps
 - **Analysis Examples**: Parameter correlation, failure detection, springback analysis
@@ -48,6 +56,7 @@ Comprehensive Jupyter notebook covering:
 - **Performance**: Memory usage optimization, batch processing
 
 **Usage:**
+
 ```bash
 jupyter notebook examples/dataset_demo.ipynb
 ```
@@ -55,6 +64,7 @@ jupyter notebook examples/dataset_demo.ipynb
 ## Example Workflows
 
 ### Basic Data Exploration
+
 ```bash
 # Quick overview of your dataset
 python examples/quick_start.py ./data
@@ -66,7 +76,9 @@ python examples/quick_start.py ./data
 ```
 
 ### Advanced Analysis (Jupyter)
+
 1. **Launch notebook**: `jupyter notebook examples/dataset_demo.ipynb`
+
 2. **Follow sections**:
    - Dataset overview and structure
    - Stress/strain visualization
@@ -74,14 +86,16 @@ python examples/quick_start.py ./data
    - ML model training examples
 
 ### Custom Analysis
+
 Use the examples as templates for your own research:
+
 - Modify parameter filters in `quick_start.py`
 - Adapt visualization code from the notebook
 - Extend ML workflows for your specific use case
 
 ## Requirements
 
-- **Python**: 3.8+
+- **Python**: 3.10+
 - **Storage**: ~1TB for full dataset
 - **Memory**: 8GB+ RAM recommended for large-scale analysis
 - **Optional**: GPU for PyTorch acceleration

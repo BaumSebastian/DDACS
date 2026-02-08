@@ -1,7 +1,5 @@
 """Test package installation and basic functionality."""
 
-import pytest
-
 
 class TestInstallation:
     """Test package installation and imports."""
@@ -15,10 +13,10 @@ class TestInstallation:
     def test_generators_functions_import(self):
         """Test generator functions import."""
         from ddacs import (
-            iter_ddacs,
-            get_simulation_by_id,
-            sample_simulations,
             count_available_simulations,
+            get_simulation_by_id,
+            iter_ddacs,
+            sample_simulations,
         )
 
         assert iter_ddacs is not None
@@ -45,13 +43,11 @@ class TestInstallation:
 
     def test_package_structure(self):
         """Test that package has expected structure."""
-        import ddacs
-        import ddacs.generators
 
         # Check that functions are available
         from ddacs.generators import (
-            iter_ddacs,
             get_simulation_by_id,
+            iter_ddacs,
             sample_simulations,
         )
 

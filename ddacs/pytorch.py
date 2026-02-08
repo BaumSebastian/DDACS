@@ -5,11 +5,11 @@ This module provides PyTorch-compatible Dataset class for machine learning
 workflows with DDACS simulation data.
 """
 
-from pathlib import Path
-from typing import Tuple, Union
 import logging
-import pandas as pd
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class DDACSDataset(Dataset):
 
     def __init__(
         self,
-        data_dir: Union[str, Path],
+        data_dir: str | Path,
         h5_subdir: str = "h5",
         metadata_file: str = "metadata.csv",
         transform=None,
@@ -156,11 +156,9 @@ class DDACSDataset(Dataset):
         }
 
         available_columns = self.get_metadata_columns()
-        return {
-            col: descriptions.get(col, "Unknown parameter") for col in available_columns
-        }
+        return {col: descriptions.get(col, "Unknown parameter") for col in available_columns}
 
-    def __getitem__(self, idx: int) -> Tuple[int, np.ndarray, str]:
+    def __getitem__(self, idx: int) -> tuple[int, np.ndarray, str]:
         """
         Get a sample from the dataset.
 

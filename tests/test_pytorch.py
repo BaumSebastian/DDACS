@@ -1,7 +1,8 @@
 """Tests for ddacs.pytorch module with real dataset."""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 
 class TestDDACSDataset:
@@ -10,8 +11,9 @@ class TestDDACSDataset:
     def test_pytorch_import(self):
         """Test that PyTorch components can be imported."""
         try:
-            from ddacs.pytorch import DDACSDataset
-            from torch.utils.data import DataLoader
+            from torch.utils.data import DataLoader  # noqa: F401
+
+            from ddacs.pytorch import DDACSDataset  # noqa: F401
         except ImportError as e:
             pytest.skip(f"PyTorch not available: {e}")
 
@@ -49,8 +51,9 @@ class TestDDACSDataset:
     def test_dataloader_integration(self, real_data_dir):
         """Test integration with PyTorch DataLoader."""
         try:
-            from ddacs.pytorch import DDACSDataset
             from torch.utils.data import DataLoader
+
+            from ddacs.pytorch import DDACSDataset
         except ImportError:
             pytest.skip("PyTorch not available")
 
@@ -60,9 +63,7 @@ class TestDDACSDataset:
         # (PyTorch DataLoader has issues with object arrays containing strings)
         sim_id, metadata_vals, h5_path = dataset[0]
         if metadata_vals.dtype == object:
-            pytest.skip(
-                "DataLoader not compatible with mixed-type metadata (contains strings)"
-            )
+            pytest.skip("DataLoader not compatible with mixed-type metadata (contains strings)")
 
         dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
 
@@ -130,8 +131,9 @@ class TestDDACSDataset:
     def test_metadata_vals_memory_efficiency(self, real_data_dir):
         """Test that metadata_vals uses memory-efficient np.asarray approach."""
         try:
-            from ddacs.pytorch import DDACSDataset
             import numpy as np
+
+            from ddacs.pytorch import DDACSDataset
         except ImportError:
             pytest.skip("PyTorch or NumPy not available")
 

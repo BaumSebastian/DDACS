@@ -1,0 +1,69 @@
+site_name: DDACS Documentation
+site_url: https://ddacs.readthedocs.io
+site_description: Deep Drawing and Cutting Simulations Dataset - Python interface
+site_author: Sebastian Baum
+
+repo_name: BaumSebastian/DDACS
+repo_url: https://github.com/BaumSebastian/DDACS
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - toc.follow
+    - content.code.copy
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            heading_level: 2
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Quick Start: quickstart.md
+  - CLI Reference: cli.md
+  - API Reference:
+      - Overview: api/index.md
+      - Generators: api/generators.md
+      - Utils: api/utils.md
+      - PyTorch: api/pytorch.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/BaumSebastian/DDACS

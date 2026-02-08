@@ -1,9 +1,11 @@
 """Tests for generator functions, focusing on metadata_vals type safety and memory efficiency."""
 
-import pytest
-import pandas as pd
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
 from ddacs.generators import iter_ddacs, iter_h5_files
 
 
@@ -109,7 +111,7 @@ class TestGeneratorFunctions:
         count = 0
         try:
             for sim_id, metadata_vals, h5_path in iter_ddacs(real_data_dir):
-                assert isinstance(sim_id, (int, np.integer))
+                assert isinstance(sim_id, int | np.integer)
                 assert isinstance(metadata_vals, np.ndarray)
                 assert isinstance(h5_path, Path)
                 assert h5_path.exists()
@@ -118,9 +120,7 @@ class TestGeneratorFunctions:
                     break
         except FileNotFoundError as e:
             if count == 0:
-                pytest.skip(
-                    f"Subset dataset: metadata entries don't match available H5 files. {e}"
-                )
+                pytest.skip(f"Subset dataset: metadata entries don't match available H5 files. {e}")
             # If we successfully tested some files, that's sufficient
 
     def test_iter_h5_files_basic_functionality(self, real_data_dir):

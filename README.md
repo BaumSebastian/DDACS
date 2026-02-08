@@ -1,38 +1,42 @@
-# Deep Drawing and Cutting Simulations (DDACS) Dataset
+<div align="center">
+  <img src="docs/images/icon/DDACS_small.png" width="150"/>
+  <h1>Deep Drawing and Cutting Simulations (DDACS) Dataset</h1>
+</div>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![DaRUS Repository](https://img.shields.io/badge/repository-DaRUS-green.svg)](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801)
 [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801)
 [![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
 
-A python example for accessing and processing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801).
-It includes functionality for downloading datasets with the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) CLI and accessing simulation data with metadata.
+A Python package for accessing and processing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801).
+It includes a CLI for downloading datasets from DaRUS and a Python API for accessing simulation data with metadata.
 
 <div align="center">
 
-![Thickness Distribution Example](doc/images/thickness_simulation.gif)
+![Thickness Distribution Example](docs/images/simulation_overview.gif)
 
-*Example: Thickness distribution changes during deep drawing simulation showing material thinning and deformation patterns*
+*Simulation with the tool geometries and various additional information like sheet metal thinning, stress and strain. The gif has been interpolated for a more fluid display (the simulation contains 3 to 4 timesteps).*
 
 </div>
 
 ## Table of Contents
-- [Deep Drawing and Cutting Simulations (DDACS) Dataset](#deep-drawing-and-cutting-simulations-ddacs-dataset)
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-    - [Core Installation](#core-installation)
-    - [PyTorch Installation](#pytorch-installation)
-    - [Examples Installation](#examples-installation)
-    - [Full Installation (Development)](#full-installation-development)
-  - [Download Dataset](#download-dataset)
-  - [Basic Usage](#basic-usage)
-    - [Core Usage](#core-usage)
-    - [PyTorch Usage](#pytorch-usage)
-  - [Citation](#citation)
-    - [Dataset Citation](#dataset-citation)
-    - [Paper Citation](#paper-citation)
-  - [Development Installation](#development-installation)
+
+- [Table of Contents](#table-of-contents)
+- [Installation](#installation)
+  - [Core Installation](#core-installation)
+  - [PyTorch Installation](#pytorch-installation)
+  - [Examples Installation](#examples-installation)
+  - [Full Installation (Development)](#full-installation-development)
+- [Download Dataset](#download-dataset)
+  - [Versioning](#versioning)
+- [Basic Usage](#basic-usage)
+  - [Core Usage](#core-usage)
+  - [PyTorch Usage](#pytorch-usage)
+- [Citation](#citation)
+  - [Dataset Citation](#dataset-citation)
+  - [Paper Citation](#paper-citation)
+- [Development Installation](#development-installation)
 
 ## Installation
 
@@ -72,15 +76,38 @@ pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simul
 
 ## Download Dataset
 
-Download the dataset using the `darus-download` CLI command:
+Download the dataset using the `ddacs` CLI:
 
 ```bash
-darus-download --url "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801" --path "./data"
+# Download full dataset (requires ~1TB storage)
+ddacs download
+
+# Download small test set for quick demos (requires ~50GB storage)
+ddacs download --small
+
+# Show dataset info and available versions
+ddacs info
 ```
 
-**Important:** The dataset is approximately 1TB in size. Specify the `--path` parameter to choose a directory with sufficient storage space. The download may take several hours depending on your internet connection.
+**Important:** The full dataset is approximately 1TB in size. Ensure you have sufficient storage space. The download may take several hours depending on your internet connection.
 
-**Note:** For more download options and advanced usage, see the [`darus` package documentation](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction).
+**Options:**
+| Flag | Description |
+| ------ | ------------- |
+| `--small` | Download small test set for demos |
+| `--out ./path` | Custom output directory (default: `./data`) |
+| `--no-extract` | Skip extraction of zip files |
+| `--keep-zip` | Keep zip files after extraction |
+| `-y, --yes` | Skip confirmation prompt |
+
+### Versioning
+
+The package version aligns with the dataset version on DaRUS. Running `ddacs download` will download dataset version 2.0 by default.
+
+```bash
+# Check available versions
+ddacs info
+```
 
 ## Basic Usage
 
@@ -179,4 +206,4 @@ cd DDACS
 pip install -e ".[dev]"
 ```
 
-This automatically installs the [`darus` package](https://github.com/BaumSebastian/DaRUS-Dataset-Interaction) which provides the `darus-download` CLI command.
+This installs the package with the `ddacs` CLI command and all development tools.
