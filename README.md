@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="doc/images/icon/DDACS.png" width="150"/>
+  <img src="doc/images/icon/DDACS_small.png" width="150"/>
   <h1>Deep Drawing and Cutting Simulations (DDACS) Dataset</h1>
 </div>
 
@@ -14,9 +14,9 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
 
 <div align="center">
 
-![Thickness Distribution Example](doc/images/thickness_simulation.gif)
+![Thickness Distribution Example](doc/images/simulation_overview.gif)
 
-*Example: Thickness distribution changes during deep drawing simulation showing material thinning and deformation patterns*
+*Simulation with the tool geometries and various additional information like sheet metal thinning, stress and strain. The gif has been interpolated for a more fluid display (the simulation contains 3 to 4 timesteps).*
 
 </div>
 
