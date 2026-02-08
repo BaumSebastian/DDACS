@@ -4,12 +4,12 @@ Test suite for identifying degenerate triangles functionality.
 Tests to verify that the no_degenerate_mask function correctly handles incorrect triangles.
 """
 
-import pytest
-import numpy as np
-import h5py
 from pathlib import Path
-from ddacs.pytorch import DDACSDataset
-from ddacs.utils import extract_mesh, extract_element_thickness, non_degenerate_mask
+
+import numpy as np
+import pytest
+
+from ddacs.utils import extract_element_thickness, extract_mesh, non_degenerate_mask
 
 
 class TestDegenerateTrianlges:
@@ -72,9 +72,7 @@ class TestDegenerateTrianlges:
             try:
                 # OP10 should contain all triangles
                 _, triangles = extract_mesh(h5_path, "blank", timestep=-1, operation=20)
-                thickness = extract_element_thickness(
-                    h5_path, timestep=-1, operation=20
-                )
+                thickness = extract_element_thickness(h5_path, timestep=-1, operation=20)
                 assert (
                     triangles.shape[0] == thickness.shape[0]
                 )  # Check if the structure is the same

@@ -18,7 +18,6 @@ __version__ = "2.0.0"
 import argparse
 import os
 import zipfile
-from typing import Optional
 
 import requests
 from humanfriendly import format_size
@@ -44,7 +43,7 @@ DDACS_NAME = "DDACS"
 SMALL_TEST_FILES = ["metadata.csv", "403926_406296.zip"]
 
 
-def _api_get(endpoint: str, headers: dict[str, str]) -> Optional[dict]:
+def _api_get(endpoint: str, headers: dict[str, str]) -> dict | None:
     """
     Make GET request to DaRUS API.
 

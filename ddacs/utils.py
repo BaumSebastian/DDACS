@@ -8,14 +8,14 @@ The DDACS dataset contains deep drawing simulations with:
 - Operations: OP10 (forming), OP20 (springback analysis)
 """
 
-import numpy as np
-import h5py
 from pathlib import Path
-from typing import Union, Tuple
+
+import h5py
+import numpy as np
 
 
 def extract_point_cloud(
-    h5_path: Union[str, Path], component: str, timestep: int = 0, operation: int = 10
+    h5_path: str | Path, component: str, timestep: int = 0, operation: int = 10
 ) -> np.ndarray:
     """
     Extract point cloud coordinates from H5 simulation file.
@@ -64,8 +64,8 @@ def extract_point_cloud(
 
 
 def extract_mesh(
-    h5_path: Union[str, Path], component: str, timestep: int = 0, operation: int = 10
-) -> Tuple[np.ndarray, np.ndarray]:
+    h5_path: str | Path, component: str, timestep: int = 0, operation: int = 10
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Extract mesh data for matplotlib visualization.
 
@@ -112,7 +112,7 @@ def extract_mesh(
 
 
 def extract_element_thickness(
-    h5_path: Union[str, Path], timestep: int = 0, operation: int = 10
+    h5_path: str | Path, timestep: int = 0, operation: int = 10
 ) -> np.ndarray:
     """
     Extract element thickness data from H5 simulation file.
@@ -194,7 +194,7 @@ def compute_von_mises(stress: np.ndarray) -> np.ndarray:
 
 
 def extract_element_stress(
-    h5_path: Union[str, Path], timestep: int = 0, operation: int = 10, integration_point: int = 0
+    h5_path: str | Path, timestep: int = 0, operation: int = 10, integration_point: int = 0
 ) -> np.ndarray:
     """
     Extract Von Mises stress for shell elements.
@@ -237,7 +237,7 @@ def extract_element_stress(
 
 
 def extract_element_strain(
-    h5_path: Union[str, Path], timestep: int = 0, operation: int = 10, integration_point: int = 0
+    h5_path: str | Path, timestep: int = 0, operation: int = 10, integration_point: int = 0
 ) -> np.ndarray:
     """
     Extract effective plastic strain for shell elements.
@@ -309,8 +309,8 @@ def non_degenerate_mask(triangles: np.ndarray) -> np.ndarray:
 
 
 def extract_point_springback(
-    h5_path: Union[str, Path], operation: int = 10
-) -> Tuple[np.ndarray, np.ndarray]:
+    h5_path: str | Path, operation: int = 10
+) -> tuple[np.ndarray, np.ndarray]:
     """
     Extract springback data for the blank component.
 
@@ -363,7 +363,7 @@ def extract_point_springback(
     return coords_final, displacement_vectors
 
 
-def display_structure(h5_path: Union[str, Path], max_depth: int = None) -> None:
+def display_structure(h5_path: str | Path, max_depth: int = None) -> None:
     """
     Display the complete hierarchical structure of an HDF5 file in tree format.
 
@@ -411,8 +411,7 @@ def display_structure(h5_path: Union[str, Path], max_depth: int = None) -> None:
         if isinstance(obj, h5py.Group):
             print(f"{prefix}{indent}{name}/ (Group){attrs_info}")
             items = list(obj.items())
-            for i, (key, item) in enumerate(items):
-                is_last = i == len(items) - 1
+            for key, item in items:
                 child_prefix = prefix + ("  " if depth == 0 else "  ")
                 _print_structure(key, item, depth + 1, child_prefix)
         elif isinstance(obj, h5py.Dataset):

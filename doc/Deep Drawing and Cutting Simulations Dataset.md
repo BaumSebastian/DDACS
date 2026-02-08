@@ -20,7 +20,7 @@ Deep drawing is a manufacturing process that transforms flat metal sheets into 3
 
 This dataset contains 32,071 finite element simulations of deep drawing processes with varying:
 - **Materials**: Different sheet thicknesses and properties
-- **Geometries**: Rectangular, concave, and convex part shapes  
+- **Geometries**: Rectangular, concave, and convex part shapes
 - **Process conditions**: Friction coefficients and blank holder forces
 
 **Applications:**
@@ -44,7 +44,7 @@ This dataset contains 32,071 finite element simulations of deep drawing processe
 from ddacs import iter_ddacs
 from ddacs.utils import display_structure
 
-# Count available simulations  
+# Count available simulations
 from ddacs import count_available_simulations
 count = count_available_simulations("data/")
 print(f"Available simulations: {count}")
@@ -149,7 +149,7 @@ Each simulation is stored as an HDF5 file containing:
 - **SHTK**: Sheet thickness [0.95-1.0 mm]
 - **MAT**: Material scaling factor [0.9-1.1]
 
-### Process Parameters  
+### Process Parameters
 - **FC**: Friction coefficient [0.05-0.15]
 - **BF**: Blank holder force [100,000-500,000 N]
 
@@ -161,7 +161,7 @@ Each simulation is stored as an HDF5 file containing:
 The metadata file contains process parameters for each simulation:
 - **ID**: Simulation identifier matching HDF5 filename
 - **GEO_R**: Rectangular geometry flag (1=rectangular, 0=other)
-- **GEO_V**: Concave geometry flag (1=concave, 0=other)  
+- **GEO_V**: Concave geometry flag (1=concave, 0=other)
 - **GEO_X**: Convex geometry flag (1=convex, 0=other)
 - **RAD**: Characteristic radius [30-150 mm]
 - **MAT**: Material scaling factor [0.9-1.1]
@@ -200,7 +200,7 @@ The metadata file contains process parameters for each simulation:
 | `element_shell_ids` | (m,) | Unique reference numbers for each surface patch |
 | `element_shell_node_indexes` | (m, 4) | Which 4 points connect to form each rectangular surface patch |
 
-#### Motion and Deformation  
+#### Motion and Deformation
 | Field | Dimensions | What it contains |
 |-------|------------|------------------|
 | `node_displacement` | (t, n, 3) | How far each point moved from its starting position |
@@ -344,10 +344,9 @@ Post-forming analysis after tool removal (blank component only):
 - **Part dimensions**: 210×210 mm base, 30 mm depth
 - **Radius variations**:
   - Rectangular: 30-40 mm corner radius
-  - Concave: 50-150 mm concave radius  
+  - Concave: 50-150 mm concave radius
   - Convex: 100-150 mm convex radius
 - **Wall angle**: 10-20°
 - **Bottom radius**: 5-10 mm
 
 </details>
-

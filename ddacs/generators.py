@@ -5,20 +5,21 @@ This module provides lightweight generator functions for iterating over
 DDACS simulation data without class overhead.
 """
 
-from pathlib import Path
-from typing import Generator, Tuple, Union, Optional
-import pandas as pd
-import numpy as np
 import logging
+from collections.abc import Generator
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 
 def iter_ddacs(
-    data_dir: Union[str, Path],
+    data_dir: str | Path,
     h5_subdir: str = "h5",
     metadata_file: str = "metadata.csv",
-) -> Generator[Tuple[int, np.ndarray, Path], None, None]:
+) -> Generator[tuple[int, np.ndarray, Path], None, None]:
     """
     Ultra-simple generator for streaming DDACS data.
 
@@ -62,7 +63,7 @@ def iter_ddacs(
             raise FileNotFoundError(f"H5 file not found: {h5_path}")
 
 
-def iter_h5_files(data_dir: Union[str, Path], h5_subdir: str = "h5") -> Generator[Path, None, None]:
+def iter_h5_files(data_dir: str | Path, h5_subdir: str = "h5") -> Generator[Path, None, None]:
     """
     Minimal generator for H5 file paths only.
 
@@ -92,16 +93,15 @@ def iter_h5_files(data_dir: Union[str, Path], h5_subdir: str = "h5") -> Generato
     if not h5_dir.exists():
         raise FileNotFoundError(f"H5 directory not found: {h5_dir}")
 
-    for h5_file in h5_dir.glob("*.h5"):
-        yield h5_file
+    yield from h5_dir.glob("*.h5")
 
 
 def get_simulation_by_id(
     sim_id: int,
-    data_dir: Union[str, Path],
+    data_dir: str | Path,
     h5_subdir: str = "h5",
     metadata_file: str = "metadata.csv",
-) -> Optional[Tuple[int, np.ndarray, Path]]:
+) -> tuple[int, np.ndarray, Path] | None:
     """
     Get a specific simulation by its ID.
 
@@ -155,10 +155,10 @@ def get_simulation_by_id(
 
 def sample_simulations(
     n: int,
-    data_dir: Union[str, Path],
+    data_dir: str | Path,
     h5_subdir: str = "h5",
     metadata_file: str = "metadata.csv",
-) -> Generator[Tuple[int, np.ndarray, Path], None, None]:
+) -> Generator[tuple[int, np.ndarray, Path], None, None]:
     """
     Randomly sample simulations from the dataset.
 
@@ -215,7 +215,7 @@ def sample_simulations(
 
 
 def count_available_simulations(
-    data_dir: Union[str, Path],
+    data_dir: str | Path,
     h5_subdir: str = "h5",
     metadata_file: str = "metadata.csv",
 ) -> int:

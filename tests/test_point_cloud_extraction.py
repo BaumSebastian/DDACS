@@ -5,11 +5,13 @@ Tests to verify that the extract_point_cloud function correctly handles
 timesteps and that points actually move between different timesteps.
 """
 
-import pytest
-import numpy as np
-import h5py
 from pathlib import Path
-from ddacs.utils import extract_point_cloud, display_structure
+
+import h5py
+import numpy as np
+import pytest
+
+from ddacs.utils import extract_point_cloud
 
 
 class TestPointCloudExtraction:
@@ -115,9 +117,7 @@ class TestPointCloudExtraction:
                 mean_diff = np.mean(diff_magnitudes)
 
                 # Last timestep should typically be significantly different from first
-                assert (
-                    mean_diff > 1e-6
-                ), f"Last timestep appears identical to first in {h5_path}"
+                assert mean_diff > 1e-6, f"Last timestep appears identical to first in {h5_path}"
 
             except Exception as e:
                 pytest.fail(f"Last timestep test failed for {h5_path}: {e}")
@@ -150,7 +150,7 @@ class TestPointCloudExtraction:
                     if "node_displacement" not in comp_group:
                         continue
 
-                    coords = np.array(comp_group["node_coordinates"])
+                    _coords = np.array(comp_group["node_coordinates"])  # noqa: F841
                     disp = np.array(comp_group["node_displacement"])
 
                     if len(disp.shape) != 3:  # Not a 3D displacement array
@@ -201,15 +201,11 @@ class TestPointCloudExtraction:
                 for component in components:
                     if component in available_components:
                         try:
-                            coords = extract_point_cloud(
-                                str(h5_path), component, timestep=0
-                            )
+                            coords = extract_point_cloud(str(h5_path), component, timestep=0)
                             assert coords.shape[1] == 3
                             assert coords.shape[0] > 0
                         except Exception as e:
-                            pytest.fail(
-                                f"Failed to extract {component} from {h5_path}: {e}"
-                            )
+                            pytest.fail(f"Failed to extract {component} from {h5_path}: {e}")
 
             except Exception as e:
                 pytest.fail(f"Component extraction test failed for {h5_path}: {e}")

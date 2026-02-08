@@ -17,23 +17,22 @@ Examples:
 __version__ = "2.0.0"
 
 from .generators import (
+    count_available_simulations,
+    get_simulation_by_id,
     iter_ddacs,
     iter_h5_files,
-    get_simulation_by_id,
     sample_simulations,
-    count_available_simulations,
 )
-
 from .utils import (
-    extract_point_cloud,
-    extract_mesh,
-    extract_element_thickness,
-    extract_element_stress,
-    extract_element_strain,
-    extract_point_springback,
     compute_von_mises,
-    non_degenerate_mask,
     display_structure,
+    extract_element_strain,
+    extract_element_stress,
+    extract_element_thickness,
+    extract_mesh,
+    extract_point_cloud,
+    extract_point_springback,
+    non_degenerate_mask,
 )
 
 # Optional PyTorch dataset (only if PyTorch is available)
