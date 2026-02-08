@@ -19,28 +19,32 @@ def iter_ddacs(
     data_dir: str | Path,
     h5_subdir: str = "h5",
     metadata_file: str = "metadata.csv",
+    skip_missing: bool = False,
 ) -> Generator[tuple[int, np.ndarray, Path], None, None]:
     """
-    Ultra-simple generator for streaming DDACS data.
+    Generator for streaming DDACS data.
 
     Args:
         data_dir: Root directory of the dataset.
         h5_subdir: Subdirectory containing H5 files (default: "h5").
         metadata_file: Name of the metadata CSV file (default: "metadata.csv").
+        skip_missing: If True, skip missing H5 files with a warning.
+            If False, raise FileNotFoundError (default: False).
 
     Yields:
         Tuple[int, np.ndarray, Path]: Simulation ID, metadata values array,
             and path to corresponding H5 file.
 
     Raises:
-        FileNotFoundError: If the H5 directory or individual H5 files don't exist.
+        FileNotFoundError: If H5 directory doesn't exist, or if skip_missing=False
+            and an H5 file is missing.
 
     Examples:
         >>> for sim_id, metadata, h5_path in iter_ddacs('/data/ddacs'):
         ...     print(f"Simulation {sim_id}: {h5_path}")
 
-        >>> # Custom subdirectory
-        >>> for sim_id, metadata, h5_path in iter_ddacs('/data/ddacs', h5_subdir='results'):
+        >>> # Skip missing files (for partial downloads)
+        >>> for sim_id, metadata, h5_path in iter_ddacs('/data/ddacs', skip_missing=True):
         ...     print(f"Processing {sim_id}")
     """
     data_dir = Path(data_dir)
@@ -52,6 +56,9 @@ def iter_ddacs(
 
     metadata = pd.read_csv(metadata_path)
 
+    if skip_missing:
+        logger.warning("skip_missing=True: Missing H5 files will be skipped")
+
     for _, row in metadata.iterrows():
         sim_id = int(row["ID"])
         h5_path = h5_dir / f"{sim_id}.h5"
@@ -59,6 +66,8 @@ def iter_ddacs(
         if h5_path.exists():
             metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip ID, no copy
             yield sim_id, metadata_vals, h5_path
+        elif skip_missing:
+            continue
         else:
             raise FileNotFoundError(f"H5 file not found: {h5_path}")
 

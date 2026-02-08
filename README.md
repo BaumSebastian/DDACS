@@ -81,8 +81,8 @@ from ddacs import iter_ddacs, count_available_simulations
 count = count_available_simulations("./data")
 print(f"Available simulations: {count}")
 
-# Iterate over first few samples
-for i, (sim_id, metadata, h5_file_path) in enumerate(iter_ddacs("./data")):
+# Iterate over samples (skip_missing=True for partial downloads)
+for i, (sim_id, metadata, h5_file_path) in enumerate(iter_ddacs("./data", skip_missing=True)):
     print(f"Sample {i+1}: ID={sim_id}, Path={h5_file_path}")
 
     # Access simulation data

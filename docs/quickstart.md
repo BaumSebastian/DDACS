@@ -24,8 +24,8 @@ import numpy as np
 count = count_available_simulations("./data")
 print(f"Available simulations: {count}")
 
-# Iterate over samples
-for sim_id, metadata, h5_path in iter_ddacs("./data"):
+# Iterate over samples (skip_missing=True for partial downloads)
+for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
     with h5py.File(h5_path, "r") as f:
         displacement = np.array(f["OP10"]["blank"]["node_displacement"])
         print(f"ID={sim_id}, shape={displacement.shape}")
