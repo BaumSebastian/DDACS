@@ -27,7 +27,6 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
   - [Core Installation](#core-installation)
   - [PyTorch Installation](#pytorch-installation)
   - [Examples Installation](#examples-installation)
-  - [Full Installation (Development)](#full-installation-development)
 - [Download Dataset](#download-dataset)
   - [Versioning](#versioning)
 - [Basic Usage](#basic-usage)
@@ -64,14 +63,6 @@ For examples with PyTorch, Jupyter, and visualization capabilities:
 
 ```bash
 pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[examples]"
-```
-
-### Full Installation (Development)
-
-For all features including development and testing tools:
-
-```bash
-pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[full]"
 ```
 
 ## Download Dataset
