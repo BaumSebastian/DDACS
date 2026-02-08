@@ -56,6 +56,9 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Quick Start: quickstart.md
+  - Dataset:
+      - Overview: dataset.md
+      - HDF5 Structure: hdf5-structure.md
   - CLI Reference: cli.md
   - API Reference:
       - Overview: api/index.md
