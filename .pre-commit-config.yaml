@@ -8,6 +8,12 @@ repos:
       - id: check-added-large-files
         args: ['--maxkb=1000']
 
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
   - repo: https://github.com/psf/black
     rev: 24.3.0
     hooks:
