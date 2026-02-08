@@ -24,45 +24,19 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
 
 - [Table of Contents](#table-of-contents)
 - [Installation](#installation)
-  - [Core Installation](#core-installation)
-  - [PyTorch Installation](#pytorch-installation)
-  - [Examples Installation](#examples-installation)
 - [Download Dataset](#download-dataset)
-  - [Versioning](#versioning)
 - [Basic Usage](#basic-usage)
   - [Core Usage](#core-usage)
   - [PyTorch Usage](#pytorch-usage)
 - [Citation](#citation)
-  - [Dataset Citation](#dataset-citation)
-  - [Paper Citation](#paper-citation)
 - [Development Installation](#development-installation)
 
 ## Installation
 
-**Note:** I recommend using [uv](https://docs.astral.sh/uv/) as a fast Python package installer and resolver. Simply replace `pip` with `uv pip` in the commands below.
-
-### Core Installation
-
-For basic dataset access without high weight module dependencies:
-
 ```bash
-pip install git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git
-```
-
-### PyTorch Installation
-
-For PyTorch integration without visualization dependencies:
-
-```bash
-pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[torch]"
-```
-
-### Examples Installation
-
-For examples with PyTorch, Jupyter, and visualization capabilities:
-
-```bash
-pip install "git+https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git[examples]"
+pip install ddacs              # Core
+pip install "ddacs[torch]"     # With PyTorch support
+pip install "ddacs[examples]"  # With visualization dependencies
 ```
 
 ## Download Dataset
@@ -85,20 +59,12 @@ ddacs info
 **Options:**
 | Flag | Description |
 | ------ | ------------- |
+| `version` | Dataset version to download (default: `2.0`) |
 | `--small` | Download small test set for demos |
 | `--out ./path` | Custom output directory (default: `./data`) |
 | `--no-extract` | Skip extraction of zip files |
 | `--keep-zip` | Keep zip files after extraction |
 | `-y, --yes` | Skip confirmation prompt |
-
-### Versioning
-
-The package version aligns with the dataset version on DaRUS. Running `ddacs download` will download dataset version 2.0 by default.
-
-```bash
-# Check available versions
-ddacs info
-```
 
 ## Basic Usage
 
@@ -154,25 +120,19 @@ See [`examples/dataset_demo.ipynb`](./examples/dataset_demo.ipynb) for a compreh
 
 If you use this dataset or code in your research, please cite both the dataset and the paper:
 
-### Dataset Citation
-
 ```bibtex
 @dataset{baum2025ddacs,
   title={Deep Drawing and Cutting Simulations Dataset},
   subtitle={FEM Simulations of a deep drawn and cut dual phase steel part},
   author={Baum, Sebastian and Heinzelmann, Pascal},
   year={2025},
-  version={1.0},
+  version={2.0},
   publisher={DaRUS},
   doi={10.18419/DARUS-4801},
   license={CC BY 4.0},
   url={https://doi.org/10.18419/DARUS-4801}
 }
-```
 
-### Paper Citation
-
-```bibtex
 @article{heinzelmann2025benchmark,
   title={A Comprehensive Benchmark Dataset for Sheet Metal Forming: Advancing Machine Learning and Surrogate Modelling in Process Simulations},
   author={Heinzelmann, Pascal and Baum, Sebastian and Riedmüller, Kim Rouven and Liewald, Mathias and Weyrich, Michael},
@@ -185,16 +145,12 @@ If you use this dataset or code in your research, please cite both the dataset a
 }
 ```
 
-## Development Installation
-
-For developers who want to contribute to this project:
+## Development
 
 ```bash
-git clone https://github.com/BaumSebastian/Deep-Drawing-and-Cutting-Simulations-Dataset.git DDACS
+git clone https://github.com/BaumSebastian/DDACS.git
 cd DDACS
-
-# Install in editable mode with development dependencies
 pip install -e ".[dev]"
+pre-commit install  # Setup code formatting hooks
+pytest              # Run tests
 ```
-
-This installs the package with the `ddacs` CLI command and all development tools.
