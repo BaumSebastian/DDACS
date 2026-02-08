@@ -13,7 +13,7 @@ Usage:
     ddacs download --keep-zip       # Keep zip files after extraction
 """
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 
 import argparse
 import os
