@@ -41,6 +41,15 @@ try:
 except ImportError:
     pass
 
+# Visualization
+from .visualization import (
+    COMPONENT_COLORS,
+    plot_2d_projection,
+    plot_mesh,
+    plot_point_cloud,
+    plot_vectors,
+)
+
 __all__ = [
     # Version
     "__version__",
@@ -62,4 +71,10 @@ __all__ = [
     "display_structure",
     # PyTorch (optional)
     "DDACSDataset",
+    # Visualization
+    "plot_mesh",
+    "plot_point_cloud",
+    "plot_vectors",
+    "plot_2d_projection",
+    "COMPONENT_COLORS",
 ]
