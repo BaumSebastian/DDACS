@@ -1,3 +1,5 @@
+__version__ = "2.0.0"
+
 from .generators import (
     iter_ddacs,
     iter_h5_files,
