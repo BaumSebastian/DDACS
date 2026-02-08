@@ -163,7 +163,7 @@ def cmd_info(args: argparse.Namespace) -> None:
     console.print()
     console.print(table)
     console.print()
-    console.print("Use 'ddacs download <version>' to download the dataset")
+    console.print("Use 'ddacs download <version>' to download a specific version of the dataset.")
 
 
 def cmd_download(args: argparse.Namespace) -> None:
