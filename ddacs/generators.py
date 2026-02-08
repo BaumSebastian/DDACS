@@ -62,9 +62,7 @@ def iter_ddacs(
             raise FileNotFoundError(f"H5 file not found: {h5_path}")
 
 
-def iter_h5_files(
-    data_dir: Union[str, Path], h5_subdir: str = "h5"
-) -> Generator[Path, None, None]:
+def iter_h5_files(data_dir: Union[str, Path], h5_subdir: str = "h5") -> Generator[Path, None, None]:
     """
     Minimal generator for H5 file paths only.
 

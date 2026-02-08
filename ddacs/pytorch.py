@@ -156,9 +156,7 @@ class DDACSDataset(Dataset):
         }
 
         available_columns = self.get_metadata_columns()
-        return {
-            col: descriptions.get(col, "Unknown parameter") for col in available_columns
-        }
+        return {col: descriptions.get(col, "Unknown parameter") for col in available_columns}
 
     def __getitem__(self, idx: int) -> Tuple[int, np.ndarray, str]:
         """
