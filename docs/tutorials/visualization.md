@@ -3,161 +3,148 @@
 This tutorial demonstrates how to visualize DDACS simulation results using
 the built-in visualization utilities.
 
-## Setup
+All examples use simulation `16336.h5` from the dataset for reproducibility.
 
-Install DDACS:
+---
 
-```bash
-pip install ddacs
-```
+### Point Cloud - Multiple Components
 
-Matplotlib is included as a core dependency.
-
-## Basic Workflow
-
-The visualization module is designed to work with extracted data.
-This lets you inspect your data before plotting:
+Visualize all components of the deep drawing setup together.
 
 ```python
-from ddacs.utils import extract_mesh, extract_element_thickness
-from ddacs.visualization import plot_mesh
+import matplotlib.pyplot as plt
+from ddacs.utils import extract_point_cloud
+from ddacs.visualization import plot_point_cloud, COMPONENT_COLORS, COMPONENT_NAMES
 
-# Step 1: Extract data
-vertices, faces = extract_mesh("simulation.h5", "blank", timestep=-1)
-thickness = extract_element_thickness("simulation.h5", timestep=-1)
+h5_path = "./data/h5/16336.h5"
 
-# Step 2: Inspect
-print(f"Mesh: {len(vertices)} vertices, {len(faces)} faces")
-print(f"Thickness: {thickness.min():.3f} - {thickness.max():.3f} mm")
+fig = plt.figure(figsize=(12, 5))
+ax = fig.add_subplot(111, projection="3d")
 
-# Step 3: Visualize
-ax, cbar = plot_mesh(vertices, faces, values=thickness)
+for component in COMPONENT_COLORS.keys():
+    coords = extract_point_cloud(h5_path, component, timestep=2)
+    alpha = 0.3 if component == "blank" else 0.7
+    plot_point_cloud(
+        coords,
+        ax=ax,
+        color=COMPONENT_COLORS[component],
+        point_size=0.5,
+        alpha=alpha,
+        axis_limits=[0, 110],
+    )
+    ax.scatter([], [], [], c=COMPONENT_COLORS[component], label=COMPONENT_NAMES[component])
+    print(f"{component}: {coords.shape[0]} nodes")
+
+ax.set_title("Deep Drawing Setup - Simulation 16336")
+ax.legend(bbox_to_anchor=(1, 1), loc="upper left", fontsize="small")
+plt.savefig("point_cloud.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
 
-## Mesh Visualization
+Output:
+```
+blank: 11041 nodes
+die: 1089 nodes
+punch: 529 nodes
+binder: 168 nodes
+```
 
-### Solid Color Mesh
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_point_cloud.png" width="700">
+
+---
+
+### Mesh Visualization
+
+Plot the blank mesh with shading for better 3D perception.
 
 ```python
 from ddacs.utils import extract_mesh
 from ddacs.visualization import plot_mesh
 import matplotlib.pyplot as plt
 
-# Extract mesh at final forming timestep
-vertices, faces = extract_mesh("simulation.h5", "blank", timestep=2)
+h5_path = "./data/h5/16336.h5"
 
-# Plot with solid color
-ax = plot_mesh(vertices, faces, color="blue", title="Blank Mesh")
-plt.tight_layout()
-plt.show()
+vertices, triangles = extract_mesh(h5_path, "blank", timestep=2)
+print(f"Mesh: {vertices.shape[0]} vertices, {triangles.shape[0]} faces")
+
+ax = plot_mesh(
+    vertices, triangles,
+    color="red",
+    title="Blank Mesh - Simulation 16336",
+    figsize=(12, 5),
+    axis_limits=[0, 110],
+    show_edges=True,
+    edge_color="red",
+    edge_linewidth=0.3,
+)
+plt.savefig("mesh.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
 
+Output:
+```
+Mesh: 11041 vertices, 43296 faces
+```
+
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_mesh.png" width="700">
+
+---
+
 ### Thickness Distribution
+
+Visualize material thinning during the forming process.
 
 ```python
 from ddacs.utils import extract_mesh, extract_element_thickness
 from ddacs.visualization import plot_mesh
+import matplotlib.pyplot as plt
 
-# Extract mesh and thickness
-vertices, faces = extract_mesh("simulation.h5", "blank", timestep=-1)
-thickness = extract_element_thickness("simulation.h5", timestep=-1)
+h5_path = "./data/h5/16336.h5"
 
-# Plot with thickness coloring
+vertices, triangles = extract_mesh(h5_path, "blank", timestep=-1)
+thickness = extract_element_thickness(h5_path, timestep=-1)
+print(f"Thickness range: {thickness.min():.4f} - {thickness.max():.4f} mm")
+
 ax, cbar = plot_mesh(
-    vertices, faces,
+    vertices, triangles,
     values=thickness,
     cmap="viridis",
     vmin=0.8,
     vmax=1.15,
     colorbar_label="Thickness [mm]",
-    title="Thickness Distribution"
+    title="Thickness Distribution - Simulation 16336",
+    figsize=(12, 5),
+    axis_limits=[0, 110],
+    show_edges=True,
+    edge_color="face",
+    edge_linewidth=0.3,
 )
-plt.tight_layout()
-plt.show()
+plt.savefig("thickness.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
 
-### Stress Visualization
-
-```python
-from ddacs.utils import extract_mesh, extract_element_stress, compute_von_mises
-from ddacs.visualization import plot_mesh
-
-# Extract mesh and stress
-vertices, faces = extract_mesh("simulation.h5", "blank", timestep=-1)
-stress = extract_element_stress("simulation.h5", timestep=-1)
-von_mises = compute_von_mises(stress)
-
-# Plot von Mises stress
-ax, cbar = plot_mesh(
-    vertices, faces,
-    values=von_mises,
-    cmap="plasma",
-    colorbar_label="von Mises Stress [MPa]",
-    title="Stress Distribution"
-)
-plt.show()
+Output:
+```
+Thickness range: 0.8734 - 1.0892 mm
 ```
 
-## Point Cloud Visualization
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_thickness.png" width="700">
 
-### Simple Point Cloud
+---
 
-```python
-from ddacs.utils import extract_point_cloud
-from ddacs.visualization import plot_point_cloud
+### Springback Magnitude
 
-# Extract coordinates
-coords = extract_point_cloud("simulation.h5", "blank", timestep=2)
-
-# Plot
-ax = plot_point_cloud(coords, color="red", point_size=0.5)
-plt.show()
-```
-
-### Multiple Components
-
-```python
-from ddacs.utils import extract_point_cloud
-from ddacs.visualization import COMPONENT_COLORS
-import matplotlib.pyplot as plt
-
-fig = plt.figure(figsize=(10, 6))
-ax = fig.add_subplot(111, projection="3d")
-
-for component in ["blank", "die", "punch", "binder"]:
-    coords = extract_point_cloud("simulation.h5", component, timestep=2)
-    ax.scatter(
-        coords[:, 0], coords[:, 1], coords[:, 2],
-        c=COMPONENT_COLORS[component],
-        label=component,
-        s=0.5,
-        alpha=0.7
-    )
-
-ax.legend()
-plt.show()
-```
-
-## Springback Visualization
-
-Springback is the elastic recovery after tool removal.
-
-### 3D Springback Magnitude
+Visualize elastic recovery after tool removal.
 
 ```python
 import numpy as np
 from ddacs.utils import extract_point_springback
 from ddacs.visualization import plot_point_cloud
+import matplotlib.pyplot as plt
 
-# Extract springback data
-coords, displacement = extract_point_springback("simulation.h5", operation=20)
+h5_path = "./data/h5/16336.h5"
 
-# Calculate magnitude
+coords, displacement = extract_point_springback(h5_path, operation=20)
 magnitude = np.linalg.norm(displacement, axis=1)
+print(f"Springback range: {magnitude.min():.4f} - {magnitude.max():.4f} mm")
 
-print(f"Springback range: {magnitude.min():.3f} - {magnitude.max():.3f} mm")
-
-# Visualize
 ax, cbar = plot_point_cloud(
     coords,
     values=magnitude,
@@ -165,79 +152,100 @@ ax, cbar = plot_point_cloud(
     vmin=0.0,
     vmax=1.4,
     colorbar_label="Springback [mm]",
-    title="Springback Magnitude"
+    title="Springback Magnitude - Simulation 16336",
+    figsize=(12, 5),
+    axis_limits=[0, 110],
+    point_size=1,
+    alpha=0.8,
 )
-plt.show()
+plt.savefig("springback.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
 
+Output:
+```
+Springback range: 0.0000 - 1.2847 mm
+```
+
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_springback.png" width="700">
+
+---
+
 ### Springback Vector Field
+
+Show displacement direction with arrows.
 
 ```python
 import numpy as np
 from ddacs.utils import extract_point_springback
 from ddacs.visualization import plot_vectors
+import matplotlib.pyplot as plt
 
-# Extract springback vectors
-coords, displacement = extract_point_springback("simulation.h5", operation=20)
+h5_path = "./data/h5/16336.h5"
+
+coords, displacement = extract_point_springback(h5_path, operation=20)
 magnitude = np.linalg.norm(displacement, axis=1)
 
-# Plot with arrows and colored by magnitude
 ax, cbar = plot_vectors(
-    coords, displacement,
+    coords,
+    displacement,
     values=magnitude,
     step=25,
     scale=10.0,
     arrow_color="black",
+    arrow_alpha=0.8,
+    cmap="plasma",
+    vmin=0.0,
+    vmax=1.4,
     colorbar_label="Springback [mm]",
-    title="Springback Vectors"
+    point_size=1,
+    point_alpha=0.6,
+    title="Springback Vectors - Simulation 16336",
+    figsize=(12, 5),
+    axis_limits=[0, 110],
 )
-plt.show()
+plt.savefig("vectors.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
 
-### 2D Top View
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_vectors.png" width="700">
+
+---
+
+### 2D Top View Projection
+
+Project springback data onto a 2D plane.
 
 ```python
 import numpy as np
 from ddacs.utils import extract_point_springback
 from ddacs.visualization import plot_2d_projection
+import matplotlib.pyplot as plt
 
-# Extract data
-coords, displacement = extract_point_springback("simulation.h5", operation=20)
+h5_path = "./data/h5/16336.h5"
+
+coords, displacement = extract_point_springback(h5_path, operation=20)
 magnitude = np.linalg.norm(displacement, axis=1)
 
-# 2D projection
 ax, cbar = plot_2d_projection(
     coords,
     values=magnitude,
     projection="xy",
+    cmap="plasma",
+    vmin=0.0,
+    vmax=1.4,
     colorbar_label="Springback [mm]",
-    title="Springback (Top View)"
+    title="Springback Top View - Simulation 16336",
+    figsize=(12, 5),
+    point_size=2,
+    alpha=0.8,
 )
-plt.show()
+plt.savefig("2d_projection.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
 
-## Comparing Timesteps
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_2d_projection.png" width="700">
 
-Visualize the forming process across timesteps:
+---
 
-```python
-from ddacs.utils import extract_mesh
-from ddacs.visualization import plot_mesh
-import matplotlib.pyplot as plt
-
-fig, axes = plt.subplots(1, 4, figsize=(16, 4), subplot_kw={"projection": "3d"})
-
-timestep_labels = ["Initial", "Forming", "Max Depth", "Springback"]
-
-for i, (ax, label) in enumerate(zip(axes, timestep_labels)):
-    vertices, faces = extract_mesh("simulation.h5", "blank", timestep=i)
-    plot_mesh(vertices, faces, ax=ax, title=label, color="steelblue")
-
-plt.tight_layout()
-plt.show()
-```
-
-## Customizing Plots
+## Additional Features
 
 ### Using Existing Axes
 
@@ -246,16 +254,16 @@ import matplotlib.pyplot as plt
 from ddacs.utils import extract_mesh
 from ddacs.visualization import plot_mesh
 
-# Create your own figure and axes
+h5_path = "./data/h5/16336.h5"
+
 fig = plt.figure(figsize=(12, 5))
 ax1 = fig.add_subplot(121, projection="3d")
 ax2 = fig.add_subplot(122, projection="3d")
 
-# Pass axes to plot functions
-vertices, faces = extract_mesh("simulation.h5", "blank", timestep=2)
+vertices, faces = extract_mesh(h5_path, "blank", timestep=2)
 plot_mesh(vertices, faces, ax=ax1, title="OP10 Final", color="blue")
 
-vertices, faces = extract_mesh("simulation.h5", "blank", timestep=-1, operation=20)
+vertices, faces = extract_mesh(h5_path, "blank", timestep=-1, operation=20)
 plot_mesh(vertices, faces, ax=ax2, title="OP20 Final", color="red")
 
 plt.tight_layout()
@@ -265,11 +273,15 @@ plt.show()
 ### Custom Axis Limits
 
 ```python
+from ddacs.utils import extract_mesh
 from ddacs.visualization import plot_mesh
 
+h5_path = "./data/h5/16336.h5"
+
+vertices, faces = extract_mesh(h5_path, "blank", timestep=2)
 ax = plot_mesh(
     vertices, faces,
-    axis_limits=[0, 150],  # Custom range
+    axis_limits=[0, 150],
     title="Extended View"
 )
 ```
@@ -277,21 +289,26 @@ ax = plot_mesh(
 ### Publication-Ready Figures
 
 ```python
+from ddacs.utils import extract_mesh, extract_element_thickness
 from ddacs.visualization import plot_mesh
+import matplotlib.pyplot as plt
 
-# Use appropriate size for papers
+h5_path = "./data/h5/16336.h5"
+
+vertices, faces = extract_mesh(h5_path, "blank", timestep=-1)
+thickness = extract_element_thickness(h5_path, timestep=-1)
+
 ax, cbar = plot_mesh(
     vertices, faces,
     values=thickness,
     figsize=(5, 3.5),
     colorbar_label="Thickness [mm]"
 )
-
 plt.savefig("figure.pdf", dpi=300, bbox_inches="tight")
 ```
 
 ## Next Steps
 
 - Explore the [API Reference](../api/visualization.md) for all options
-- See `notebooks/dataset_demo.ipynb` for more advanced examples
+- See [`notebooks/dataset_demo.ipynb`](https://github.com/BaumSebastian/DDACS/tree/main/notebooks/dataset_demo.ipynb) for more advanced examples
 - Check the [Dataset Overview](../dataset.md) for physics background

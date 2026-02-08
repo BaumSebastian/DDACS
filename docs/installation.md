@@ -10,24 +10,14 @@
 pip install ddacs
 ```
 
+This includes all core dependencies: numpy, pandas, h5py, matplotlib, and CLI tools.
+
 ## Optional Dependencies
 
 ### PyTorch Integration
 
+For using `DDACSDataset` with PyTorch:
+
 ```bash
 pip install "ddacs[torch]"
-```
-
-### Examples (with visualization)
-
-```bash
-pip install "ddacs[examples]"
-```
-
-### Development
-
-```bash
-git clone https://github.com/BaumSebastian/DDACS.git
-cd DDACS
-pip install -e ".[dev]"
 ```

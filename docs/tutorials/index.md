@@ -22,17 +22,11 @@ Create visualizations of simulation results:
 
 ## Prerequisites
 
-Before starting, ensure you have:
+Before starting, ensure you have installed DDACS (see [Installation](../installation.md)) and downloaded the dataset:
 
-1. **Installed DDACS**:
-   ```bash
-   pip install ddacs
-   ```
-
-2. **Downloaded the dataset** (or at least the small test set):
-   ```bash
-   ddacs download --small
-   ```
+```bash
+ddacs download --small
+```
 
 ## Jupyter Notebook
 

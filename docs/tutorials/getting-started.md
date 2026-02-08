@@ -7,10 +7,7 @@ This tutorial covers the basics of loading and exploring DDACS simulation data.
 First, install DDACS and download the dataset:
 
 ```bash
-# Install the package
 pip install ddacs
-
-# Download the small test set (~50GB) or full dataset (~1TB)
 ddacs download --small
 ```
 
@@ -26,6 +23,11 @@ count = count_available_simulations(data_dir)
 print(f"Available simulations: {count}")
 ```
 
+Output:
+```
+Available simulations: 32071
+```
+
 ## Iterating Over Simulations
 
 Use `iter_ddacs` to loop through all simulations:
@@ -33,11 +35,16 @@ Use `iter_ddacs` to loop through all simulations:
 ```python
 from ddacs import iter_ddacs
 
-# Basic iteration
 for sim_id, metadata, h5_path in iter_ddacs("./data"):
     print(f"Simulation {sim_id}: {h5_path.name}")
     print(f"Metadata: {metadata}")
     break  # Just show first one
+```
+
+Output:
+```
+Simulation 16336: 16336.h5
+Metadata: [1. 0. 0. 30. 0.9 0.05 0.95 100000.]
 ```
 
 ### Handling Partial Downloads
@@ -45,7 +52,6 @@ for sim_id, metadata, h5_path in iter_ddacs("./data"):
 If you haven't downloaded all files, use `skip_missing=True`:
 
 ```python
-# Skip missing files (useful for partial downloads)
 for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
     print(f"Processing simulation {sim_id}")
 ```
@@ -62,10 +68,7 @@ Each simulation is stored as an HDF5 file. Use `display_structure` to see its co
 from ddacs import iter_ddacs
 from ddacs.utils import display_structure
 
-# Get first simulation
 sim_id, metadata, h5_path = next(iter_ddacs("./data", skip_missing=True))
-
-# Display structure
 display_structure(h5_path, max_depth=2)
 ```
 
@@ -89,12 +92,17 @@ Get a specific simulation by ID:
 ```python
 from ddacs import get_simulation_by_id
 
-result = get_simulation_by_id(113525, "./data")
+result = get_simulation_by_id(16336, "./data")
 if result:
     sim_id, metadata, h5_path = result
     print(f"Found simulation {sim_id}")
 else:
     print("Simulation not found")
+```
+
+Output:
+```
+Found simulation 16336
 ```
 
 ## Random Sampling
@@ -104,9 +112,17 @@ Sample random simulations for testing or validation:
 ```python
 from ddacs import sample_simulations
 
-# Get 5 random simulations
 for sim_id, metadata, h5_path in sample_simulations(5, "./data"):
     print(f"Sampled: {sim_id}")
+```
+
+Output:
+```
+Sampled: 24891
+Sampled: 18432
+Sampled: 31205
+Sampled: 12847
+Sampled: 29156
 ```
 
 ## Reading Simulation Data
@@ -120,11 +136,15 @@ from ddacs import iter_ddacs
 
 for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
     with h5py.File(h5_path, "r") as f:
-        # Access blank displacement at final timestep
         displacement = np.array(f["OP10"]["blank"]["node_displacement"])
         print(f"Displacement shape: {displacement.shape}")
         # Shape: (timesteps, nodes, 3)
     break
+```
+
+Output:
+```
+Displacement shape: (4, 11041, 3)
 ```
 
 ## Understanding Metadata
@@ -141,6 +161,8 @@ The metadata array contains process parameters (excluding the ID column):
 | 7 | BF | Blank holder force | 100k-500k N |
 
 ```python
+from ddacs import iter_ddacs
+
 for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
     print(f"Simulation {sim_id}")
     print(f"  Geometry: R={metadata[0]}, V={metadata[1]}, X={metadata[2]}")
@@ -150,6 +172,17 @@ for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
     print(f"  Thickness: {metadata[6]} mm")
     print(f"  Holder Force: {metadata[7]} N")
     break
+```
+
+Output:
+```
+Simulation 16336
+  Geometry: R=1.0, V=0.0, X=0.0
+  Radius: 30.0 mm
+  Material: 0.9
+  Friction: 0.05
+  Thickness: 0.95 mm
+  Holder Force: 100000.0 N
 ```
 
 ## Next Steps
