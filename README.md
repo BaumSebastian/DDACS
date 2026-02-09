@@ -35,9 +35,10 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
 ## Installation
 
 ```bash
-pip install ddacs              # Core (includes visualization)
-pip install "ddacs[torch]"     # With PyTorch support
+pip install ddacs
 ```
+
+For PyTorch integration, install PyTorch first following the [official instructions](https://pytorch.org/get-started/locally/) for your CUDA version.
 
 ## Download Dataset
 

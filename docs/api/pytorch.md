@@ -3,6 +3,6 @@
 PyTorch Dataset class for DDACS data.
 
 !!! note
-    Requires the `torch` extra: `pip install "ddacs[torch]"`
+    Requires PyTorch. Install it first following the [official instructions](https://pytorch.org/get-started/locally/) for your CUDA version.
 
 ::: ddacs.pytorch

@@ -12,12 +12,13 @@ pip install ddacs
 
 This includes all core dependencies: numpy, pandas, h5py, matplotlib, and CLI tools.
 
-## Optional Dependencies
+## PyTorch Integration
 
-### PyTorch Integration
-
-For using `DDACSDataset` with PyTorch:
+To use `DDACSDataset` with PyTorch, install PyTorch separately following the [official instructions](https://pytorch.org/get-started/locally/) for your system and CUDA version.
 
 ```bash
-pip install "ddacs[torch]"
+# Example for CPU-only
+pip install torch
+
+# For CUDA versions, see https://pytorch.org/get-started/locally/
 ```
