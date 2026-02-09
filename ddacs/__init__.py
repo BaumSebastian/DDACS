@@ -14,7 +14,7 @@ Examples:
     >>> vertices, triangles = extract_mesh('simulation.h5', 'blank')
 """
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 
 from .generators import (
     count_available_simulations,
