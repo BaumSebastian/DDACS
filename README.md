@@ -74,12 +74,15 @@ from ddacs import iter_ddacs, count_available_simulations
 import h5py
 import numpy as np
 
+# Path to DDACS dataset
+data_dir = "./data"
+
 # Count available simulations
-count = count_available_simulations("./data")
+count = count_available_simulations(data_dir)
 print(f"Available simulations: {count}")
 
 # Iterate over samples (skip_missing=True for partial downloads)
-for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
+for sim_id, metadata, h5_path in iter_ddacs(data_dir, skip_missing=True):
     with h5py.File(h5_path, "r") as f:
         displacement = np.array(f["OP10"]["blank"]["node_displacement"])
         print(f"ID={sim_id}, shape={displacement.shape}")
@@ -92,7 +95,10 @@ for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
 from ddacs.pytorch import DDACSDataset
 from torch.utils.data import DataLoader
 
-dataset = DDACSDataset("./data")
+# Path to DDACS dataset
+data_dir = "./data"
+
+dataset = DDACSDataset(data_dir)
 dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
 
 for sim_ids, metadata_batch, h5_paths in dataloader:
