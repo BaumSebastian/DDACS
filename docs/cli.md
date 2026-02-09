@@ -12,6 +12,8 @@ Display dataset information and available versions.
 ddacs info
 ```
 
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_info.png" width="700">
+
 ### `ddacs download`
 
 Download dataset files from DaRUS.
@@ -45,10 +47,18 @@ ddacs download [VERSION] [OPTIONS]
 ```bash
 # Download full dataset
 ddacs download
+```
 
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_download.png" width="700">
+
+```bash
 # Download small test set
 ddacs download --small
+```
 
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_download_small.png" width="700">
+
+```bash
 # Download to custom directory
 ddacs download --out /path/to/data
 
