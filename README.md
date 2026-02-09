@@ -5,12 +5,15 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Documentation](https://readthedocs.org/projects/ddacs/badge/?version=latest)](https://ddacs.readthedocs.io)
 [![DaRUS Repository](https://img.shields.io/badge/repository-DaRUS-green.svg)](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801)
 [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801)
 [![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
 
 A Python package for accessing and processing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801).
 It includes a CLI for downloading datasets from DaRUS and a Python API for accessing simulation data with metadata.
+
+**[Read the full documentation](https://ddacs.readthedocs.io)**
 
 <div align="center">
 
@@ -22,21 +25,18 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
 
 ## Table of Contents
 
-- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Download Dataset](#download-dataset)
 - [Basic Usage](#basic-usage)
-  - [Core Usage](#core-usage)
-  - [PyTorch Usage](#pytorch-usage)
+- [PyTorch Integration](#pytorch-integration)
 - [Citation](#citation)
 - [Development](#development)
 
 ## Installation
 
 ```bash
-pip install ddacs              # Core
+pip install ddacs              # Core (includes visualization)
 pip install "ddacs[torch]"     # With PyTorch support
-pip install "ddacs[examples]"  # With visualization dependencies
 ```
 
 ## Download Dataset
@@ -59,7 +59,7 @@ ddacs info
 **Options:**
 | Flag | Description |
 | ------ | ------------- |
-| `version` | Dataset version to download (default: `2.0`) |
+| `VERSION` | Dataset version to download (default: `2.0`) |
 | `--small` | Download small test set for demos |
 | `--out ./path` | Custom output directory (default: `./data`) |
 | `--no-extract` | Skip extraction of zip files |
@@ -68,53 +68,38 @@ ddacs info
 
 ## Basic Usage
 
-### Core Usage
-
-For basic dataset iteration:
-
 ```python
+from ddacs import iter_ddacs, count_available_simulations
 import h5py
 import numpy as np
-from ddacs import iter_ddacs, count_available_simulations
 
 # Count available simulations
 count = count_available_simulations("./data")
 print(f"Available simulations: {count}")
 
 # Iterate over samples (skip_missing=True for partial downloads)
-for i, (sim_id, metadata, h5_file_path) in enumerate(iter_ddacs("./data", skip_missing=True)):
-    print(f"Sample {i+1}: ID={sim_id}, Path={h5_file_path}")
-
-    # Access simulation data
-    with h5py.File(h5_file_path, "r") as f:
-        data = np.array(f["OP10"]["blank"]["node_displacement"])
-        print(f"Data shape: {data.shape}")
-
-    if i >= 2:  # Show first 3 samples
-        break
+for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
+    with h5py.File(h5_path, "r") as f:
+        displacement = np.array(f["OP10"]["blank"]["node_displacement"])
+        print(f"ID={sim_id}, shape={displacement.shape}")
+    break
 ```
 
-### PyTorch Usage
-
-For PyTorch-compatible dataset with DataLoader support:
+## PyTorch Integration
 
 ```python
 from ddacs.pytorch import DDACSDataset
 from torch.utils.data import DataLoader
 
-# Create dataset
 dataset = DDACSDataset("./data")
 dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
 
-# Use in training loop
-for batch_idx, (sim_ids, metadata_batch, h5_paths) in enumerate(dataloader):
-    print(f"Batch {batch_idx}: {len(sim_ids)} samples")
+for sim_ids, metadata_batch, h5_paths in dataloader:
     # Your training code here
-    if batch_idx >= 2:  # Show first 3 batches
-        break
+    break
 ```
 
-See [`notebooks/dataset_demo.ipynb`](./notebooks/dataset_demo.ipynb) for a comprehensive tutorial including visualization and advanced usage patterns.
+For more examples, see the [full documentation](https://ddacs.readthedocs.io) and [`notebooks/dataset_demo.ipynb`](./notebooks/dataset_demo.ipynb).
 
 ## Citation
 
