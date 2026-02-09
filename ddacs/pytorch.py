@@ -180,7 +180,9 @@ class DDACSDataset(Dataset):
         row = self._metadata.iloc[idx]
         sim_id = int(row["ID"])
         h5_path = self._h5_dir / f"{sim_id}.h5"
-        metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip ID, no copy
+        metadata_vals = np.asarray(
+            row.values[1:], copy=True
+        )  # Skip ID, copy for PyTorch compatibility
 
         if self.transform:
             metadata_vals = self.transform(metadata_vals)
