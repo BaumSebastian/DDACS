@@ -32,8 +32,8 @@ COMPONENT_COLORS = {
 
 COMPONENT_NAMES = {
     "blank": "Blank (Workpiece)",
-    "die": "Die (Lower Tool)",
-    "punch": "Punch (Upper Tool)",
+    "die": "Die (Upper Tool)",
+    "punch": "Punch (Lower Tool)",
     "binder": "Binder (Clamp)",
 }
 
@@ -340,7 +340,7 @@ def plot_vectors(
     # Set defaults for arrows
     arrow_kwargs.setdefault("color", "red")
     arrow_kwargs.setdefault("alpha", 0.8)
-    arrow_kwargs.setdefault("arrow_length_ratio", 0.1)
+    arrow_kwargs.setdefault("arrow_length_ratio", 0.4)
 
     if show_points:
         if values is not None:
@@ -376,6 +376,21 @@ def plot_vectors(
     coords_sub = coords[::step]
     vectors_sub = vectors[::step] * scale
 
+    # Draw black outline first (slightly thicker)
+    ax.quiver(
+        coords_sub[:, 0],
+        coords_sub[:, 1],
+        coords_sub[:, 2],
+        vectors_sub[:, 0],
+        vectors_sub[:, 1],
+        vectors_sub[:, 2],
+        color="black",
+        alpha=arrow_kwargs.get("alpha", 0.8),
+        arrow_length_ratio=arrow_kwargs.get("arrow_length_ratio", 0.4),
+        linewidth=1.5,
+    )
+
+    # Draw colored arrows on top
     ax.quiver(
         coords_sub[:, 0],
         coords_sub[:, 1],

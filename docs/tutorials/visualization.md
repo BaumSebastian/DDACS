@@ -197,7 +197,7 @@ ax, cbar = plot_vectors(
     figsize=(12, 5),
     axis_limits=[0, 110],
     point_kwargs={"s": 1, "alpha": 0.6},
-    arrow_kwargs={"color": "black", "alpha": 0.8},
+    arrow_kwargs={"color": "red", "alpha": 0.8},
 )
 plt.savefig("vectors.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
