@@ -19,9 +19,11 @@ The DDACS (Deep Drawing and Cutting Simulations) dataset contains **32,071 finit
 | Component | Description |
 |-----------|-------------|
 | **blank** | The sheet metal workpiece being formed |
-| **punch** | Upper forming tool |
-| **die** | Lower forming tool |
+| **punch** | Lower forming tool |
+| **die** | Upper forming tool |
 | **binder** | Blank holder that controls material flow |
+
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_tools.png" width="700">
 
 ## Parameter Specifications
 
@@ -34,6 +36,14 @@ The DDACS (Deep Drawing and Cutting Simulations) dataset contains **32,071 finit
 | **GEO_X** | Convex (outward) corners | 100-150 mm (10 mm steps) |
 
 All geometries share: bottom radius (5-10 mm), wall angle (10-30°)
+
+**OP10 (After Forming):**
+
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_geometries_op10.png" width="700">
+
+**OP20 (After Cutting):**
+
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_geometries_op20.png" width="700">
 
 ### Material Parameters
 
