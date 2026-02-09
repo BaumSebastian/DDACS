@@ -27,8 +27,8 @@ for component in COMPONENT_COLORS.keys():
     plot_point_cloud(
         coords,
         ax=ax,
-        color=COMPONENT_COLORS[component],
-        point_size=0.5,
+        c=COMPONENT_COLORS[component],
+        s=0.5,
         alpha=alpha,
         axis_limits=[0, 110],
     )
@@ -68,13 +68,12 @@ print(f"Mesh: {vertices.shape[0]} vertices, {triangles.shape[0]} faces")
 
 ax = plot_mesh(
     vertices, triangles,
-    color="red",
+    facecolors="red",
+    edgecolors="red",
+    linewidth=0.3,
     title="Blank Mesh - Simulation 16336",
     figsize=(12, 5),
     axis_limits=[0, 110],
-    show_edges=True,
-    edge_color="red",
-    edge_linewidth=0.3,
 )
 plt.savefig("mesh.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
@@ -113,9 +112,8 @@ ax, cbar = plot_mesh(
     title="Thickness Distribution - Simulation 16336",
     figsize=(12, 5),
     axis_limits=[0, 110],
-    show_edges=True,
-    edge_color="face",
-    edge_linewidth=0.3,
+    edgecolors="face",
+    linewidth=0.3,
 )
 plt.savefig("thickness.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
@@ -155,7 +153,7 @@ ax, cbar = plot_point_cloud(
     title="Springback Magnitude - Simulation 16336",
     figsize=(12, 5),
     axis_limits=[0, 110],
-    point_size=1,
+    s=1,
     alpha=0.8,
 )
 plt.savefig("springback.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
@@ -191,17 +189,15 @@ ax, cbar = plot_vectors(
     values=magnitude,
     step=25,
     scale=10.0,
-    arrow_color="black",
-    arrow_alpha=0.8,
     cmap="plasma",
     vmin=0.0,
     vmax=1.4,
     colorbar_label="Springback [mm]",
-    point_size=1,
-    point_alpha=0.6,
     title="Springback Vectors - Simulation 16336",
     figsize=(12, 5),
     axis_limits=[0, 110],
+    point_kwargs={"s": 1, "alpha": 0.6},
+    arrow_kwargs={"color": "black", "alpha": 0.8},
 )
 plt.savefig("vectors.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
 ```
@@ -235,7 +231,7 @@ ax, cbar = plot_2d_projection(
     colorbar_label="Springback [mm]",
     title="Springback Top View - Simulation 16336",
     figsize=(12, 5),
-    point_size=2,
+    s=2,
     alpha=0.8,
 )
 plt.savefig("2d_projection.png", dpi=300, bbox_inches="tight", pad_inches=0.3)
@@ -261,10 +257,10 @@ ax1 = fig.add_subplot(121, projection="3d")
 ax2 = fig.add_subplot(122, projection="3d")
 
 vertices, faces = extract_mesh(h5_path, "blank", timestep=2)
-plot_mesh(vertices, faces, ax=ax1, title="OP10 Final", color="blue")
+plot_mesh(vertices, faces, ax=ax1, title="OP10 Final", facecolors="blue")
 
 vertices, faces = extract_mesh(h5_path, "blank", timestep=-1, operation=20)
-plot_mesh(vertices, faces, ax=ax2, title="OP20 Final", color="red")
+plot_mesh(vertices, faces, ax=ax2, title="OP20 Final", facecolors="red")
 
 plt.tight_layout()
 plt.show()
