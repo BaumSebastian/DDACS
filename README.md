@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/icon/DDACS_small.png" width="150"/>
+  <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/icon/DDACS.png" width="150"/>
   <h1>Deep Drawing and Cutting Simulations (DDACS) Dataset</h1>
 </div>
 
@@ -25,6 +25,7 @@ It includes a CLI for downloading datasets from DaRUS and a Python API for acces
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Installation](#installation)
 - [Download Dataset](#download-dataset)
 - [Basic Usage](#basic-usage)

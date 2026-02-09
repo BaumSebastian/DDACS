@@ -1,7 +1,7 @@
 # DDACS - Deep Drawing and Cutting Simulations Dataset
 
 <div align="center">
-  <img src="images/icon/DDACS_small.png" width="150"/>
+  <img src="images/icon/DDACS.png" width="150"/>
 </div>
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
