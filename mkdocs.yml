@@ -31,6 +31,8 @@ theme:
 
 plugins:
   - search
+  - macros:
+      module_name: docs/macros
   - mkdocstrings:
       handlers:
         python:
@@ -59,6 +61,7 @@ nav:
   - Dataset:
       - Overview: dataset.md
       - HDF5 Structure: hdf5-structure.md
+      - Croissant Manifest: croissant.md
   - Tutorials:
       - Overview: tutorials/index.md
       - Getting Started: tutorials/getting-started.md

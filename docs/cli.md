@@ -32,7 +32,7 @@ ddacs download [VERSION] [OPTIONS]
 
 | Option | Description |
 |--------|-------------|
-| `--small` | Download small test set (~50GB) |
+| `--small` | Download small test set ({{ small_download_size() }}) |
 | `--out PATH` | Output directory (default: `./data`) |
 | `--files FILE...` | Download specific files only |
 | `--no-extract` | Skip extraction of zip files |
@@ -63,7 +63,7 @@ ddacs download --small
 ddacs download --out /path/to/data
 
 # Download specific files
-ddacs download --files metadata.csv 403926_406296.zip
+ddacs download --files {{ small_test_files() }}
 ```
 
 ## Global Options

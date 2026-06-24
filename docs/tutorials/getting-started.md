@@ -25,7 +25,7 @@ print(f"Available simulations: {count}")
 
 Output:
 ```
-Available simulations: 32071
+Available simulations: {{ simulation_count() }}
 ```
 
 ## Iterating Over Simulations
@@ -149,25 +149,25 @@ Displacement shape: (4, 11041, 3)
 
 ## Understanding Metadata
 
-The metadata array contains process parameters (excluding the ID column):
+`iter_ddacs` returns each simulation's parameter row as a NumPy array. Categorical columns (`geometry`, `split`, `rddac`) are dropped so the array stays numeric; for the full per-column reference see [Parameter columns](../dataset.md#parameter-columns).
 
-| Index | Parameter | Description | Range |
-|-------|-----------|-------------|-------|
-| 0-2 | GEO_R/V/X | Geometry type (one-hot) | 0 or 1 |
-| 3 | RAD | Characteristic radius | 30-150 mm |
-| 4 | MAT | Material scaling factor | 0.9-1.1 |
-| 5 | FC | Friction coefficient | 0.05-0.15 |
-| 6 | SHTK | Sheet thickness | 0.95-1.0 mm |
-| 7 | BF | Blank holder force | 100k-500k N |
+| Index | Column | Range |
+|-------|--------|-------|
+| 0 | `curvature_radius` | 30 - 150 mm |
+| 1 | `bottom_radius` | 5 - 10 mm |
+| 2 | `wall_angle` | 10 - 30° |
+| 3 | `material_scaling_factor` | 0.9 - 1.1 |
+| 4 | `sheet_metal_thickness` | 0.95 - 1.0 mm |
+| 5 | `friction_coefficient` | 0.05 - 0.15 |
+| 6 | `blankholder_force` | 100k - 500k N |
 
 ```python
 from ddacs import iter_ddacs
 
 for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
     print(f"Simulation {sim_id}")
-    print(f"  Geometry: R={metadata[0]}, V={metadata[1]}, X={metadata[2]}")
-    print(f"  Radius: {metadata[3]} mm")
-    print(f"  Material: {metadata[4]}")
+    print(f"  curvature_radius: {metadata[0]} mm")
+    print(f"  material_scaling_factor: {metadata[3]}")
     print(f"  Friction: {metadata[5]}")
     print(f"  Thickness: {metadata[6]} mm")
     print(f"  Holder Force: {metadata[7]} N")

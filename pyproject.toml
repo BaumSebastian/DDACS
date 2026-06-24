@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ddacs"
-version = "2.1.1"
+version = "3.0.0"
 description = "Deep Drawing and Cutting Simulations (DDACS) Dataset - Python interface"
 readme = "README.md"
 license = {file="LICENSE"}
@@ -61,6 +61,7 @@ docs = [
     "mkdocs>=1.5.0",
     "mkdocs-material>=9.5.0",
     "mkdocstrings[python]>=0.24.0",
+    "mkdocs-macros-plugin>=1.0.0",
 ]
 
 [project.scripts]
@@ -97,7 +98,7 @@ select = ["E", "F", "W", "I", "UP"]
 ignore = ["E501"]  # line length handled by black
 
 [tool.bumpver]
-current_version = "2.1.1"
+current_version = "3.0.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "Bump version {old_version} -> {new_version}"
 commit = true

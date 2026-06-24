@@ -3,10 +3,10 @@
 ## Download the Dataset
 
 ```bash
-# Download full dataset (~1TB)
+# Download full dataset ({{ total_size() }})
 ddacs download
 
-# Download small test set (~50GB)
+# Download small test set ({{ small_download_size() }})
 ddacs download --small
 
 # Show dataset info

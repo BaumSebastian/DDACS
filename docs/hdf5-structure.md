@@ -1,6 +1,6 @@
 # HDF5 File Structure
 
-Each simulation is stored as a self-contained HDF5 file (~35 MB). This page documents the complete structure.
+Each simulation is stored as a self-contained HDF5 file ({{ per_sim_size() }}). This page documents the complete structure.
 
 ## File Organization
 
