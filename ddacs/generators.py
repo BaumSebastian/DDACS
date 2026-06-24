@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .config import H5_SUBDIR, PROCESS_PARAMETERS_FILE
+from .config import H5_SUBDIR, ID_COLUMN, PROCESS_PARAMETERS_FILE
 
 logger = logging.getLogger(__name__)
 
@@ -62,11 +62,11 @@ def iter_ddacs(
         logger.warning("skip_missing=True: Missing H5 files will be skipped")
 
     for _, row in metadata.iterrows():
-        sim_id = int(row["ID"])
+        sim_id = int(row[ID_COLUMN])
         h5_path = h5_dir / f"{sim_id}.h5"
 
         if h5_path.exists():
-            metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip ID, no copy
+            metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip the index column, no copy
             yield sim_id, metadata_vals, h5_path
         elif skip_missing:
             continue
@@ -149,7 +149,7 @@ def get_simulation_by_id(
         raise FileNotFoundError(f"Metadata file not found: {metadata_path}")
 
     metadata = pd.read_csv(metadata_path)
-    row = metadata[metadata["ID"] == sim_id]
+    row = metadata[metadata[ID_COLUMN] == sim_id]
 
     if row.empty:
         return None
@@ -160,7 +160,7 @@ def get_simulation_by_id(
     if not h5_path.exists():
         return None
 
-    metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip ID, no copy
+    metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip the index column, no copy
     return sim_id, metadata_vals, h5_path
 
 
@@ -207,7 +207,7 @@ def sample_simulations(
     metadata = pd.read_csv(metadata_path)
 
     # Filter to only existing H5 files
-    mask = metadata["ID"].apply(lambda sim_id: (h5_dir / f"{int(sim_id)}.h5").exists())
+    mask = metadata[ID_COLUMN].apply(lambda sim_id: (h5_dir / f"{int(sim_id)}.h5").exists())
     available_metadata = metadata[mask]
 
     if len(available_metadata) == 0:
@@ -219,9 +219,9 @@ def sample_simulations(
     sampled = available_metadata.sample(n=n_sample)
 
     for _, row in sampled.iterrows():
-        sim_id = int(row["ID"])
+        sim_id = int(row[ID_COLUMN])
         h5_path = h5_dir / f"{sim_id}.h5"
-        metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip ID, no copy
+        metadata_vals = np.asarray(row.values[1:], copy=False)  # Skip the index column, no copy
         yield sim_id, metadata_vals, h5_path
 
 
@@ -258,7 +258,7 @@ def count_available_simulations(
         raise FileNotFoundError(f"Metadata file not found: {metadata_path}")
 
     metadata = pd.read_csv(metadata_path)
-    mask = metadata["ID"].apply(lambda sim_id: (h5_dir / f"{int(sim_id)}.h5").exists())
+    mask = metadata[ID_COLUMN].apply(lambda sim_id: (h5_dir / f"{int(sim_id)}.h5").exists())
     return mask.sum()
 
 

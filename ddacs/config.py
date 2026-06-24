@@ -19,6 +19,9 @@ PROCESS_PARAMETERS_FILE = "process_parameters.csv"
 METADATA_FILE = "metadata.json"
 H5_SUBDIR = "h5"
 
+# Column that holds the simulation ID (matches the HDF5 filename)
+ID_COLUMN = "index"
+
 # Single-simulation sample for fast preview + small-test downloads
 SAMPLE_SIM_ID = 258864
 SAMPLE_ZIP_FILE = f"{SAMPLE_SIM_ID}.zip"

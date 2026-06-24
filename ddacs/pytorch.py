@@ -11,6 +11,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from .config import H5_SUBDIR, ID_COLUMN, PROCESS_PARAMETERS_FILE
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -41,8 +43,8 @@ class DDACSDataset(Dataset):
     def __init__(
         self,
         data_dir: str | Path,
-        h5_subdir: str = "h5",
-        metadata_file: str = "metadata.csv",
+        h5_subdir: str = H5_SUBDIR,
+        metadata_file: str = PROCESS_PARAMETERS_FILE,
         transform=None,
     ):
         """
@@ -50,8 +52,8 @@ class DDACSDataset(Dataset):
 
         Args:
             data_dir: Root directory of the dataset.
-            h5_subdir: Subdirectory containing H5 files (default: "h5").
-            metadata_file: Name of metadata CSV file (default: "metadata.csv").
+            h5_subdir: Subdirectory containing the .h5 files (default: config.H5_SUBDIR).
+            metadata_file: Name of the parameter table CSV (default: config.PROCESS_PARAMETERS_FILE).
             transform: Optional transform to apply to metadata.
 
         Raises:
@@ -79,6 +81,13 @@ class DDACSDataset(Dataset):
         self._metadata = pd.read_csv(self._metadata_path)
         self._metadata = self._filter_existing_files()
 
+        # PyTorch tensors need uniform numeric dtypes. Cache the numeric
+        # columns (excluding the simulation index) so __getitem__ skips
+        # categorical fields like `geometry`, `split`, `rddac`.
+        self._numeric_columns = [
+            c for c in self._metadata.select_dtypes(include="number").columns if c != ID_COLUMN
+        ]
+
     def _filter_existing_files(self) -> pd.DataFrame:
         """Filter metadata to only include entries with existing H5 files.
 
@@ -93,7 +102,7 @@ class DDACSDataset(Dataset):
             >>> dataset = DDACSDataset('/data/ddacs')
             >>> # Warns if some H5 files are missing
         """
-        mask = self._metadata["ID"].apply(
+        mask = self._metadata[ID_COLUMN].apply(
             lambda sim_id: (self._h5_dir / f"{int(sim_id)}.h5").exists()
         )
         filtered = self._metadata[mask]
@@ -133,10 +142,14 @@ class DDACSDataset(Dataset):
         return self._metadata.columns[1:].tolist()
 
     def get_metadata_descriptions(self) -> dict[str, str]:
-        """Get explanations for abbreviated metadata column names.
+        """Map each metadata column name to a human-readable description.
+
+        Pulled live from the Croissant ``metadata.json`` that ships with the
+        dataset (local copy under ``data_dir`` if present, otherwise the
+        permanent DaRUS URL). No description is duplicated in package code.
 
         Returns:
-            dict[str, str]: Mapping of column abbreviations to their descriptions.
+            dict[str, str]: Mapping of column name to a short description.
 
         Examples:
             >>> dataset = DDACSDataset('/data/ddacs')
@@ -144,19 +157,11 @@ class DDACSDataset(Dataset):
             >>> for col, desc in descriptions.items():
             ...     print(f"{col}: {desc}")
         """
-        descriptions = {
-            "GEO_R": "Rectangular geometry (1=yes, 0=no)",
-            "GEO_V": "Concave geometry (1=yes, 0=no)",
-            "GEO_X": "Convex geometry (1=yes, 0=no)",
-            "RAD": "Characteristic radius [30-150 mm]",
-            "MAT": "Material scaling factor [0.9-1.1]",
-            "FC": "Friction coefficient [0.05-0.15]",
-            "SHTK": "Sheet thickness [0.95-1.0 mm]",
-            "BF": "Blank holder force [100,000-500,000 N]",
-        }
+        from . import metadata as _md
 
-        available_columns = self.get_metadata_columns()
-        return {col: descriptions.get(col, "Unknown parameter") for col in available_columns}
+        ds = _md.load_dataset(data_dir=self.data_dir)
+        all_desc = _md.process_parameters_descriptions(ds)
+        return {col: all_desc.get(col, "") for col in self.get_metadata_columns()}
 
     def __getitem__(self, idx: int) -> tuple[int, np.ndarray, str]:
         """
@@ -178,11 +183,11 @@ class DDACSDataset(Dataset):
             >>> print(f"Simulation {sim_id}: {h5_path}")
         """
         row = self._metadata.iloc[idx]
-        sim_id = int(row["ID"])
+        sim_id = int(row[ID_COLUMN])
         h5_path = self._h5_dir / f"{sim_id}.h5"
-        metadata_vals = np.asarray(
-            row.values[1:], copy=True
-        )  # Skip ID, copy for PyTorch compatibility
+        # PyTorch wants a uniform numeric array: skip the index and any
+        # categorical columns (geometry, split, rddac, ...).
+        metadata_vals = np.asarray(row[self._numeric_columns].values, dtype=np.float64, copy=True)
 
         if self.transform:
             metadata_vals = self.transform(metadata_vals)
@@ -207,8 +212,8 @@ class DDACSDataset(Dataset):
         ]
 
         if len(self._metadata) > 0:
-            lines.append("  Metadata columns:")
-            for col in self._metadata.columns[1:]:  # Skip ID
+            lines.append("  Numeric metadata columns (used as PyTorch features):")
+            for col in self._numeric_columns:
                 lines.append(f"    - {col}")
 
         return "\n".join(lines)
