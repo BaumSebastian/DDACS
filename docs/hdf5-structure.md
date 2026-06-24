@@ -5,21 +5,30 @@ Each simulation is stored as a self-contained HDF5 file ({{ per_sim_size() }}). 
 ## File Organization
 
 ```
-simulation_{id}.h5
-├── Attributes (root level)
-│   ├── Geometry_Parameters: [radius, bottom_radius, wall_angle]
-│   └── Material_Parameters: [MAT, FC, SHTK, BF]
+{index}.h5
+├── Attributes (root level — one named scalar per parameter)
+│   ├── index
+│   ├── geometry
+│   ├── curvature_radius
+│   ├── bottom_radius
+│   ├── wall_angle
+│   ├── material_scaling_factor
+│   ├── sheet_metal_thickness
+│   ├── friction_coefficient
+│   └── blankholder_force
 │
 ├── OP10/ (deep drawing operation)
-│   ├── blank/   → Sheet metal workpiece
-│   ├── die/     → Lower tool
-│   ├── punch/   → Upper tool
-│   ├── binder/  → Blank holder
-│   └── general/ → Simulation metrics
+│   ├── blank/   → Sheet metal workpiece (4 timesteps incl. springback)
+│   ├── die/     → Lower tool (3 timesteps)
+│   ├── punch/   → Upper tool (3 timesteps)
+│   ├── binder/  → Blank holder (3 timesteps)
+│   └── general/ → Global / part-level simulation metrics
 │
 └── OP20/ (cutting operation)
-    └── blank/   → Part after cutting
+    └── blank/   → Part after cutting + cutting-induced springback (2 timesteps)
 ```
+
+Each root attribute matches a column of `process_parameters.csv`, so a single HDF5 file is fully self-describing: you can look up its parameters without consulting the index CSV.
 
 ## Inspecting Structure
 
