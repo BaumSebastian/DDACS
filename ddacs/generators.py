@@ -12,13 +12,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from .config import H5_SUBDIR, PROCESS_PARAMETERS_FILE
+
 logger = logging.getLogger(__name__)
 
 
 def iter_ddacs(
     data_dir: str | Path,
-    h5_subdir: str = "h5",
-    metadata_file: str = "metadata.csv",
+    h5_subdir: str = H5_SUBDIR,
+    metadata_file: str = PROCESS_PARAMETERS_FILE,
     skip_missing: bool = False,
 ) -> Generator[tuple[int, np.ndarray, Path], None, None]:
     """
@@ -26,8 +28,8 @@ def iter_ddacs(
 
     Args:
         data_dir: Root directory of the dataset.
-        h5_subdir: Subdirectory containing H5 files (default: "h5").
-        metadata_file: Name of the metadata CSV file (default: "metadata.csv").
+        h5_subdir: Subdirectory containing the .h5 files (default: config.H5_SUBDIR).
+        metadata_file: Name of the parameter table CSV (default: config.PROCESS_PARAMETERS_FILE).
         skip_missing: If True, skip missing H5 files with a warning.
             If False, raise FileNotFoundError (default: False).
 
@@ -72,13 +74,13 @@ def iter_ddacs(
             raise FileNotFoundError(f"H5 file not found: {h5_path}")
 
 
-def iter_h5_files(data_dir: str | Path, h5_subdir: str = "h5") -> Generator[Path, None, None]:
+def iter_h5_files(data_dir: str | Path, h5_subdir: str = H5_SUBDIR) -> Generator[Path, None, None]:
     """
     Minimal generator for H5 file paths only.
 
     Args:
         data_dir: Root directory of the dataset.
-        h5_subdir: Subdirectory containing H5 files (default: "h5").
+        h5_subdir: Subdirectory containing the .h5 files (default: config.H5_SUBDIR).
 
     Yields:
         Path: Absolute path to each H5 file found in the specified directory.
@@ -108,8 +110,8 @@ def iter_h5_files(data_dir: str | Path, h5_subdir: str = "h5") -> Generator[Path
 def get_simulation_by_id(
     sim_id: int,
     data_dir: str | Path,
-    h5_subdir: str = "h5",
-    metadata_file: str = "metadata.csv",
+    h5_subdir: str = H5_SUBDIR,
+    metadata_file: str = PROCESS_PARAMETERS_FILE,
 ) -> tuple[int, np.ndarray, Path] | None:
     """
     Get a specific simulation by its ID.
@@ -117,8 +119,8 @@ def get_simulation_by_id(
     Args:
         sim_id: The simulation ID to retrieve.
         data_dir: Root directory of the dataset.
-        h5_subdir: Subdirectory containing H5 files (default: "h5").
-        metadata_file: Name of the metadata CSV file (default: "metadata.csv").
+        h5_subdir: Subdirectory containing the .h5 files (default: config.H5_SUBDIR).
+        metadata_file: Name of the parameter table CSV (default: config.PROCESS_PARAMETERS_FILE).
 
     Returns:
         Optional[Tuple[int, np.ndarray, Path]]: Simulation data if found, None otherwise.
@@ -165,8 +167,8 @@ def get_simulation_by_id(
 def sample_simulations(
     n: int,
     data_dir: str | Path,
-    h5_subdir: str = "h5",
-    metadata_file: str = "metadata.csv",
+    h5_subdir: str = H5_SUBDIR,
+    metadata_file: str = PROCESS_PARAMETERS_FILE,
 ) -> Generator[tuple[int, np.ndarray, Path], None, None]:
     """
     Randomly sample simulations from the dataset.
@@ -174,8 +176,8 @@ def sample_simulations(
     Args:
         n: Number of simulations to sample.
         data_dir: Root directory of the dataset.
-        h5_subdir: Subdirectory containing H5 files (default: "h5").
-        metadata_file: Name of the metadata CSV file (default: "metadata.csv").
+        h5_subdir: Subdirectory containing the .h5 files (default: config.H5_SUBDIR).
+        metadata_file: Name of the parameter table CSV (default: config.PROCESS_PARAMETERS_FILE).
 
     Yields:
         Tuple[int, np.ndarray, Path]: Simulation ID, metadata values array,
@@ -225,16 +227,16 @@ def sample_simulations(
 
 def count_available_simulations(
     data_dir: str | Path,
-    h5_subdir: str = "h5",
-    metadata_file: str = "metadata.csv",
+    h5_subdir: str = H5_SUBDIR,
+    metadata_file: str = PROCESS_PARAMETERS_FILE,
 ) -> int:
     """
     Count available simulations (with existing H5 files).
 
     Args:
         data_dir: Root directory of the dataset.
-        h5_subdir: Subdirectory containing H5 files (default: "h5").
-        metadata_file: Name of the metadata CSV file (default: "metadata.csv").
+        h5_subdir: Subdirectory containing the .h5 files (default: config.H5_SUBDIR).
+        metadata_file: Name of the parameter table CSV (default: config.PROCESS_PARAMETERS_FILE).
 
     Returns:
         int: Number of simulations with existing H5 files.

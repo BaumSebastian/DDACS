@@ -1,11 +1,13 @@
-"""
-DDACS utilities for extracting simulation data.
+"""DDACS utilities for extracting simulation data from HDF5 files.
 
 The DDACS dataset contains deep drawing simulations with:
-- Material parameters: FC (friction), MAT (material), STHK (sheet thickness), BF (blank holder force)
-- Geometry types: R (rectangular), V (concave), X (convex) with radius parameter
+- Geometries: rectangular, concave, convex
 - Components: blank (workpiece), die, binder, punch (forming tools)
-- Operations: OP10 (forming), OP20 (springback analysis)
+- Operations: OP10 (forming + springback), OP20 (cutting + cutting-induced springback)
+
+Per-simulation parameters are stored as named scalar attributes on each HDF5
+root and indexed in ``process_parameters.csv``. See ``ddacs.metadata`` and the
+Croissant ``metadata.json`` for the full field-map and column descriptions.
 """
 
 from pathlib import Path

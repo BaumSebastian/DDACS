@@ -34,13 +34,18 @@ from rich.progress import (
 from rich.prompt import Confirm
 from rich.table import Table
 
+from .config import DARUS_BASE_URL, DATASET_DOI, DEFAULT_VERSION, SMALL_TEST_FILES
+
 console = Console()
 
-# DaRUS repository configuration
-DARUS_URL = "https://darus.uni-stuttgart.de"
-DDACS_DOI = "doi:10.18419/darus-4801"
-DDACS_NAME = "DDACS"
-SMALL_TEST_FILES = ["metadata.csv", "403926_406296.zip"]
+
+def _dataset_title(version_data: dict) -> str:
+    """Extract the dataset title from a DaRUS version metadata response."""
+    fields = version_data.get("metadataBlocks", {}).get("citation", {}).get("fields", [])
+    for f in fields:
+        if f.get("typeName") == "title":
+            return f.get("value", "")
+    return ""
 
 
 def _api_get(endpoint: str, headers: dict[str, str]) -> dict | None:
@@ -55,7 +60,7 @@ def _api_get(endpoint: str, headers: dict[str, str]) -> dict | None:
         Response data dict if successful, None on error.
     """
     try:
-        r = requests.get(f"{DARUS_URL}/api/{endpoint}", headers=headers)
+        r = requests.get(f"{DARUS_BASE_URL}/api/{endpoint}", headers=headers)
         r.raise_for_status()
         return r.json()["data"]
     except Exception as e:
@@ -74,7 +79,9 @@ def _get_version_files(version: str, headers: dict[str, str]) -> set[str]:
     Returns:
         Set of filenames in the specified version.
     """
-    data = _api_get(f"datasets/:persistentId/versions/{version}?persistentId={DDACS_DOI}", headers)
+    data = _api_get(
+        f"datasets/:persistentId/versions/{version}?persistentId={DATASET_DOI}", headers
+    )
     if data:
         return {f["dataFile"]["filename"] for f in data.get("files", [])}
     return set()
@@ -130,22 +137,22 @@ def cmd_info(args: argparse.Namespace) -> None:
     headers = {"X-Dataverse-key": args.token} if args.token else {}
 
     with console.status("[bold blue]Fetching dataset information..."):
-        versions = _api_get(f"datasets/:persistentId/versions?persistentId={DDACS_DOI}", headers)
+        versions = _api_get(f"datasets/:persistentId/versions?persistentId={DATASET_DOI}", headers)
         if not versions:
             return
 
-    dataset_url = f"{DARUS_URL}/dataset.xhtml?persistentId={DDACS_DOI}"
+    dataset_url = f"{DARUS_BASE_URL}/dataset.xhtml?persistentId={DATASET_DOI}"
     latest = versions[0] if versions else {}
     license_name = latest.get("license", {}).get("name", "Unknown")
 
     info = (
         f"[bold]URL:[/bold] [link={dataset_url}]{dataset_url}[/link]\n"
-        f"[bold]Persistent ID:[/bold] {DDACS_DOI}\n"
+        f"[bold]Persistent ID:[/bold] {DATASET_DOI}\n"
         f"[bold]Authors:[/bold] Sebastian Baum, Pascal Heinzelmann\n"
         f"[bold]License:[/bold] {license_name}"
     )
     console.print()
-    console.print(Panel(info, title=f"{DDACS_NAME} Dataset", border_style="cyan"))
+    console.print(Panel(info, title=_dataset_title(latest), border_style="cyan"))
 
     version_files = {}
     with console.status("[bold blue]Fetching version details..."):
@@ -218,7 +225,7 @@ def cmd_download(args: argparse.Namespace) -> None:
 
     with console.status("[bold blue]Fetching dataset metadata..."):
         data = _api_get(
-            f"datasets/:persistentId/versions/{args.version}?persistentId={DDACS_DOI}",
+            f"datasets/:persistentId/versions/{args.version}?persistentId={DATASET_DOI}",
             headers,
         )
         if not data:
@@ -230,7 +237,7 @@ def cmd_download(args: argparse.Namespace) -> None:
     version_state = data.get("versionState", "")
     last_update = data.get("lastUpdateTime", "Unknown")[:10]
     license_name = data.get("license", {}).get("name", "Unknown")
-    dataset_url = f"{DARUS_URL}/dataset.xhtml?persistentId={DDACS_DOI}"
+    dataset_url = f"{DARUS_BASE_URL}/dataset.xhtml?persistentId={DATASET_DOI}"
 
     version_str = f"{version_number}.{version_minor}"
     if version_state == "DRAFT":
@@ -238,13 +245,13 @@ def cmd_download(args: argparse.Namespace) -> None:
 
     dataset_info = (
         f"[bold]URL:[/bold] [link={dataset_url}]{dataset_url}[/link]\n"
-        f"[bold]Persistent ID:[/bold] {DDACS_DOI}\n"
+        f"[bold]Persistent ID:[/bold] {DATASET_DOI}\n"
         f"[bold]Version:[/bold] {version_str}\n"
         f"[bold]Last Update:[/bold] {last_update}\n"
         f"[bold]License:[/bold] {license_name}"
     )
     console.print()
-    console.print(Panel(dataset_info, title=f"{DDACS_NAME} Dataset", border_style="cyan"))
+    console.print(Panel(dataset_info, title=_dataset_title(data), border_style="cyan"))
 
     original = True  # Always download original format
 
@@ -323,7 +330,7 @@ def cmd_download(args: argparse.Namespace) -> None:
             file_id = f["dataFile"]["id"]
             directory = f.get("directoryLabel", "")
 
-            dl_url = f"{DARUS_URL}/api/access/datafile/{file_id}"
+            dl_url = f"{DARUS_BASE_URL}/api/access/datafile/{file_id}"
             if original:
                 dl_url += "?format=original"
 
@@ -433,7 +440,10 @@ def main() -> None:
         description="Download DDACS dataset files from DaRUS repository.",
     )
     dl_parser.add_argument(
-        "version", nargs="?", default="2.0", help="Dataset version (default: 2.0)"
+        "version",
+        nargs="?",
+        default=DEFAULT_VERSION,
+        help=f"Dataset version (default: {DEFAULT_VERSION})",
     )
     dl_parser.add_argument("--files", nargs="+", help="Specific filenames to download")
     dl_parser.add_argument(
