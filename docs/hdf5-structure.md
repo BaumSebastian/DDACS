@@ -137,3 +137,9 @@ with h5py.File("simulation.h5", "r") as f:
     # Get node positions at final timestep
     positions = np.array(f["OP10/blank/node_displacement"])[-1]
 ```
+
+## Complete field reference
+
+The full list of HDF5 datasets, generated from `metadata.json`:
+
+{{ hdf5_field_table() }}
