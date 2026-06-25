@@ -63,6 +63,7 @@ docs = [
     "mkdocstrings[python]>=0.24.0",
     "mkdocs-macros-plugin>=1.0.0",
 ]
+torch = ["torch>=2.0"]
 
 [project.scripts]
 ddacs = "ddacs.cli:main"

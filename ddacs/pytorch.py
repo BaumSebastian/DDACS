@@ -1,218 +1,259 @@
-"""
-PyTorch integration for DDACS dataset.
+"""PyTorch IterableDataset adapter for DDACS.
 
-This module provides PyTorch-compatible Dataset class for machine learning
-workflows with DDACS simulation data.
+Streams records of a Croissant view by walking the locally mapped zips and
+applying the view's field selection per simulation. Auto-shards across
+DataLoader workers and DDP ranks; supports `where` / `sim_ids` filters and
+per-shard seeded shuffle.
 """
 
+from __future__ import annotations
+
+import io
 import logging
+import random
+import re
+import zipfile
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
+import h5py
 import numpy as np
 import pandas as pd
 
 from . import croissant as _croissant
-from .config import H5_SUBDIR, ID_COLUMN, PROCESS_PARAMETERS_FILE
+from .config import (
+    DEFAULT_DATA_DIR,
+    FIELD_MAP_RECORD_SET,
+    ID_COLUMN,
+    PROCESS_PARAMETERS_FILE,
+)
+
+try:
+    from torch.utils.data import IterableDataset, get_worker_info
+except ImportError as exc:
+    raise ImportError(
+        "PyTorch is required for DDACSDataset. Install with `pip install ddacs[torch]` "
+        "or install a flavour from https://pytorch.org/get-started/locally/."
+    ) from exc
 
 logger = logging.getLogger(__name__)
 
-try:
-    from torch.utils.data import Dataset
-except ImportError as exc:
-    raise ImportError(
-        "PyTorch is required for DDACSDataset. Install with: pip install torch or use DDACSIterator for PyTorch-free access."
-    ) from exc
+_JSONPATH_RE = re.compile(r"^\$\[(.+)\]$")
 
 
-class DDACSDataset(Dataset):
-    """
-    PyTorch-compatible DDACS dataset for machine learning workflows.
+class DDACSDataset(IterableDataset):
+    """Streaming PyTorch dataset for a single Croissant view.
 
-    Raises:
-        FileNotFoundError: If the H5 directory or metadata file don't exist.
-        ImportError: If PyTorch is not installed.
+    Yields a `dict[str, numpy.ndarray]` per simulation. Field selection
+    (which dataset path, optional timestep slicing) is derived from the
+    Croissant view + field-map; no manual extraction code lives here.
 
-    Examples:
-        >>> dataset = DDACSDataset('/data/ddacs')
-        >>> print(len(dataset))
+    Sharding is decided inside `__iter__` via `get_worker_info()` and
+    `torch.distributed`, so the same instance plays under
+    `num_workers=0`, `num_workers=N` and DDP without constructor changes.
 
-        >>> # Use with PyTorch DataLoader
-        >>> from torch.utils.data import DataLoader
-        >>> loader = DataLoader(dataset, batch_size=32, shuffle=True)
+    Args:
+        view: Name of the RecordSet to stream (e.g. "springback-minimal").
+        source: Override the manifest URL / path. Defaults to the resolution
+            chain in `ddacs.croissant.resolve_source`.
+        data_dir: Override the local data directory. Defaults to
+            `ddacs.config.DEFAULT_DATA_DIR`. Pass `None` to skip local-file
+            discovery.
+        sim_ids: Explicit allowlist of simulation ids to stream (default:
+            every sim in `process_parameters.csv`).
+        where: Predicate applied to each `process_parameters.csv` row before
+            any zip is opened. Combined with `sim_ids` if both are given.
+        shuffle: If true, each shard shuffles its own sim_id list with a
+            seed derived from `seed + epoch + shard_id`. Call `set_epoch`
+            between epochs to get a fresh permutation.
+        seed: Base seed for the per-shard shuffle.
     """
 
     def __init__(
         self,
-        data_dir: str | Path,
-        h5_subdir: str = H5_SUBDIR,
-        metadata_file: str = PROCESS_PARAMETERS_FILE,
-        transform=None,
+        view: str,
+        source: str | Path | None = None,
+        data_dir: str | Path | None = DEFAULT_DATA_DIR,
+        sim_ids: list[int] | None = None,
+        where: Callable[[pd.Series], bool] | None = None,
+        shuffle: bool = False,
+        seed: int = 0,
     ):
+        super().__init__()
+        self.view = view
+        self.source = source
+        self.data_dir = Path(data_dir) if data_dir is not None else None
+        self.where = where
+        self.shuffle = shuffle
+        self.seed = seed
+        self._epoch = 0
+
+        ds = _croissant.load(source=source, data_dir=data_dir)
+        self._field_specs = self._build_field_specs(ds)
+        self._h5_index = self._build_h5_index(ds.mapping or {})
+        self._sim_ids = self._resolve_sim_ids(sim_ids)
+
+    # --- public ------------------------------------------------------------
+
+    def set_epoch(self, epoch: int) -> None:
+        """Update the epoch used in shuffle seeding.
+
+        Call once per epoch (analogous to `DistributedSampler.set_epoch`)
+        to get a different per-shard permutation each pass.
         """
-        Initialize PyTorch-compatible DDACS dataset.
+        self._epoch = int(epoch)
 
-        Args:
-            data_dir: Root directory of the dataset.
-            h5_subdir: Subdirectory containing the .h5 files (default: config.H5_SUBDIR).
-            metadata_file: Name of the parameter table CSV (default: config.PROCESS_PARAMETERS_FILE).
-            transform: Optional transform to apply to metadata.
+    def __iter__(self):
+        shard_id, total_shards = self._shard_position()
+        my_ids = self._sim_ids[shard_id::total_shards]
 
-        Raises:
-            FileNotFoundError: If the H5 directory or metadata file don't exist.
+        if self.shuffle:
+            rng = random.Random(self.seed + self._epoch * 1_000_003 + shard_id)
+            my_ids = list(my_ids)
+            rng.shuffle(my_ids)
 
-        Examples:
-            >>> dataset = DDACSDataset('/data/ddacs')
-            >>> print(f"Dataset has {len(dataset)} samples")
+        # Reuse the open zip across consecutive sims that land in it. Corner
+        # blocks group ~2200 sims per zip, so the cache hits nearly every time.
+        last_path: str | None = None
+        last_zf: zipfile.ZipFile | None = None
+        try:
+            for sim_id in my_ids:
+                zip_path = self._h5_index.get(int(sim_id))
+                if zip_path is None:
+                    continue
+                if zip_path != last_path:
+                    if last_zf is not None:
+                        last_zf.close()
+                    last_zf = zipfile.ZipFile(zip_path)
+                    last_path = zip_path
+                try:
+                    data = last_zf.read(f"{sim_id}.h5")
+                except KeyError:
+                    continue
+                with h5py.File(io.BytesIO(data), "r") as f:
+                    yield self._extract_record(f)
+        finally:
+            if last_zf is not None:
+                last_zf.close()
 
-            >>> # Custom subdirectory and transform
-            >>> dataset = DDACSDataset('/data/ddacs', h5_subdir='results', transform=my_transform)
+    # --- internals ---------------------------------------------------------
+
+    def _shard_position(self) -> tuple[int, int]:
+        """Return `(shard_id, total_shards)` for the current worker × rank."""
+        worker = get_worker_info()
+        num_workers = worker.num_workers if worker else 1
+        worker_id = worker.id if worker else 0
+        rank, world = self._ddp_info()
+        return rank * num_workers + worker_id, world * num_workers
+
+    @staticmethod
+    def _ddp_info() -> tuple[int, int]:
+        try:
+            import torch.distributed as dist
+
+            if dist.is_available() and dist.is_initialized():
+                return dist.get_rank(), dist.get_world_size()
+        except (ImportError, RuntimeError):
+            pass
+        return 0, 1
+
+    def _build_field_specs(self, ds) -> dict[str, tuple[str, Any]]:
+        """For each view-field, return `(h5_path, slicing)`.
+
+        `slicing` is `None`, an `int` (single timestep), or a `list[int]`
+        (multiple timesteps), parsed from the view-field's JSONPath transform.
         """
-        self.data_dir = Path(data_dir)
-        self._h5_dir = self.data_dir / h5_subdir
-        self._metadata_path = self.data_dir / metadata_file
-        self.transform = transform
-
-        # Validate paths
-        if not self._h5_dir.is_dir():
-            raise FileNotFoundError(f"H5 directory not found: {self._h5_dir}")
-        if not self._metadata_path.exists():
-            raise FileNotFoundError(f"Metadata file not found: {self._metadata_path}")
-
-        # Load and filter metadata for existing files
-        self._metadata = pd.read_csv(self._metadata_path)
-        self._metadata = self._filter_existing_files()
-
-        # PyTorch tensors need uniform numeric dtypes. Cache the numeric
-        # columns (excluding the simulation index) so __getitem__ skips
-        # categorical fields like `geometry`, `split`, `rddac`.
-        self._numeric_columns = [
-            c for c in self._metadata.select_dtypes(include="number").columns if c != ID_COLUMN
-        ]
-
-    def _filter_existing_files(self) -> pd.DataFrame:
-        """Filter metadata to only include entries with existing H5 files.
-
-        Returns:
-            pd.DataFrame: Filtered metadata containing only simulations with existing H5 files.
-
-        Warns:
-            UserWarning: If some simulations in metadata don't have corresponding H5 files.
-
-        Examples:
-            >>> # Called automatically during initialization
-            >>> dataset = DDACSDataset('/data/ddacs')
-            >>> # Warns if some H5 files are missing
-        """
-        mask = self._metadata[ID_COLUMN].apply(
-            lambda sim_id: (self._h5_dir / f"{int(sim_id)}.h5").exists()
+        view_rs = next((r for r in ds.metadata.record_sets if r.id == self.view), None)
+        if view_rs is None:
+            raise ValueError(f"view {self.view!r} not found in manifest")
+        fm_rs = next(
+            (r for r in ds.metadata.record_sets if r.id == FIELD_MAP_RECORD_SET),
+            None,
         )
-        filtered = self._metadata[mask]
+        if fm_rs is None:
+            raise ValueError(f"{FIELD_MAP_RECORD_SET!r} RecordSet missing — manifest is malformed")
+        fm = {f.name: f for f in fm_rs.fields}
 
-        n_original = len(self._metadata)
-        n_filtered = len(filtered)
-        if n_original != n_filtered:
-            logger.warning(
-                f"WARNING: Found {n_filtered}/{n_original} simulations with existing H5 files"
-            )
+        specs: dict[str, tuple[str, Any]] = {}
+        for f in view_rs.fields:
+            source_field_id = f.source.uuid.split("/", 1)[-1]
+            if source_field_id not in fm:
+                raise ValueError(f"view field {f.name!r} sources unknown field {source_field_id!r}")
+            h5_path = fm[source_field_id].source.transforms[0].regex
+            slicing = None
+            if f.source.transforms:
+                slicing = self._parse_jsonpath(f.source.transforms[0].json_path)
+            specs[f.name] = (h5_path, slicing)
+        return specs
 
-        return filtered
+    @staticmethod
+    def _parse_jsonpath(expr: str | None) -> Any:
+        """Parse `$[N]` -> int, `$[a,b,c]` -> list[int]. Anything else -> None."""
+        if not expr:
+            return None
+        m = _JSONPATH_RE.match(expr)
+        if not m:
+            return None
+        inner = m.group(1)
+        if "," in inner:
+            return [int(s) for s in inner.split(",")]
+        try:
+            return int(inner)
+        except ValueError:
+            return None
 
-    def __len__(self) -> int:
-        """Return the number of samples in the dataset.
+    @staticmethod
+    def _build_h5_index(mapping: dict[str, str]) -> dict[int, str]:
+        """Map sim_id (int) -> absolute path of the zip containing `<sim_id>.h5`."""
+        index: dict[int, str] = {}
+        for path in mapping.values():
+            path_str = str(path)
+            if not path_str.endswith(".zip"):
+                continue
+            try:
+                with zipfile.ZipFile(path_str) as zf:
+                    for name in zf.namelist():
+                        if not name.endswith(".h5"):
+                            continue
+                        try:
+                            sim_id = int(Path(name).stem)
+                        except ValueError:
+                            continue
+                        index[sim_id] = path_str
+            except zipfile.BadZipFile:
+                continue
+        return index
 
-        Returns:
-            int: Number of available simulation samples.
+    def _resolve_sim_ids(self, sim_ids_arg: list[int] | None) -> list[int]:
+        """Apply sim_ids + where to produce the final ordered list of sim ids.
 
-        Examples:
-            >>> dataset = DDACSDataset('/data/ddacs')
-            >>> print(len(dataset))
+        The list is built once at construction time (before any worker fork)
+        so every shard sees the same ordering.
         """
-        return len(self._metadata)
+        if self.data_dir is not None:
+            csv_path = self.data_dir / PROCESS_PARAMETERS_FILE
+            if csv_path.is_file():
+                df = pd.read_csv(csv_path)
+                if ID_COLUMN not in df.columns:
+                    raise ValueError(f"{csv_path} missing required {ID_COLUMN!r} column")
+                if sim_ids_arg is not None:
+                    df = df[df[ID_COLUMN].isin(set(sim_ids_arg))]
+                if self.where is not None:
+                    df = df[df.apply(self.where, axis=1)]
+                return [int(x) for x in df[ID_COLUMN].tolist()]
 
-    def get_metadata_columns(self) -> list[str]:
-        """Get list of metadata column names (excluding ID).
+        if self.where is not None:
+            raise ValueError(f"`where` filter requires {PROCESS_PARAMETERS_FILE} under data_dir")
+        if sim_ids_arg is not None:
+            return [int(x) for x in sim_ids_arg]
+        return sorted(self._h5_index.keys())
 
-        Returns:
-            list[str]: Column names from metadata CSV, excluding the ID column.
-
-        Examples:
-            >>> dataset = DDACSDataset('/data/ddacs')
-            >>> columns = dataset.get_metadata_columns()
-            >>> print(f"Available parameters: {columns}")
-        """
-        return self._metadata.columns[1:].tolist()
-
-    def get_metadata_descriptions(self) -> dict[str, str]:
-        """Map each metadata column name to a human-readable description.
-
-        Pulled live from the Croissant ``metadata.json`` that ships with the
-        dataset (local copy under ``data_dir`` if present, otherwise the
-        permanent DaRUS URL). No description is duplicated in package code.
-
-        Returns:
-            dict[str, str]: Mapping of column name to a short description.
-
-        Examples:
-            >>> dataset = DDACSDataset('/data/ddacs')
-            >>> descriptions = dataset.get_metadata_descriptions()
-            >>> for col, desc in descriptions.items():
-            ...     print(f"{col}: {desc}")
-        """
-        ds = _croissant.load(data_dir=self.data_dir)
-        all_desc = _croissant.process_parameters_descriptions(ds)
-        return {col: all_desc.get(col, "") for col in self.get_metadata_columns()}
-
-    def __getitem__(self, idx: int) -> tuple[int, np.ndarray, str]:
-        """
-        Get a sample from the dataset.
-
-        Args:
-            idx: Index of the sample.
-
-        Returns:
-            Tuple[int, np.ndarray, str]: Simulation ID, metadata values array,
-                and path to corresponding H5 file.
-
-        Raises:
-            IndexError: If idx is out of range.
-
-        Examples:
-            >>> dataset = DDACSDataset('/data/ddacs')
-            >>> sim_id, metadata, h5_path = dataset[0]
-            >>> print(f"Simulation {sim_id}: {h5_path}")
-        """
-        row = self._metadata.iloc[idx]
-        sim_id = int(row[ID_COLUMN])
-        h5_path = self._h5_dir / f"{sim_id}.h5"
-        # PyTorch wants a uniform numeric array: skip the index and any
-        # categorical columns (geometry, split, rddac, ...).
-        metadata_vals = np.asarray(row[self._numeric_columns].values, dtype=np.float64, copy=True)
-
-        if self.transform:
-            metadata_vals = self.transform(metadata_vals)
-
-        return sim_id, metadata_vals, str(h5_path)
-
-    def __str__(self) -> str:
-        """Return a formatted string representation of the dataset.
-
-        Returns:
-            str: Multi-line string showing dataset directory, number of samples,
-                and metadata column names.
-
-        Examples:
-            >>> dataset = DDACSDataset('/data/ddacs')
-            >>> print(dataset)
-        """
-        lines = [
-            "DDACS Dataset (PyTorch)",
-            f"  Directory: {self.data_dir}",
-            f"  Samples: {len(self)}",
-        ]
-
-        if len(self._metadata) > 0:
-            lines.append("  Numeric metadata columns (used as PyTorch features):")
-            for col in self._numeric_columns:
-                lines.append(f"    - {col}")
-
-        return "\n".join(lines)
+    def _extract_record(self, f: h5py.File) -> dict[str, np.ndarray]:
+        rec: dict[str, np.ndarray] = {}
+        for alias, (h5_path, slicing) in self._field_specs.items():
+            arr = f[h5_path][...]
+            if slicing is not None:
+                arr = arr[slicing]
+            rec[alias] = arr
+        return rec
