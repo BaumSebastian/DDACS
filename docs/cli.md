@@ -1,12 +1,10 @@
 # CLI Reference
 
-The `ddacs` command-line interface provides tools for downloading and managing the DDACS dataset.
+The `ddacs` command line interface downloads the dataset from DaRUS and prints summary information.
 
-## Commands
+## `ddacs info`
 
-### `ddacs info`
-
-Display dataset information and available versions.
+Display dataset information and the list of available versions.
 
 ```bash
 ddacs info
@@ -14,7 +12,7 @@ ddacs info
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_info.png" width="700">
 
-### `ddacs download`
+## `ddacs download`
 
 Download dataset files from DaRUS.
 
@@ -22,53 +20,64 @@ Download dataset files from DaRUS.
 ddacs download [VERSION] [OPTIONS]
 ```
 
-**Arguments:**
+### Arguments
 
 | Argument | Default | Description |
 |----------|---------|-------------|
-| `VERSION` | `2.0` | Dataset version to download |
+| `VERSION` | `3.0` | Dataset version to download |
 
-**Options:**
+### Options
 
 | Option | Description |
 |--------|-------------|
-| `--small` | Download small test set ({{ small_download_size() }}) |
+| `--small` | Download the small test set ({{ small_download_size() }}) |
+| `--files FILE...` | Download only the listed files |
 | `--out PATH` | Output directory (default: `./data`) |
-| `--files FILE...` | Download specific files only |
-| `--no-extract` | Skip extraction of zip files |
-| `--keep-zip` | Keep zip files after extraction |
-| `-y, --yes` | Skip confirmation prompt |
+| `--extract` | Extract zip files in place after download |
+| `--remove-zip` | Delete the zip file after a successful extraction (requires `--extract`) |
+| `-y, --yes` | Skip the confirmation prompt |
 
-!!! note "Download Size"
-    The displayed download size refers to the compressed zip files. By default, files are extracted after download, resulting in larger disk usage than shown.
+### Default behaviour
 
-**Examples:**
+Zip files are kept on disk by default and are not extracted. This keeps the dataset readable in place by `mlcroissant`, which references zip members through the Croissant manifest. Pass `--extract` to additionally write the HDF5 files to disk, and `--remove-zip` to delete the zip afterwards.
+
+The `--out` directory defaults to `./data`. The same value is used by `ddacs.load(data_dir=...)` and `DDACSDataset(data_dir=...)`, so files written by `ddacs download` are picked up by the Python API without additional configuration.
+
+### Examples
 
 ```bash
-# Download full dataset
+# Download the full dataset (zips kept as is, no extraction)
 ddacs download
 ```
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_download.png" width="700">
 
 ```bash
-# Download small test set
+# Download the small test set
 ddacs download --small
 ```
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_download_small.png" width="700">
 
 ```bash
-# Download to custom directory
+# Download to a custom directory
 ddacs download --out /path/to/data
 
-# Download specific files
+# Download specific files only
 ddacs download --files {{ small_test_files() }}
+
+# Extract the zip files in place, keep the zip alongside
+ddacs download --extract
+
+# Extract and remove the zip after a successful extraction
+ddacs download --extract --remove-zip
 ```
+
+After `--extract --remove-zip`, the HDF5 files are no longer wrapped in zips and `mlcroissant` cannot resolve the FileSet. See the loose HDF5 recipe in the tutorials for the appropriate iteration pattern in that case.
 
 ## Global Options
 
 | Option | Description |
 |--------|-------------|
-| `--token TOKEN` | DaRUS API token (for draft access) |
-| `-V, --version` | Show version and exit |
+| `--token TOKEN` | DaRUS API token (used to download draft versions) |
+| `-V, --version` | Show the package version and exit |
