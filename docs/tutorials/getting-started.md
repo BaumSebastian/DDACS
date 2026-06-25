@@ -1,192 +1,107 @@
 # Getting Started
 
-This tutorial covers the basics of loading and exploring DDACS simulation data.
+This tutorial walks from installation to a first plot. It uses only the public surface that ships with v3.0.0: `ddacs.load`, `ddacs.open_h5`, `ddacs.inspect_h5`, and the visualization helpers.
 
-## Setup
-
-First, install DDACS and download the dataset:
+## 1. Install
 
 ```bash
 pip install ddacs
+```
+
+The PyTorch adapter is optional. Install it explicitly if a model is to be trained:
+
+```bash
+pip install ddacs[torch]
+```
+
+For hardware specific PyTorch builds (CUDA, ROCm, MPS) see [pytorch.org](https://pytorch.org/get-started/locally/) and install PyTorch before `ddacs`.
+
+## 2. Download the sample bundle
+
+The full dataset is large. For a first walkthrough, download the small bundle ({{ small_download_size() }}):
+
+```bash
 ddacs download --small
 ```
 
-## Counting Simulations
+The command writes `metadata.json`, `process_parameters.csv`, and one sample simulation zip (`258864.zip`) into `./data/`. The zips are not extracted; `mlcroissant` reads them in place.
 
-Check how many simulations are available in your dataset:
+## 3. Load the dataset
+
+`ddacs.load()` returns an `mlcroissant.Dataset`. The default `data_dir` matches the `ddacs download` output, so no further argument is needed:
 
 ```python
-from ddacs import count_available_simulations
+import ddacs
 
-data_dir = "./data"
-count = count_available_simulations(data_dir)
-print(f"Available simulations: {count}")
+ds = ddacs.load()
+print(ds.metadata.name)
+print([rs.id for rs in ds.metadata.record_sets])
 ```
 
 Output:
+
 ```
-Available simulations: {{ simulation_count() }}
+DDACS
+['process-parameters', 'field-map', 'simulation-provenance',
+ 'springback-minimal', 'springback-prediction',
+ 'forming-snapshot', 'cutting-view']
 ```
 
-## Iterating Over Simulations
+The dataset is composed of named RecordSets. Each RecordSet defines a fixed selection of fields suitable for one task (e.g. springback prediction, forming snapshot).
 
-Use `iter_ddacs` to loop through all simulations:
+## 4. Iterate records
+
+The `process-parameters` RecordSet is the simulation index. It iterates {{ simulation_count() }} rows, one per simulation:
 
 ```python
-from ddacs import iter_ddacs
-
-for sim_id, metadata, h5_path in iter_ddacs("./data"):
-    print(f"Simulation {sim_id}: {h5_path.name}")
-    print(f"Metadata: {metadata}")
-    break  # Just show first one
+for n, rec in enumerate(ds.records('process-parameters'), start=1):
+    if n == 1:
+        for k, v in rec.items():
+            print(f"{k:42s} = {v}")
+    if n >= 1:
+        break
 ```
 
-Output:
-```
-Simulation 16336: 16336.h5
-Metadata: [1. 0. 0. 30. 0.9 0.05 0.95 100000.]
-```
+The `springback-minimal` RecordSet pulls real HDF5 arrays from the local zips. With the small bundle only the sample simulation is iterable; with the full download it produces {{ simulation_count() }} records.
 
-### Handling Partial Downloads
+## 5. Inspect one simulation
 
-If you haven't downloaded all files, use `skip_missing=True`:
+`ddacs.open_h5(sim_id)` resolves the manifest, finds the right zip, reads the HDF5 member into memory and returns an `h5py.File`. It is read only and supports the `with` idiom:
 
 ```python
-for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
-    print(f"Processing simulation {sim_id}")
+with ddacs.open_h5(258864) as f:
+    print(list(f['OP10/blank'].keys()))
 ```
 
-!!! warning
-    With `skip_missing=False` (default), a `FileNotFoundError` is raised
-    if any H5 file referenced in metadata is missing.
-
-## Exploring HDF5 Structure
-
-Each simulation is stored as an HDF5 file. Use `display_structure` to see its contents:
+`ddacs.inspect_h5` prints the group and dataset hierarchy of an open file or a path on disk:
 
 ```python
-from ddacs import iter_ddacs
-from ddacs.utils import display_structure
-
-sim_id, metadata, h5_path = next(iter_ddacs("./data", skip_missing=True))
-display_structure(h5_path, max_depth=2)
+with ddacs.open_h5(258864) as f:
+    ddacs.inspect_h5(f)
 ```
 
-Output:
-```
-/
-├── OP10/
-│   ├── blank/
-│   ├── die/
-│   ├── punch/
-│   ├── binder/
-│   └── general/
-└── OP20/
-    └── blank/
-```
+Each line that starts with `@` is an HDF5 attribute. Groups end in `/`; datasets show their shape and dtype.
 
-## Accessing Specific Simulations
+## 6. First plot
 
-Get a specific simulation by ID:
+Combine `open_h5` with the visualization helpers to render the blank mesh coloured by thickness at the final forming timestep:
 
 ```python
-from ddacs import get_simulation_by_id
+import ddacs
 
-result = get_simulation_by_id(16336, "./data")
-if result:
-    sim_id, metadata, h5_path = result
-    print(f"Found simulation {sim_id}")
-else:
-    print("Simulation not found")
+with ddacs.open_h5(258864) as f:
+    nodes = f['OP10/blank/node_coordinates'][:]
+    faces = f['OP10/blank/element_shell_node_indexes'][:]
+    thickness = f['OP10/blank/element_shell_thickness'][-1]
+
+ax, cbar = ddacs.plot_mesh(nodes, faces, values=thickness, cmap='viridis')
 ```
 
-Output:
-```
-Found simulation 16336
-```
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/first_plot.png" width="700">
 
-## Random Sampling
+## Where to go next
 
-Sample random simulations for testing or validation:
-
-```python
-from ddacs import sample_simulations
-
-for sim_id, metadata, h5_path in sample_simulations(5, "./data"):
-    print(f"Sampled: {sim_id}")
-```
-
-Output:
-```
-Sampled: 24891
-Sampled: 18432
-Sampled: 31205
-Sampled: 12847
-Sampled: 29156
-```
-
-## Reading Simulation Data
-
-Access the actual simulation data using h5py:
-
-```python
-import h5py
-import numpy as np
-from ddacs import iter_ddacs
-
-for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
-    with h5py.File(h5_path, "r") as f:
-        displacement = np.array(f["OP10"]["blank"]["node_displacement"])
-        print(f"Displacement shape: {displacement.shape}")
-        # Shape: (timesteps, nodes, 3)
-    break
-```
-
-Output:
-```
-Displacement shape: (4, 11041, 3)
-```
-
-## Understanding Metadata
-
-`iter_ddacs` returns each simulation's parameter row as a NumPy array. Categorical columns (`geometry`, `split`, `rddac`) are dropped so the array stays numeric; for the full per-column reference see [Parameter columns](../dataset.md#parameter-columns).
-
-| Index | Column | Range |
-|-------|--------|-------|
-| 0 | `curvature_radius` | 30 - 150 mm |
-| 1 | `bottom_radius` | 5 - 10 mm |
-| 2 | `wall_angle` | 10 - 30° |
-| 3 | `material_scaling_factor` | 0.9 - 1.1 |
-| 4 | `sheet_metal_thickness` | 0.95 - 1.0 mm |
-| 5 | `friction_coefficient` | 0.05 - 0.15 |
-| 6 | `blankholder_force` | 100k - 500k N |
-
-```python
-from ddacs import iter_ddacs
-
-for sim_id, metadata, h5_path in iter_ddacs("./data", skip_missing=True):
-    print(f"Simulation {sim_id}")
-    print(f"  curvature_radius: {metadata[0]} mm")
-    print(f"  material_scaling_factor: {metadata[3]}")
-    print(f"  Friction: {metadata[5]}")
-    print(f"  Thickness: {metadata[6]} mm")
-    print(f"  Holder Force: {metadata[7]} N")
-    break
-```
-
-Output:
-```
-Simulation 16336
-  Geometry: R=1.0, V=0.0, X=0.0
-  Radius: 30.0 mm
-  Material: 0.9
-  Friction: 0.05
-  Thickness: 0.95 mm
-  Holder Force: 100000.0 N
-```
-
-## Next Steps
-
-- Learn about [Visualization](visualization.md) to create plots
-- See the [Dataset Overview](../dataset.md) for detailed physics background
-- Check the [HDF5 Structure](../hdf5-structure.md) for all available fields
+- [Build your own view](views.md) explains `ddacs.add_view` and the JSONPath transforms behind it.
+- [PyTorch training](pytorch.md) covers `DDACSDataset`, multi worker `DataLoader`, DDP, and the per simulation read benchmark.
+- [Visualization](visualization.md) covers mesh, point cloud, and vector field plotting.
+- [Loose HDF5 recipe](loose-h5.md) shows the CSV plus `h5py.File` iteration loop for users who run `ddacs download --extract --remove-zip`.
