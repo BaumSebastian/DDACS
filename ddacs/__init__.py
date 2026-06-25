@@ -16,7 +16,7 @@ Examples:
 
 __version__ = "3.0.0"
 
-from .croissant import load
+from .croissant import add_view, load
 from .generators import (
     count_available_simulations,
     get_simulation_by_id,
@@ -57,6 +57,7 @@ __all__ = [
     "__version__",
     # Croissant entry point
     "load",
+    "add_view",
     # HDF5 inspection helpers
     "open_h5",
     "inspect_h5",

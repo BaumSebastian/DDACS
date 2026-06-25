@@ -6,12 +6,25 @@ nothing is duplicated in the Python package.
 
 from __future__ import annotations
 
+import json
+import urllib.request
 from pathlib import Path
 from typing import Any
 
 import mlcroissant as mlc
 
-from .config import DARUS_BASE_URL, DATASET_DOI, DEFAULT_DATA_DIR, METADATA_FILE
+from .config import (
+    DARUS_BASE_URL,
+    DATASET_DOI,
+    DEFAULT_DATA_DIR,
+    DEFAULT_FIELD_DATA_TYPE,
+    FIELD_MAP_RECORD_SET,
+    METADATA_FILE,
+)
+
+# A field-spec value in `add_view(fields=...)`. See `add_view` docstring.
+FieldSpec = str | tuple
+TimestepSpec = None | int | list
 
 # Permanent DaRUS download URL for the published metadata.json.
 METADATA_URL = (
@@ -111,8 +124,8 @@ def process_parameters_descriptions(dataset: mlc.Dataset) -> dict[str, str]:
 
 
 def field_map(dataset: mlc.Dataset) -> dict[str, Any]:
-    """Map each HDF5 field name in the ``field-map`` RecordSet to its mlc Field."""
-    rs = _record_set(dataset, "field-map")
+    """Map each HDF5 field name in the field-map RecordSet to its mlc Field."""
+    rs = _record_set(dataset, FIELD_MAP_RECORD_SET)
     if rs is None:
         return {}
     return {f.name: f for f in rs.fields}
@@ -120,3 +133,128 @@ def field_map(dataset: mlc.Dataset) -> dict[str, Any]:
 
 def dataset_name(dataset: mlc.Dataset) -> str:
     return dataset.metadata.name or ""
+
+
+# ---------------------------------------------------------------------------
+# add_view — extend a loaded dataset with a custom RecordSet
+# ---------------------------------------------------------------------------
+
+
+def _load_jsonld_dict(source: str) -> dict[str, Any]:
+    """Return the manifest's JSON-LD as a plain dict.
+
+    Used by :func:`add_view`. We don't go through ``ds.metadata.to_json()``
+    because that round-trip drops the original ``value`` payload on some
+    fields and the rebuilt dataset fails validation.
+    """
+    if str(source).startswith(("http://", "https://")):
+        with urllib.request.urlopen(str(source)) as r:
+            return json.load(r)
+    with open(source) as f:
+        return json.load(f)
+
+
+def _slicing_to_jsonpath(slicing: TimestepSpec) -> str | None:
+    """Convert a timestep spec to a JSONPath transform expression.
+
+    ``None`` -> ``None`` (no transform, whole field is read).
+    ``int``  -> ``$[N]``.
+    ``list`` -> ``$[a,b,c,...]``.
+    """
+    if slicing is None:
+        return None
+    if isinstance(slicing, bool):
+        # bool is a subclass of int — reject explicitly so True/False don't
+        # silently become "$[1]" / "$[0]".
+        raise TypeError("timestep slicing must be None, int, or list[int]")
+    if isinstance(slicing, int):
+        return f"$[{slicing}]"
+    if isinstance(slicing, list):
+        if not all(isinstance(i, int) and not isinstance(i, bool) for i in slicing):
+            raise TypeError("timestep slicing list must contain only ints")
+        return "$[" + ",".join(str(i) for i in slicing) + "]"
+    raise TypeError(f"unsupported timestep slicing: {slicing!r}")
+
+
+def _normalize_field_spec(spec: FieldSpec) -> tuple[str, TimestepSpec]:
+    """Return ``(field_id, slicing)`` from one entry of the ``fields`` dict.
+
+    Bare string -> whole field.
+    ``(field_id, None | int | list[int])`` -> explicit slicing.
+    """
+    if isinstance(spec, str):
+        return spec, None
+    if isinstance(spec, tuple) and len(spec) == 2:
+        field_id, slicing = spec
+        if not isinstance(field_id, str):
+            raise TypeError(f"field_id must be a string, got {field_id!r}")
+        return field_id, slicing
+    raise TypeError(f"fields value must be a string or (field_id, slicing) tuple, got {spec!r}")
+
+
+def _lookup_data_type(jsonld: dict[str, Any], field_id: str) -> str:
+    """Return the source field's `dataType` from the field-map RecordSet."""
+    for rs in jsonld.get("recordSet", []):
+        if rs.get("@id") != FIELD_MAP_RECORD_SET:
+            continue
+        for f in rs.get("field", []):
+            if f.get("name") == field_id:
+                dt = f.get("dataType")
+                if isinstance(dt, list):
+                    return dt[0]
+                return dt or DEFAULT_FIELD_DATA_TYPE
+    return DEFAULT_FIELD_DATA_TYPE
+
+
+def _build_record_set(
+    jsonld: dict[str, Any], name: str, fields: dict[str, FieldSpec]
+) -> dict[str, Any]:
+    """Build the JSON-LD fragment for a new RecordSet sourced from field-map."""
+    field_entries: list[dict[str, Any]] = []
+    for alias, spec in fields.items():
+        field_id, slicing = _normalize_field_spec(spec)
+        source: dict[str, Any] = {"field": {"@id": f"{FIELD_MAP_RECORD_SET}/{field_id}"}}
+        jsonpath = _slicing_to_jsonpath(slicing)
+        if jsonpath is not None:
+            source["transform"] = [{"jsonPath": jsonpath}]
+        field_entries.append(
+            {
+                "@type": "cr:Field",
+                "@id": f"{name}/{alias}",
+                "name": alias,
+                "dataType": _lookup_data_type(jsonld, field_id),
+                "source": source,
+            }
+        )
+    return {
+        "@type": "cr:RecordSet",
+        "@id": name,
+        "name": name,
+        "field": field_entries,
+    }
+
+
+def add_view(
+    ds: mlc.Dataset,
+    name: str,
+    fields: dict[str, FieldSpec],
+) -> mlc.Dataset:
+    """Add a custom RecordSet to a loaded dataset and rewire it in place.
+
+    Each ``fields`` entry references a field-map field by name:
+
+    - ``"name": "field_id"``              — whole field
+    - ``"name": ("field_id", None)``       — whole field (explicit)
+    - ``"name": ("field_id", 2)``          — timestep 2 only
+    - ``"name": ("field_id", [2, 3])``     — timesteps 2 and 3
+
+    The published manifest on DaRUS is untouched — only the in-memory
+    representation grows. ``ds`` is mutated in place and returned for
+    optional chaining.
+    """
+    jsonld = _load_jsonld_dict(str(ds.jsonld))
+    jsonld.setdefault("recordSet", []).append(_build_record_set(jsonld, name, fields))
+    rebuilt = mlc.Dataset(jsonld=jsonld, mapping=ds.mapping)
+    ds.metadata = rebuilt.metadata
+    ds.operations = rebuilt.operations
+    return ds

@@ -29,7 +29,15 @@ SAMPLE_ZIP_FILE = f"{SAMPLE_SIM_ID}.zip"
 # Files downloaded by `ddacs download --small`
 SMALL_TEST_FILES = [PROCESS_PARAMETERS_FILE, METADATA_FILE, SAMPLE_ZIP_FILE]
 
-# Default output directory used by `ddacs download --out` and the
-# upcoming `ddacs.load(data_dir=...)`. Kept symmetric so files written by the
-# CLI are picked up by `load()` without an extra argument.
+# Default output directory used by `ddacs download --out` and
+# `ddacs.load(data_dir=...)`. Kept symmetric so files written by the CLI are
+# picked up by `load()` without an extra argument.
 DEFAULT_DATA_DIR = "./data"
+
+# Croissant manifest @ids the code references when composing or reading the
+# manifest. Kept here so a manifest rename only touches one file.
+FIELD_MAP_RECORD_SET = "field-map"
+
+# Fallback dataType for fields created via `ddacs.add_view` when the source
+# field-map entry doesn't carry one. Croissant 1.1 uses schema.org datatypes.
+DEFAULT_FIELD_DATA_TYPE = "sc:Float"
