@@ -1,19 +1,15 @@
-"""
-Visualization utilities for DDACS simulation data.
+"""Visualization utilities for DDACS simulation data.
 
-This module provides functions for visualizing deep drawing simulation results
-including meshes, point clouds, and springback analysis.
+Plotting helpers (`plot_mesh`, `plot_point_cloud`, `plot_vectors`,
+`plot_2d_projection`) operate on numpy arrays the caller already pulled out
+of an HDF5 file. Pair them with `ddacs.open_h5` for end-to-end inspection:
 
-Example workflow:
-    >>> from ddacs.utils import extract_mesh, extract_element_thickness
-    >>> from ddacs.visualization import plot_mesh
-    >>>
-    >>> # Extract data (user sees what they're working with)
-    >>> vertices, faces = extract_mesh("simulation.h5", "blank", timestep=-1)
-    >>> thickness = extract_element_thickness("simulation.h5", timestep=-1)
-    >>>
-    >>> # Visualize with thickness coloring
-    >>> ax, cbar = plot_mesh(vertices, faces, values=thickness, cmap="viridis")
+    >>> import ddacs, numpy as np
+    >>> with ddacs.open_h5(258864, data_dir="./data") as f:
+    ...     vertices = f["OP10/blank/node_displacement"][-1]      # (n_nodes, 3)
+    ...     thickness = f["OP10/blank/element_shell_thickness"][-1]  # (n_elems,)
+    ...     faces = f["OP10/blank/element_shell_node_indexes"][:]
+    >>> ax, cbar = ddacs.plot_mesh(vertices, faces, values=thickness, cmap="viridis")
 """
 
 import matplotlib.pyplot as plt

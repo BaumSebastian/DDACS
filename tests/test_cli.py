@@ -187,21 +187,21 @@ class TestArgumentParsing:
                 args = mock_download.call_args[0][0]
                 assert args.yes is True
 
-    def test_download_no_extract_flag(self):
-        """Test --no-extract flag."""
-        with patch("sys.argv", ["ddacs", "download", "--no-extract"]):
+    def test_download_extract_flag(self):
+        """Test --extract opt-in flag."""
+        with patch("sys.argv", ["ddacs", "download", "--extract"]):
             with patch("ddacs.cli.cmd_download") as mock_download:
                 main()
                 args = mock_download.call_args[0][0]
-                assert args.no_extract is True
+                assert args.extract is True
 
-    def test_download_keep_zip_flag(self):
-        """Test --keep-zip flag."""
-        with patch("sys.argv", ["ddacs", "download", "--keep-zip"]):
+    def test_download_remove_zip_flag(self):
+        """Test --remove-zip flag."""
+        with patch("sys.argv", ["ddacs", "download", "--extract", "--remove-zip"]):
             with patch("ddacs.cli.cmd_download") as mock_download:
                 main()
                 args = mock_download.call_args[0][0]
-                assert args.keep_zip is True
+                assert args.remove_zip is True
 
     def test_download_specific_files(self):
         """Test --files flag."""
@@ -272,8 +272,8 @@ class TestCmdDownload:
             small=False,
             out="./data",
             yes=True,
-            no_extract=True,
-            keep_zip=False,
+            extract=False,
+            remove_zip=False,
         )
         cmd_download(args)
 
@@ -298,8 +298,8 @@ class TestCmdDownload:
             small=False,
             out="./data",
             yes=True,
-            no_extract=True,
-            keep_zip=False,
+            extract=False,
+            remove_zip=False,
         )
         cmd_download(args)
 
@@ -343,8 +343,8 @@ class TestCmdDownload:
             small=False,
             out=str(tmp_path),
             yes=True,
-            no_extract=True,
-            keep_zip=False,
+            extract=False,
+            remove_zip=False,
         )
         cmd_download(args)
 
@@ -400,20 +400,20 @@ class TestCmdDownload:
             small=False,
             out=str(output_dir),
             yes=True,
-            no_extract=False,
-            keep_zip=False,
+            extract=True,
+            remove_zip=True,
         )
         cmd_download(args)
 
         # Check extraction worked
         assert (output_dir / "inner.txt").exists()
-        # Check zip was removed (keep_zip=False)
+        # Check zip was removed (remove_zip=True)
         assert not (output_dir / "test.zip").exists()
 
     @patch("ddacs.cli.requests.get")
     @patch("ddacs.cli._api_get")
     def test_cmd_download_keep_zip(self, mock_api_get, mock_requests_get, tmp_path):
-        """Test download with --keep-zip flag."""
+        """Test download with extract but no remove-zip — zip is kept."""
         # Create a real zip file
         zip_content_path = tmp_path / "content"
         zip_content_path.mkdir()
@@ -458,8 +458,8 @@ class TestCmdDownload:
             small=False,
             out=str(output_dir),
             yes=True,
-            no_extract=False,
-            keep_zip=True,  # Keep the zip
+            extract=True,
+            remove_zip=False,  # Keep the zip
         )
         cmd_download(args)
 
@@ -488,8 +488,8 @@ class TestCmdDownload:
             small=False,
             out="./data",
             yes=False,  # Will prompt
-            no_extract=True,
-            keep_zip=False,
+            extract=False,
+            remove_zip=False,
         )
         cmd_download(args)
 
@@ -523,8 +523,8 @@ class TestSmallTestSet:
             small=True,
             out="./data",
             yes=False,  # Will show table but not download
-            no_extract=True,
-            keep_zip=False,
+            extract=False,
+            remove_zip=False,
         )
 
         # Mock Confirm to cancel

@@ -14,12 +14,12 @@ DATASET_DOI = "doi:10.18419/DARUS-4801"
 # major: ddacs 3.x.y -> dataset version "3.0".
 DEFAULT_VERSION = f"{_pkg_version(__package__).split('.')[0]}.0"
 
-# Canonical file names inside the dataset (post-extraction)
+# Canonical file names inside the dataset
 PROCESS_PARAMETERS_FILE = "process_parameters.csv"
 METADATA_FILE = "metadata.json"
-H5_SUBDIR = "h5"
 
-# Column that holds the simulation ID (matches the HDF5 filename)
+# Column in process_parameters.csv that holds the simulation ID
+# (matches the HDF5 filename inside the zips).
 ID_COLUMN = "index"
 
 # Single-simulation sample for fast preview + small-test downloads

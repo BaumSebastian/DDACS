@@ -1,49 +1,24 @@
-"""
-DDACS - Deep Drawing and Cutting Simulations Dataset.
+"""DDACS — Deep Drawing and Cutting Simulations Dataset.
 
-A Python package for accessing and processing the DDACS dataset containing
-FEM simulations of sheet metal forming processes.
+Python interface for the DDACS dataset (FEM simulations of sheet metal
+forming). Built on a Croissant 1.1 manifest: `ddacs.load()` returns an
+`mlcroissant.Dataset` whose `records(view)` streams the data; `add_view`,
+`open_h5`, `inspect_h5` are convenience helpers around the same manifest.
 
 Examples:
-    >>> from ddacs import iter_ddacs, count_available_simulations
-    >>> count = count_available_simulations('./data')
-    >>> for sim_id, metadata, h5_path in iter_ddacs('./data'):
-    ...     print(f"Simulation {sim_id}")
+    >>> import ddacs
+    >>> ds = ddacs.load(data_dir="./data")
+    >>> for record in ds.records("springback-minimal"):
+    ...     ...
 
-    >>> from ddacs.utils import extract_mesh, extract_element_thickness
-    >>> vertices, triangles = extract_mesh('simulation.h5', 'blank')
+    >>> with ddacs.open_h5(258864, data_dir="./data") as f:
+    ...     ddacs.inspect_h5(f)
 """
 
 __version__ = "3.0.0"
 
 from .croissant import add_view, load
-from .generators import (
-    count_available_simulations,
-    get_simulation_by_id,
-    iter_ddacs,
-    iter_h5_files,
-    sample_simulations,
-)
 from .h5_tools import inspect_h5, open_h5
-from .utils import (
-    compute_von_mises,
-    display_structure,
-    extract_element_strain,
-    extract_element_stress,
-    extract_element_thickness,
-    extract_mesh,
-    extract_point_cloud,
-    extract_point_springback,
-    non_degenerate_mask,
-)
-
-# Optional PyTorch dataset (only if PyTorch is available)
-try:
-    from .pytorch import DDACSDataset
-except ImportError:
-    pass
-
-# Visualization
 from .visualization import (
     COMPONENT_COLORS,
     plot_2d_projection,
@@ -52,32 +27,20 @@ from .visualization import (
     plot_vectors,
 )
 
+try:
+    from .pytorch import DDACSDataset
+except ImportError:
+    pass
+
 __all__ = [
-    # Version
     "__version__",
-    # Croissant entry point
+    # Croissant entry point + helpers
     "load",
     "add_view",
-    # HDF5 inspection helpers
+    # HDF5 helpers
     "open_h5",
     "inspect_h5",
-    # Generators
-    "iter_ddacs",
-    "iter_h5_files",
-    "get_simulation_by_id",
-    "sample_simulations",
-    "count_available_simulations",
-    # Utils
-    "extract_point_cloud",
-    "extract_mesh",
-    "extract_element_thickness",
-    "extract_element_stress",
-    "extract_element_strain",
-    "extract_point_springback",
-    "compute_von_mises",
-    "non_degenerate_mask",
-    "display_structure",
-    # PyTorch (optional)
+    # PyTorch (optional — only available if torch is installed)
     "DDACSDataset",
     # Visualization
     "plot_mesh",

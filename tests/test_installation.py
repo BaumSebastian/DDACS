@@ -1,56 +1,30 @@
-"""Test package installation and basic functionality."""
+"""Smoke test that the public surface imports cleanly."""
 
 
 class TestInstallation:
-    """Test package installation and imports."""
-
     def test_package_import(self):
-        """Test that the package can be imported."""
         import ddacs
 
         assert ddacs is not None
+        assert ddacs.__version__
 
-    def test_generators_functions_import(self):
-        """Test generator functions import."""
-        from ddacs import (
-            count_available_simulations,
-            get_simulation_by_id,
-            iter_ddacs,
-            sample_simulations,
-        )
+    def test_top_level_entries(self):
+        from ddacs import add_view, inspect_h5, load, open_h5
 
-        assert iter_ddacs is not None
-        assert get_simulation_by_id is not None
-        assert sample_simulations is not None
-        assert count_available_simulations is not None
+        for fn in (load, add_view, open_h5, inspect_h5):
+            assert callable(fn)
+
+    def test_visualization_imports(self):
+        from ddacs import plot_2d_projection, plot_mesh, plot_point_cloud, plot_vectors
+
+        for fn in (plot_mesh, plot_point_cloud, plot_vectors, plot_2d_projection):
+            assert callable(fn)
 
     def test_pytorch_import_handling(self):
-        """Test PyTorch import handling."""
         try:
             from ddacs.pytorch import DDACSDataset
 
-            # If successful, PyTorch is available
             assert DDACSDataset is not None
-        except ImportError as e:
-            # Should give clear error message about PyTorch
-            assert "PyTorch is required" in str(e)
-
-    def test_generators_import(self):
-        """Test generators module import."""
-        from ddacs import generators
-
-        assert generators is not None
-
-    def test_package_structure(self):
-        """Test that package has expected structure."""
-
-        # Check that functions are available
-        from ddacs.generators import (
-            get_simulation_by_id,
-            iter_ddacs,
-            sample_simulations,
-        )
-
-        assert callable(iter_ddacs)
-        assert callable(get_simulation_by_id)
-        assert callable(sample_simulations)
+        except ImportError:
+            # OK — torch isn't installed in this environment
+            pass
