@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ddacs import metadata as ddacs_md
+from ddacs import croissant as _croissant
 from ddacs.config import METADATA_FILE, SMALL_TEST_FILES
 
 # ---------------------------------------------------------------------------
@@ -33,7 +33,7 @@ _LOCAL_METADATA = Path(__file__).resolve().parent.parent / "data" / METADATA_FIL
 
 def _dataset():
     src = _LOCAL_METADATA if _LOCAL_METADATA.is_file() else None
-    return ddacs_md.load_dataset(source=src)
+    return _croissant.load(source=src)
 
 
 def _md_table(headers: list[str], rows: list[list[str]]) -> str:
@@ -92,20 +92,20 @@ def define_env(env):
     @env.macro
     def metadata_url() -> str:
         """Permanent DaRUS download URL for `metadata.json`."""
-        return ddacs_md.METADATA_URL
+        return _croissant.METADATA_URL
 
     # ----- schema tables sourced from metadata.json -----
     @env.macro
     def process_parameters_table() -> str:
         ds = _dataset()
-        descs = ddacs_md.process_parameters_descriptions(ds)
+        descs = _croissant.process_parameters_descriptions(ds)
         rows = [[f"`{name}`", desc] for name, desc in descs.items()]
         return _md_table(["Column", "Description"], rows)
 
     @env.macro
     def hdf5_field_table(prefix: str = "") -> str:
         ds = _dataset()
-        fields = ddacs_md.field_map(ds)
+        fields = _croissant.field_map(ds)
         rows = []
         for name, f in fields.items():
             desc = (f.description or "").replace("\n", " ")

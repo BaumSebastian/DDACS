@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from . import croissant as _croissant
 from .config import H5_SUBDIR, ID_COLUMN, PROCESS_PARAMETERS_FILE
 
 logger = logging.getLogger(__name__)
@@ -157,10 +158,8 @@ class DDACSDataset(Dataset):
             >>> for col, desc in descriptions.items():
             ...     print(f"{col}: {desc}")
         """
-        from . import metadata as _md
-
-        ds = _md.load_dataset(data_dir=self.data_dir)
-        all_desc = _md.process_parameters_descriptions(ds)
+        ds = _croissant.load(data_dir=self.data_dir)
+        all_desc = _croissant.process_parameters_descriptions(ds)
         return {col: all_desc.get(col, "") for col in self.get_metadata_columns()}
 
     def __getitem__(self, idx: int) -> tuple[int, np.ndarray, str]:

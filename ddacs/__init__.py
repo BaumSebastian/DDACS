@@ -16,6 +16,7 @@ Examples:
 
 __version__ = "3.0.0"
 
+from .croissant import load
 from .generators import (
     count_available_simulations,
     get_simulation_by_id,
@@ -53,6 +54,8 @@ from .visualization import (
 __all__ = [
     # Version
     "__version__",
+    # Croissant entry point
+    "load",
     # Generators
     "iter_ddacs",
     "iter_h5_files",
