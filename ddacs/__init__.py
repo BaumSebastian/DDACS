@@ -24,6 +24,7 @@ from .generators import (
     iter_h5_files,
     sample_simulations,
 )
+from .h5_tools import inspect_h5, open_h5
 from .utils import (
     compute_von_mises,
     display_structure,
@@ -56,6 +57,9 @@ __all__ = [
     "__version__",
     # Croissant entry point
     "load",
+    # HDF5 inspection helpers
+    "open_h5",
+    "inspect_h5",
     # Generators
     "iter_ddacs",
     "iter_h5_files",
