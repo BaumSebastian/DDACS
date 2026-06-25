@@ -254,7 +254,11 @@ class TestCmdInfo:
         cmd_info(args)
 
         captured = capsys.readouterr()
-        assert "DDACS" in captured.out
+        # cmd_info prints the dataset URL, the persistent DOI and the version.
+        # Asserting on those guarantees the panel rendered without coupling to
+        # the metadataBlocks-derived title (which the mock doesn't include).
+        assert "darus.uni-stuttgart.de" in captured.out
+        assert "2.0" in captured.out
 
 
 class TestCmdDownload:
@@ -510,14 +514,15 @@ class TestSmallTestSet:
             "lastUpdateTime": "2024-01-01T00:00:00Z",
             "license": {"name": "CC BY 4.0"},
             "files": [
-                {"dataFile": {"filename": "metadata.csv", "filesize": 100, "id": 1}},
-                {"dataFile": {"filename": "403926_406296.zip", "filesize": 1000, "id": 2}},
-                {"dataFile": {"filename": "other_large.zip", "filesize": 10000, "id": 3}},
+                {"dataFile": {"filename": "process_parameters.csv", "filesize": 100, "id": 1}},
+                {"dataFile": {"filename": "metadata.json", "filesize": 80, "id": 2}},
+                {"dataFile": {"filename": "258864.zip", "filesize": 1000, "id": 3}},
+                {"dataFile": {"filename": "other_large.zip", "filesize": 10000, "id": 4}},
             ],
         }
 
         args = argparse.Namespace(
-            version="2.0",
+            version="3.0",
             token=None,
             files=None,
             small=True,
@@ -532,8 +537,9 @@ class TestSmallTestSet:
             cmd_download(args)
 
         captured = capsys.readouterr()
-        # Should show metadata.csv and the small test zip
-        assert "metadata.csv" in captured.out
-        assert "403926_406296.zip" in captured.out
-        # Should NOT show the large file
+        # Should show the small-set files
+        assert "process_parameters.csv" in captured.out
+        assert "metadata.json" in captured.out
+        assert "258864.zip" in captured.out
+        # Should NOT show files outside the small set
         assert "other_large.zip" not in captured.out

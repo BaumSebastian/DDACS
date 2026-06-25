@@ -250,10 +250,15 @@ class DDACSDataset(IterableDataset):
         return sorted(self._h5_index.keys())
 
     def _extract_record(self, f: h5py.File) -> dict[str, np.ndarray]:
+        # Cache the full array per h5 path so multiple view fields sharing a
+        # source field (e.g. `forming` + `springback` both reading
+        # `OP10/blank/node_displacement`) only read it once.
+        cache: dict[str, np.ndarray] = {}
         rec: dict[str, np.ndarray] = {}
         for alias, (h5_path, slicing) in self._field_specs.items():
-            arr = f[h5_path][...]
-            if slicing is not None:
-                arr = arr[slicing]
-            rec[alias] = arr
+            arr = cache.get(h5_path)
+            if arr is None:
+                arr = f[h5_path][...]
+                cache[h5_path] = arr
+            rec[alias] = arr[slicing] if slicing is not None else arr
         return rec
