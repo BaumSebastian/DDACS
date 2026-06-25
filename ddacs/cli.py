@@ -5,12 +5,15 @@ Provides commands to view dataset information and download files from the
 DDACS (Deep Drawing and Cutting Simulations) dataset hosted on DaRUS.
 
 Usage:
-    ddacs info                      # Show dataset info and versions
-    ddacs download                  # Download dataset v2.0, extract, ready to use
-    ddacs download --small          # Download small test set for demos
-    ddacs download --files a.zip    # Download specific files
-    ddacs download --no-extract     # Download without extracting
-    ddacs download --keep-zip       # Keep zip files after extraction
+    ddacs info                              # Show dataset info and versions
+    ddacs download                          # Download published files; zips stay zipped
+    ddacs download --small                  # Download the small sample bundle
+    ddacs download --files a.zip            # Download specific files
+    ddacs download --extract                # Also extract zips into their directory
+    ddacs download --extract --remove-zip   # Extract and delete the zip afterwards
+
+Zip files are kept by default so they remain readable in place via mlcroissant
+(the Croissant manifest references zip members directly).
 """
 
 __version__ = "3.0.0"
@@ -34,7 +37,13 @@ from rich.progress import (
 from rich.prompt import Confirm
 from rich.table import Table
 
-from .config import DARUS_BASE_URL, DATASET_DOI, DEFAULT_VERSION, SMALL_TEST_FILES
+from .config import (
+    DARUS_BASE_URL,
+    DATASET_DOI,
+    DEFAULT_DATA_DIR,
+    DEFAULT_VERSION,
+    SMALL_TEST_FILES,
+)
 
 console = Console()
 
@@ -219,7 +228,7 @@ def cmd_download(args: argparse.Namespace) -> None:
 
     Args:
         args: Parsed command-line arguments containing version, output path,
-              and download options (files, small, no_extract, keep_zip, yes).
+              and download options (files, small, extract, remove_zip, yes).
     """
     headers = {"X-Dataverse-key": args.token} if args.token else {}
 
@@ -359,7 +368,7 @@ def cmd_download(args: argparse.Namespace) -> None:
                 failed_downloads.append((file_name, str(e)))
                 console.print(f"[red]Failed to download {file_name}:[/red] {e}")
 
-    if not args.no_extract and downloaded_files:
+    if args.extract and downloaded_files:
         console.print()
         zip_files = [p for p in downloaded_files if p.endswith(".zip")]
         if zip_files:
@@ -387,7 +396,7 @@ def cmd_download(args: argparse.Namespace) -> None:
                                 zf.extract(member, extract_dir)
                                 progress.advance(task)
                         console.print(f"[green]Extracted:[/green] {zip_name}")
-                        if not args.keep_zip:
+                        if args.remove_zip:
                             os.remove(local_path)
                             console.print(f"[dim]Removed:[/dim] {zip_name}")
                     except Exception as e:
@@ -451,11 +460,21 @@ def main() -> None:
         action="store_true",
         help="Download small test set for demos/testing",
     )
-    dl_parser.add_argument("--out", default="./data", help="Output directory (default: ./data)")
-    dl_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
-    dl_parser.add_argument("--no-extract", action="store_true", help="Skip extraction of zip files")
     dl_parser.add_argument(
-        "--keep-zip", action="store_true", help="Keep zip files after extraction"
+        "--out",
+        default=DEFAULT_DATA_DIR,
+        help=f"Output directory (default: {DEFAULT_DATA_DIR})",
+    )
+    dl_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
+    dl_parser.add_argument(
+        "--extract",
+        action="store_true",
+        help="Extract downloaded zip files into the same directory as the zip.",
+    )
+    dl_parser.add_argument(
+        "--remove-zip",
+        action="store_true",
+        help="Delete the zip file after a successful extraction (only with --extract).",
     )
 
     args = parser.parse_args()

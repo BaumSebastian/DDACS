@@ -9,6 +9,7 @@ __pycache__/
 
 # Dataset directory (large files)
 data/
+data
 
 # Issues directory - code to reproduce issues
 issues/
@@ -185,3 +186,5 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+REFACTORING.md
+CHANGELOG.md

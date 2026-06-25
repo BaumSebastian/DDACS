@@ -28,3 +28,8 @@ SAMPLE_ZIP_FILE = f"{SAMPLE_SIM_ID}.zip"
 
 # Files downloaded by `ddacs download --small`
 SMALL_TEST_FILES = [PROCESS_PARAMETERS_FILE, METADATA_FILE, SAMPLE_ZIP_FILE]
+
+# Default output directory used by `ddacs download --out` and the
+# upcoming `ddacs.load(data_dir=...)`. Kept symmetric so files written by the
+# CLI are picked up by `load()` without an extra argument.
+DEFAULT_DATA_DIR = "./data"
