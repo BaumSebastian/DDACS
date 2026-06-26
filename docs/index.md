@@ -23,7 +23,7 @@ pip install ddacs               # installation of package
 ddacs download --small          # ~22 MB sample bundle into ./data
 ```
 
-The package major version tracks the DaRUS dataset major version: `ddacs 3.x` reads dataset v3.0. See [Version compatibility](dataset.md#version-compatibility) for the full pairing.
+The package major version tracks the DaRUS dataset major version: `ddacs 3.x` reads dataset v3.0 and any future v3.x updates. See [Version compatibility](dataset.md#version-compatibility) for the full pairing.
 
 ## A first read
 

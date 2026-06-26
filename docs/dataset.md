@@ -16,11 +16,10 @@ The `ddacs` Python package major version tracks the DaRUS dataset major version.
 
 | Package | DaRUS dataset |
 |---------|---------------|
-| `ddacs 3.x` | [v3.0](https://doi.org/10.18419/DARUS-4801) (current) |
-| `ddacs 2.x` | v2.0 |
-| `ddacs 1.x` | v1.0 |
+| `ddacs 3.x` | [v3.0](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801&version=3.0) and any future v3.x updates (current) |
+| `ddacs 2.x` | [v1.0](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801&version=1.0) and [v2.0](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801&version=2.0) |
 
-Pin the package major to the dataset major you target : for example `pip install 'ddacs~=3.0'` for the v3.0 release.
+Pin the package major to the dataset major you target, for example `pip install 'ddacs~=3.0'` to stay on the v3 line.
 
 ## Operations
 
