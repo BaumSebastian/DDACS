@@ -1,33 +1,16 @@
 # Visualization
 
-Visualization utilities for DDACS simulation data.
-
-## Overview
-
-The visualization module provides flexible plotting functions that work with extracted data.
-This design allows you to see and understand your data before visualizing it.
-
-### Basic Workflow
+Matplotlib plotting helpers that operate on numpy arrays. Pair them with `ddacs.open_h5` to read the input arrays from a single simulation. See the [Visualization tutorial](../tutorials/visualization.md) for end to end examples.
 
 ```python
-from ddacs.utils import extract_mesh, extract_element_thickness
-from ddacs.visualization import plot_mesh
+import ddacs
 
-# Step 1: Extract data (you see what you're working with)
-vertices, faces = extract_mesh("simulation.h5", "blank", timestep=-1)
-thickness = extract_element_thickness("simulation.h5", timestep=-1)
+with ddacs.open_h5(258864) as f:
+    vertices = f["OP10/blank/node_displacement"][-1]
+    faces = f["OP10/blank/element_shell_node_indexes"][:]
+    thickness = f["OP10/blank/element_shell_thickness"][-1]
 
-print(f"Mesh: {len(vertices)} vertices, {len(faces)} faces")
-print(f"Thickness range: {thickness.min():.3f} - {thickness.max():.3f} mm")
-
-# Step 2: Visualize
-ax, cbar = plot_mesh(
-    vertices, faces,
-    values=thickness,
-    cmap="viridis",
-    vmin=0.8, vmax=1.15,
-    colorbar_label="Thickness [mm]"
-)
+ax, cbar = ddacs.plot_mesh(vertices, faces, values=thickness, cmap="viridis")
 ```
 
 ## Functions
@@ -42,12 +25,8 @@ ax, cbar = plot_mesh(
 
 ## Constants
 
-### COMPONENT_COLORS
-
-Default colors for simulation components:
-
 ```python
-COMPONENT_COLORS = {
+ddacs.visualization.COMPONENT_COLORS = {
     "blank": "red",
     "die": "blue",
     "punch": "green",

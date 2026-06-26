@@ -1,8 +1,14 @@
-# PyTorch Integration
+# PyTorch
 
-PyTorch Dataset class for DDACS data.
+`ddacs.pytorch.DDACSDataset` is a `torch.utils.data.IterableDataset` over a Croissant view. It is available only when the `[torch]` extra is installed (see [Installation](../installation.md)).
 
-!!! note
-    Requires PyTorch. Install it first following the [official instructions](https://pytorch.org/get-started/locally/) for your CUDA version.
+## `DDACSDataset`
 
-::: ddacs.pytorch
+::: ddacs.pytorch.DDACSDataset
+    options:
+      show_signature: true
+      show_signature_annotations: true
+      members:
+        - __init__
+        - __iter__
+        - set_epoch

@@ -10,7 +10,7 @@ Display dataset information and the list of available versions.
 ddacs info
 ```
 
-<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_info.png" width="700">
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_info.svg" width="900">
 
 ## `ddacs download`
 
@@ -46,20 +46,16 @@ The `--out` directory defaults to `./data`. The same value is used by `ddacs.loa
 ### Examples
 
 ```bash
+# Download the small test set (22.38 MB)
+ddacs download --small -y
+```
+
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_download_small.svg" width="900">
+
+```bash
 # Download the full dataset (zips kept as is, no extraction)
 ddacs download
-```
 
-<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_download.png" width="700">
-
-```bash
-# Download the small test set
-ddacs download --small
-```
-
-<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/cli_download_small.png" width="700">
-
-```bash
 # Download to a custom directory
 ddacs download --out /path/to/data
 
@@ -73,7 +69,7 @@ ddacs download --extract
 ddacs download --extract --remove-zip
 ```
 
-After `--extract --remove-zip`, the HDF5 files are no longer wrapped in zips and `mlcroissant` cannot resolve the FileSet. See the loose HDF5 recipe in the tutorials for the appropriate iteration pattern in that case.
+After `--extract --remove-zip`, the HDF5 files are no longer wrapped in zips and `mlcroissant` cannot resolve the FileSet. See the [Loose HDF5 recipe](tutorials/loose-h5.md) for the appropriate iteration pattern in that case.
 
 ## Global Options
 

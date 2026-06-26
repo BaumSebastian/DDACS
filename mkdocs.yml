@@ -26,8 +26,13 @@ theme:
     - navigation.tracking
     - navigation.sections
     - navigation.expand
+    - navigation.footer
     - toc.follow
     - content.code.copy
+
+watch:
+  - ddacs
+  - docs/macros.py
 
 plugins:
   - search
@@ -57,22 +62,25 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Quick Start: quickstart.md
   - Dataset:
       - Overview: dataset.md
+      - Process Parameters: process-parameters.md
       - HDF5 Structure: hdf5-structure.md
       - Croissant Manifest: croissant.md
   - Tutorials:
       - Overview: tutorials/index.md
-      - Getting Started: tutorials/getting-started.md
-      - Visualization: tutorials/visualization.md
+      - 1. Getting Started: tutorials/getting-started.md
+      - 2. Build your own view: tutorials/views.md
+      - 3. PyTorch training: tutorials/pytorch.md
+      - 4. Visualization: tutorials/visualization.md
+      - 5. Loose HDF5 recipe: tutorials/loose-h5.md
   - CLI Reference: cli.md
   - API Reference:
       - Overview: api/index.md
-      - Generators: api/generators.md
-      - Utils: api/utils.md
-      - Visualization: api/visualization.md
+      - Croissant: api/croissant.md
+      - HDF5: api/h5.md
       - PyTorch: api/pytorch.md
+      - Visualization: api/visualization.md
 
 extra:
   social:

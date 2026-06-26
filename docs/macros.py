@@ -75,11 +75,10 @@ def define_env(env):
     @env.macro
     def simulation_stats() -> str:
         return _md_table(
-            ["Subset", "Count"],
+            ["", "Count"],
             [
-                ["Total", f"{SIMULATION_COUNT:,}"],
-                ["Corner blocks", f"{SIMULATION_COUNT_CORNER:,}"],
-                ["RDDAC sub-study", f"{SIMULATION_COUNT_RDDAC:,}"],
+                ["DDACS (total)", f"{SIMULATION_COUNT:,}"],
+                ["RDDAC sub study", f"{SIMULATION_COUNT_RDDAC:,}"],
             ],
         )
 
