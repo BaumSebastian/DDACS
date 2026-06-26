@@ -60,6 +60,10 @@ class DDACSDataset(IterableDataset):
         data_dir: Override the local data directory. Defaults to
             `ddacs.config.DEFAULT_DATA_DIR`. Pass `None` to skip local-file
             discovery.
+        dataset: A pre-loaded `mlcroissant.Dataset` (e.g. one mutated by
+            `ddacs.add_view`). When supplied, `source`/`data_dir` are ignored
+            for the manifest parse and the caller's object is used as-is.
+            This is the way to stream a custom view from `DDACSDataset`.
         sim_ids: Explicit allowlist of simulation ids to stream (default:
             every sim in `process_parameters.csv`).
         where: Predicate applied to each `process_parameters.csv` row before
@@ -75,6 +79,7 @@ class DDACSDataset(IterableDataset):
         view: str,
         source: str | Path | None = None,
         data_dir: str | Path | None = DEFAULT_DATA_DIR,
+        dataset=None,
         sim_ids: list[int] | None = None,
         where: Callable[[pd.Series], bool] | None = None,
         shuffle: bool = False,
@@ -89,7 +94,9 @@ class DDACSDataset(IterableDataset):
         self.seed = seed
         self._epoch = 0
 
-        ds = _croissant.load(source=source, data_dir=data_dir)
+        # Use a caller-provided `dataset` (e.g. one mutated by `ddacs.add_view`)
+        # so the custom view is visible here; otherwise parse the manifest fresh.
+        ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
         self._field_specs = self._build_field_specs(ds)
         self._h5_index = self._build_h5_index(ds.mapping or {})
         self._sim_ids = self._resolve_sim_ids(sim_ids)

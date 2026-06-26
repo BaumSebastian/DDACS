@@ -25,6 +25,7 @@ def open_h5(
     sim_id: int,
     source: str | Path | None = None,
     data_dir: str | Path | None = DEFAULT_DATA_DIR,
+    dataset=None,
 ) -> h5py.File:
     """Return an `h5py.File` for the requested simulation.
 
@@ -40,11 +41,16 @@ def open_h5(
         data_dir: Override the directory searched for already-downloaded
             zips. Defaults to `ddacs.config.DEFAULT_DATA_DIR`. Pass `None`
             to skip the local lookup entirely.
+        dataset: A pre-loaded `mlcroissant.Dataset` (e.g. from `ddacs.load`).
+            When given, `source` and `data_dir` are ignored: the manifest is
+            not re-parsed and the caller's object is used. Useful when the
+            caller has applied `ddacs.add_view` and wants the mutation to
+            stay in scope.
 
     Raises:
         FileNotFoundError: No locally mapped zip contained the requested h5.
     """
-    ds = _croissant.load(source=source, data_dir=data_dir)
+    ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
     h5_name = f"{sim_id}.h5"
 
     for zip_path in (ds.mapping or {}).values():

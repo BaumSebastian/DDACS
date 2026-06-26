@@ -40,6 +40,40 @@ class TestBasicIteration:
             DDACSDataset(view="nonexistent", data_dir=str(synthetic_data_dir))
 
 
+class TestDatasetKwarg:
+    """Cover the `dataset=` entry point: add_view -> DDACSDataset(dataset=ds)."""
+
+    def test_custom_view_via_dataset_kwarg(self, synthetic_data_dir):
+        import ddacs
+
+        ds = ddacs.load(data_dir=str(synthetic_data_dir))
+        ddacs.add_view(
+            ds,
+            "trajectory-only",
+            fields={"trajectory": ("op10_blank_node_displacement", None)},
+        )
+
+        # Without `dataset=`, the constructor reloads the on-disk manifest and
+        # the custom view is invisible.
+        with pytest.raises(ValueError):
+            DDACSDataset(
+                view="trajectory-only",
+                data_dir=str(synthetic_data_dir),
+            )
+
+        # With `dataset=`, the mutation carries through and iteration works.
+        ds_iter = DDACSDataset(
+            view="trajectory-only",
+            data_dir=str(synthetic_data_dir),
+            dataset=ds,
+        )
+        records = list(ds_iter)
+        assert len(records) >= 1
+        for rec in records:
+            assert "trajectory" in rec
+            assert rec["trajectory"].ndim == 3  # (timesteps, n_nodes, 3)
+
+
 class TestFilters:
     def test_sim_ids_allowlist(self, synthetic_data_dir):
         ds = DDACSDataset(
