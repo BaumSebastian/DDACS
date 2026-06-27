@@ -82,7 +82,12 @@ def plot_mesh(
         colorbar_label: Label for the colorbar (e.g., "Thickness [mm]").
         title: Plot title.
         axis_limits: Axis limits as [min, max]. Defaults to [0, 110].
-        mirror: Reflect the quarter-symmetric mesh across `x = 0` and `y = 0`.
+        mirror: Reflect the quarter-symmetric mesh across the `x = 0` and
+            `y = 0` planes to reconstruct the full part. Assumes the input
+            data lives in the positive quadrant (i.e. raw OP10/OP20 node
+            coordinates in mm). On normalised or centred data the four
+            reflections overlay each other on the origin, so pass
+            `mirror=False` in that case.
         shade: When True (default), matplotlib lights each face by its surface
             normal. The shading subtly biases the rendered face colour away
             from the pure cmap value, which can misalign the visual mesh with
@@ -249,6 +254,11 @@ def plot_point_cloud(
         colorbar_label: Label for the colorbar.
         title: Plot title.
         axis_limits: Axis limits as [min, max]. Defaults to [0, 110].
+        mirror: Reflect the quarter-symmetric data across the `x = 0` and
+            `y = 0` planes to reconstruct the full part. Assumes the input
+            data lives in the positive quadrant (raw OP10/OP20 coordinates
+            in mm). On normalised or centred data the four reflections
+            overlay each other on the origin, so pass `mirror=False`.
         **kwargs: Additional arguments passed to ax.scatter.
             Common options: c (color), s (size), alpha, marker.
 
@@ -380,7 +390,11 @@ def plot_vectors(
         colorbar_label: Label for the colorbar (if values is provided).
         title: Plot title.
         axis_limits: Axis limits as [min, max]. Defaults to [0, 110].
-        mirror: Reflect the quarter-symmetric data across `x = 0` and `y = 0`.
+        mirror: Reflect the quarter-symmetric data across the `x = 0` and
+            `y = 0` planes to reconstruct the full part. Assumes the input
+            data lives in the positive quadrant (raw OP10/OP20 coordinates
+            in mm). On normalised or centred data the four reflections
+            overlay each other on the origin, so pass `mirror=False`.
         arrow_kwargs: Additional arguments passed to `ax.quiver` for the
             coloured arrows on top. Common options: color (only used when
             values is None), alpha, arrow_length_ratio.
