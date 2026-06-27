@@ -1,9 +1,10 @@
-"""Tests for `ddacs.streaming.iter_view`."""
+"""Tests for `ddacs.streaming.iter_view` and `ddacs.streaming.export_to_numpy`."""
 
 from __future__ import annotations
 
 import zipfile
 
+import numpy as np
 import pytest
 
 import ddacs
@@ -121,3 +122,89 @@ class TestIterViewInvalidView:
     def test_unknown_view_raises(self, synthetic_data_dir):
         with pytest.raises(ValueError):
             list(ddacs.streaming.iter_view("nonexistent", data_dir=str(synthetic_data_dir)))
+
+
+class TestExportToNumpy:
+    """`export_to_numpy` materialises a view as flat .npy memmap files."""
+
+    def test_basic_round_trip(self, synthetic_data_dir, tmp_path):
+        out = tmp_path / "shards"
+        paths = ddacs.streaming.export_to_numpy(
+            "springback-minimal",
+            out,
+            data_dir=str(synthetic_data_dir),
+        )
+        assert set(paths.keys()) == {"forming", "springback", "sim_ids"}
+        for p in paths.values():
+            assert p.is_file()
+
+        streamed = list(
+            ddacs.streaming.iter_view("springback-minimal", data_dir=str(synthetic_data_dir))
+        )
+        sim_ids = np.load(paths["sim_ids"])
+        forming = np.load(paths["forming"], mmap_mode="r")
+        assert forming.shape == (len(streamed), *streamed[0]["forming"].shape)
+        for i, rec in enumerate(streamed):
+            np.testing.assert_array_equal(forming[i], rec["forming"])
+        assert sim_ids.dtype == np.int64
+        assert len(sim_ids) == len(streamed)
+
+    def test_per_field_transforms(self, synthetic_data_dir, tmp_path):
+        ds = ddacs.load(data_dir=str(synthetic_data_dir))
+        ddacs.add_view(
+            ds,
+            "geom-view",
+            fields={"forming": ("op10_blank_node_displacement", 2)},
+        )
+        out = tmp_path / "shards-tx"
+        paths = ddacs.streaming.export_to_numpy(
+            "geom-view",
+            out,
+            data_dir=str(synthetic_data_dir),
+            dataset=ds,
+            transforms={"forming": lambda arr: arr.astype(np.float32)},
+        )
+        loaded = np.load(paths["forming"], mmap_mode="r")
+        assert loaded.dtype == np.float32
+
+    def test_record_transform_combines_fields(self, synthetic_data_dir, tmp_path):
+        ds = ddacs.load(data_dir=str(synthetic_data_dir))
+        ddacs.add_view(
+            ds,
+            "combo-view",
+            fields={
+                "a": ("op10_blank_node_displacement", 2),
+                "b": ("op10_blank_node_displacement", 3),
+            },
+        )
+        out = tmp_path / "shards-combo"
+        paths = ddacs.streaming.export_to_numpy(
+            "combo-view",
+            out,
+            data_dir=str(synthetic_data_dir),
+            dataset=ds,
+            record_transform=lambda rec: {"delta": rec["b"] - rec["a"]},
+        )
+        assert set(paths.keys()) == {"delta", "sim_ids"}
+        delta = np.load(paths["delta"], mmap_mode="r")
+        assert delta.shape[0] == np.load(paths["sim_ids"]).shape[0]
+
+    def test_sim_ids_filter_subset(self, synthetic_data_dir, tmp_path):
+        out = tmp_path / "shards-subset"
+        paths = ddacs.streaming.export_to_numpy(
+            "springback-minimal",
+            out,
+            data_dir=str(synthetic_data_dir),
+            sim_ids=[1, 3],
+        )
+        assert np.load(paths["sim_ids"]).tolist() == [1, 3]
+        assert np.load(paths["forming"], mmap_mode="r").shape[0] == 2
+
+    def test_empty_export_raises(self, synthetic_data_dir, tmp_path):
+        with pytest.raises(ValueError):
+            ddacs.streaming.export_to_numpy(
+                "springback-minimal",
+                tmp_path / "shards-empty",
+                data_dir=str(synthetic_data_dir),
+                sim_ids=[999_999_999],
+            )

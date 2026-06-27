@@ -200,16 +200,78 @@ operation Download(106921_109120.zip)
 DDACSDataset: yielded 1 record(s) without error
 ```
 
+## 8. Stream a custom view (`add_view` + `dataset=`)
+
+The published views (`springback-minimal`, `forming-snapshot`, ...) cover the common targets, but the [Build your own view](views.md) tutorial shows how to compose a custom `RecordSet` with `ddacs.add_view`. `add_view` mutates the in-memory `mlcroissant.Dataset` you hand it; the published manifest on DaRUS stays unchanged.
+
+To stream that custom view through `DDACSDataset`, pass the same loaded object via the `dataset=` kwarg. Without it, `DDACSDataset.__init__` would re-parse `metadata.json` from disk and the in-memory mutation would be invisible (it would raise `ValueError: view 'my-view' not found`). With it, the constructor uses the caller's object as-is.
+
+```python
+ds_manifest = ddacs.load(data_dir=DATA_DIR)
+ddacs.add_view(
+    ds_manifest,
+    'forming-only',
+    fields={
+        'forming': ('op10_blank_node_displacement', 2),
+    },
+)
+
+custom_ds = DDACSDataset(
+    view='forming-only',
+    data_dir=DATA_DIR,
+    dataset=ds_manifest,
+)
+
+print('view:           ', custom_ds.view)
+print('field specs:    ', custom_ds._field_specs)
+print('total sim_ids:  ', len(custom_ds._sim_ids))
+print('locally indexed:', len(custom_ds._h5_index))
+
+# One record through the loader: the custom view ships exactly one field.
+loader = DataLoader(custom_ds, batch_size=4, num_workers=0)
+for batch in loader:
+    for k, v in batch.items():
+        print(f'  {k:30s} shape={tuple(v.shape)} dtype={v.dtype}')
+    break
+```
+
+Output (with the small bundle on disk):
+
+```
+view:            forming-only
+field specs:     {'forming': ('OP10/blank/node_displacement', 2)}
+total sim_ids:   32466
+locally indexed: 1
+  forming                        shape=(1, 11236, 3) dtype=torch.float64
+```
+
+Same flow with `where=`, `sim_ids=`, and `shuffle=` works against `custom_ds` — the custom view is just another `RecordSet` once it lives on `ds_manifest`.
+
 ## Performance
 
-`DDACSDataset.__iter__` matches a hand rolled `zipfile + h5py.File` loop computing the same springback delta. Both paths produce identical numerical output (verified by the `sum |delta|` check in the benchmark). On the 396 simulation RDDAC subset:
+`DDACSDataset.__iter__` is benchmarked against a hand rolled `zipfile + h5py.File` loop computing the same springback delta on the same files. Both paths produce identical numerical output (`sum |delta|` matches to 1e-6), so the timing comparison is purely about read efficiency.
+
+Hardware for the measurements below: AMD Ryzen 9 3900XT (12 cores), 64 GB RAM, Toshiba MG10SCA20TE 18.2 TB spinning HDD, Python 3.11.14, `h5py` 3.15.1, `mlcroissant` 1.1.0. Both paths iterate every locally available simulation once and compute the same per-node springback delta `pos[3] - pos[2]` over `OP10/blank/node_displacement`.
+
+**RDDAC subset (396 simulations, ~8 GB, fits in OS page cache):**
 
 | Path | Time | Per sim |
 |------|------|---------|
-| Hand rolled `zipfile + h5py.File` loop | 9.4 s | 23.8 ms |
-| `DDACSDataset.__iter__` | 9.2 s | 23.3 ms |
+| Hand rolled `zipfile + h5py.File` loop | 33.3 s | 84.2 ms |
+| `DDACSDataset.__iter__` | 12.9 s | 32.5 ms |
 
-Three repeated runs land within ~1 % of each other; `DDACSDataset` is consistently at parity or slightly ahead thanks to the cached zip handle across consecutive sims in the same archive.
+`DDACSDataset` runs roughly 2.6x faster than the hand rolled loop on the same files. The advantage comes from the JSONPath transforms on the published view: `DDACSDataset` reads `OP10/blank/node_displacement[2]` and `[3]` as two partial reads while the hand rolled loop pulls the full `(4, n_nodes, 3)` array before slicing. On a spinning disk the two short seeks beat one big read every time.
+
+**Full release (~32 466 simulations, ~600 GB, does not fit in 64 GB RAM):**
+
+| Path | Time | Per sim |
+|------|------|---------|
+| Hand rolled `zipfile + h5py.File` loop | 3568.1 s | 109.9 ms |
+| `DDACSDataset.__iter__` | 3578.2 s | 110.2 ms |
+
+Two effects flip on the full release. First, the 3.4x per-sim slowdown vs RDDAC is the OS page cache running out: once the working set exceeds RAM, every zip read hits the spinning disk and reading from RAM is no longer free. Second, the 2.6x `DDACSDataset` advantage disappears: h5py gzip chunks span the full `(t, n, 3)` array, so reading `[2]` then `[3]` still decompresses the same chunk that the hand rolled loop pulls in one shot, and disk IO dominates either way. Both paths converge at ~110 ms/sim and the comparison becomes a check that the abstraction adds no overhead, which it does not.
+
+A faster disk (NVMe) brings the full release back into the partial-read regime where `DDACSDataset` runs ahead.
 
 ## Custom collate
 

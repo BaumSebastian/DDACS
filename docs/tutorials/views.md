@@ -98,10 +98,15 @@ generation of the dataset, more specifically during the operation
 Download(106921_109120.zip)
 ```
 
-!!! note
-    `mlcroissant` walks every zip referenced by the FileSet and aborts at the first missing one. With the small bundle only `258864.zip` is on disk, so the snippet above will raise a `GenerationError` before yielding anything. The iteration works in full only after `ddacs download` (without `--small`) has pulled the complete release.
+!!! warning "`ds.records()` does not scale to the full release"
+    `mlcroissant` walks every zip referenced by the FileSet at iterator setup, before yielding the first record. With the **small bundle** only `258864.zip` is on disk, so the snippet above raises `GenerationError` immediately. With the **full release** on disk it does *not* abort, but the setup walk has to open and parse the central directory of every zip in the FileSet, which can take **several minutes on spinning disks** and only gets slower as releases grow.
 
-    For partial downloads, [`DDACSDataset`](pytorch.md) builds a `sim_id -> local zip` index at construction time and silently skips simulations whose zip is missing.
+    Either way, this is the wrong path for a training loop. Use [`DDACSDataset`](pytorch.md#8-stream-a-custom-view-add_view-dataset) from the PyTorch tutorial instead: it builds a lazy `sim_id -> local zip` index, opens a zip only when a record is requested, scales to the full release, and silently skips missing zips on a partial download. To stream **this** custom view through `DDACSDataset`, pass the same in-memory `ds` via the `dataset=` kwarg:
+
+    ```python
+    from ddacs.pytorch import DDACSDataset
+    custom_ds = DDACSDataset(view="my-view", data_dir=DATA_DIR, dataset=ds)
+    ```
 
 ## 5. Read other RecordSets
 
@@ -166,6 +171,6 @@ schema_reference      = 'SIM-KAx, doi:10.1007/s11740-026-01441-7'
 
 ## Where to go next
 
-- [PyTorch training](pytorch.md) wraps a view (custom or published) in `DDACSDataset` for batched training.
+- [PyTorch training](pytorch.md) wraps a view (custom or published) in `DDACSDataset` for batched training. The "Stream a custom view" section shows the `add_view` -> `DDACSDataset(dataset=ds)` chain that streams the view you just built without re-parsing the manifest.
 - [Visualization](visualization.md) plots arrays pulled from a record.
 - [Croissant manifest](../croissant.md) explains the schema and the field-map RecordSet that underpins `add_view`.
