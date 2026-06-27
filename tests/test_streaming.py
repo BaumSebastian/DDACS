@@ -208,3 +208,72 @@ class TestExportToNumpy:
                 data_dir=str(synthetic_data_dir),
                 sim_ids=[999_999_999],
             )
+
+
+class TestLoadExport:
+    """`load_export` is the lazy reader counterpart to `export_to_numpy`."""
+
+    @pytest.fixture
+    def shard_dir(self, synthetic_data_dir, tmp_path):
+        out = tmp_path / "shards"
+        ddacs.streaming.export_to_numpy("springback-minimal", out, data_dir=str(synthetic_data_dir))
+        return out
+
+    def test_basic_attributes(self, shard_dir):
+        export = ddacs.streaming.load_export(shard_dir)
+        assert len(export) >= 1
+        assert set(export.fields) == {"forming", "springback"}
+
+    def test_getitem_returns_dict(self, shard_dir):
+        export = ddacs.streaming.load_export(shard_dir)
+        rec = export[0]
+        assert set(rec.keys()) == set(export.fields)
+        for v in rec.values():
+            assert isinstance(v, np.ndarray)
+
+    def test_iteration_matches_indexing(self, shard_dir):
+        export = ddacs.streaming.load_export(shard_dir)
+        iterated = list(export)
+        assert len(iterated) == len(export)
+        for i, rec in enumerate(iterated):
+            for alias in export.fields:
+                np.testing.assert_array_equal(rec[alias], export[i][alias])
+
+    def test_by_sim_id(self, shard_dir):
+        export = ddacs.streaming.load_export(shard_dir)
+        first_sim_id = int(export.sim_ids[0])
+        rec_by_id = export.by_sim_id(first_sim_id)
+        rec_by_idx = export[0]
+        for alias in export.fields:
+            np.testing.assert_array_equal(rec_by_id[alias], rec_by_idx[alias])
+        with pytest.raises(KeyError):
+            export.by_sim_id(999_999_999)
+
+    def test_index_out_of_range(self, shard_dir):
+        export = ddacs.streaming.load_export(shard_dir)
+        with pytest.raises(IndexError):
+            _ = export[len(export)]
+
+    def test_missing_sim_ids_raises(self, tmp_path):
+        with pytest.raises(FileNotFoundError):
+            ddacs.streaming.load_export(tmp_path)
+
+    def test_fields_subset(self, shard_dir):
+        export = ddacs.streaming.load_export(shard_dir, fields=["forming"])
+        assert export.fields == ("forming",)
+        assert set(export[0].keys()) == {"forming"}
+
+    def test_unknown_field_raises(self, shard_dir):
+        with pytest.raises(ValueError, match="unknown field"):
+            ddacs.streaming.load_export(shard_dir, fields=["forming", "typo"])
+
+    def test_works_with_torch_dataloader(self, shard_dir):
+        pytest.importorskip("torch")
+        from torch.utils.data import DataLoader
+
+        export = ddacs.streaming.load_export(shard_dir)
+        loader = DataLoader(export, batch_size=min(2, len(export)), shuffle=False)
+        batch = next(iter(loader))
+        assert set(batch.keys()) == set(export.fields)
+        for v in batch.values():
+            assert v.shape[0] <= 2

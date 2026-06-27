@@ -118,6 +118,123 @@ def iter_view(
             last_zf.close()
 
 
+class _LoadedExport:
+    """Lazy reader for a directory of ``.npy`` memmap shards.
+
+    Returns plain ``numpy.ndarray`` rows and uses only the standard Python
+    data model (``__len__`` / ``__getitem__`` / ``__iter__``). The class is
+    private; users construct instances through :func:`load_export`.
+
+    The implementation is deliberately framework-agnostic: it satisfies
+    PyTorch's map-style ``Dataset`` protocol (so ``DataLoader(instance, ...)``
+    works), can drive ``tf.data.Dataset.from_generator``, and is fine with
+    JAX or plain Python loops -- there is no ``torch`` import inside.
+    """
+
+    def __init__(self, directory: str | Path, fields: list[str] | None = None):
+        self.directory = Path(directory)
+        sim_ids_path = self.directory / "sim_ids.npy"
+        if not sim_ids_path.is_file():
+            raise FileNotFoundError(
+                f"{sim_ids_path} not found. Run `ddacs.streaming.export_to_numpy` first."
+            )
+        self.sim_ids = np.load(sim_ids_path)
+
+        available = sorted(p.stem for p in self.directory.glob("*.npy") if p.stem != "sim_ids")
+        if not available:
+            raise FileNotFoundError(
+                f"No data shards found in {self.directory} besides sim_ids.npy."
+            )
+
+        if fields is None:
+            wanted = available
+        else:
+            wanted = list(fields)
+            unknown = sorted(set(wanted) - set(available))
+            if unknown:
+                raise ValueError(
+                    f"unknown field(s) {unknown}. Available fields in "
+                    f"{self.directory}: {available}"
+                )
+
+        self._fields: dict[str, np.ndarray] = {
+            alias: np.load(self.directory / f"{alias}.npy", mmap_mode="r") for alias in wanted
+        }
+        self._n = int(self.sim_ids.shape[0])
+
+    @property
+    def fields(self) -> tuple[str, ...]:
+        """Tuple of field aliases available on each record."""
+        return tuple(self._fields.keys())
+
+    def __len__(self) -> int:
+        return self._n
+
+    def __getitem__(self, idx: int) -> dict[str, np.ndarray]:
+        if not 0 <= idx < self._n:
+            raise IndexError(f"index {idx} out of range for export with {self._n} records")
+        return {alias: arr[idx] for alias, arr in self._fields.items()}
+
+    def __iter__(self):
+        for i in range(self._n):
+            yield self[i]
+
+    def by_sim_id(self, sim_id: int) -> dict[str, np.ndarray]:
+        """Return the record for a specific simulation id."""
+        match = np.where(self.sim_ids == int(sim_id))[0]
+        if match.size == 0:
+            raise KeyError(f"sim_id {sim_id} not present in export")
+        return self[int(match[0])]
+
+    def __repr__(self) -> str:
+        return (
+            f"<LoadedExport directory={str(self.directory)!r} "
+            f"records={self._n} fields={self.fields}>"
+        )
+
+
+def load_export(directory: str | Path, fields: list[str] | None = None) -> _LoadedExport:
+    """Open a directory of ``.npy`` shards produced by :func:`export_to_numpy`.
+
+    Returns a lazy reader that exposes the standard Python data model
+    (``len(reader)``, ``reader[i]``, ``for r in reader``, ``reader.by_sim_id(sid)``).
+    Each record is a plain ``dict[str, numpy.ndarray]`` backed by
+    ``mmap_mode='r'``, so the full release fits even when it exceeds RAM --
+    only the rows actually accessed page in.
+
+    The returned object is framework-agnostic. Pass it directly into
+    ``torch.utils.data.DataLoader(loader, batch_size=...)`` because it
+    satisfies the map-style ``Dataset`` protocol. The same instance also
+    works with ``tf.data.Dataset.from_generator(lambda: iter(loader), ...)``,
+    with JAX, or with plain Python loops -- no adapter required and no
+    ``torch`` import inside.
+
+    Args:
+        directory: Path produced by :func:`export_to_numpy`. Must contain a
+            ``sim_ids.npy`` and at least one other ``.npy`` shard.
+        fields: Optional subset of field aliases to load. ``None`` loads
+            every shard in the directory. Unknown names raise ``ValueError``
+            so typos surface immediately, listing the available fields.
+
+    Returns:
+        A reader instance. The concrete type is private; rely on the
+        documented protocol rather than the class name.
+
+    Raises:
+        FileNotFoundError: ``directory`` is empty or missing ``sim_ids.npy``.
+        ValueError: ``fields`` references a name that is not on disk.
+
+    Example:
+        >>> export = ddacs.streaming.load_export("./data/tutorial_export")
+        >>> len(export), export.fields                # (1, ('delta', 'forming', ...))
+        >>> export[0]                                 # {alias: ndarray}
+        >>> export.by_sim_id(258864)                  # lookup by simulation id
+        >>> from torch.utils.data import DataLoader
+        >>> DataLoader(export, batch_size=16, shuffle=True)
+    """
+    return _LoadedExport(directory, fields=fields)
+
+
 def export_to_numpy(
     view: str,
     out_dir: str | Path,

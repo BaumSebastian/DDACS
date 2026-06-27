@@ -116,36 +116,43 @@ Output:
   sim_ids    -> ./data/tutorial_export/sim_ids.npy   (    0.1 KB)
 ```
 
-## 4. Read the shards back
+## 4. Read the shards back with `load_export`
 
-Training-side code never touches HDF5 or zip again. `np.load(..., mmap_mode='r')` returns a memory-mapped array; indexing by row is a single mmap slice, no decompression. The same field aliases used in the view become the file names.
+`ddacs.streaming.load_export(directory)` opens the exported folder behind the standard Python data model (`__len__`, `__getitem__`, `__iter__`, plus `by_sim_id`). Each row is a plain `dict[str, np.ndarray]` backed by `mmap_mode='r'`, so the full release fits even when it is too large for RAM: only the rows you actually access page in.
 
-The scalar metadata (`center_mm`, `scale_mm`) sits alongside the tensors at the same row index. This is the general pattern for **storing custom per-record data alongside the tensors**: anything that fits in a numpy array (scalar, vector, tensor, integer label, downsampled image, ...) can ride next to the main fields, declared by the `record_transform`. No separate metadata file required.
+`load_export` deliberately does **not** import torch. It just satisfies the same `len + getitem` protocol PyTorch's map-style `Dataset` uses, so the returned object plugs into `DataLoader`, `tf.data.Dataset.from_generator`, JAX, or a plain Python loop without any adapter. Pass `fields=["forming", "delta"]` to load a subset; unknown names raise `ValueError` so typos surface immediately.
+
+The scalar metadata (`center_mm`, `scale_mm`) sits alongside the tensors at the same row index. That is the general pattern for **storing custom per-record data alongside the tensors**: anything that fits in a numpy array (scalar, vector, tensor, integer label, downsampled image, ...) can ride next to the main fields, declared by the `record_transform`. No separate metadata file required.
 
 ```python
-sim_ids   = np.load(paths['sim_ids'])
-forming   = np.load(paths['forming'],   mmap_mode='r')
-delta     = np.load(paths['delta'],     mmap_mode='r')
-center_mm = np.load(paths['center_mm'], mmap_mode='r')
-scale_mm  = np.load(paths['scale_mm'],  mmap_mode='r')
+export = ddacs.streaming.load_export(EXPORT_DIR)
 
-print(f'forming:   shape={forming.shape}   dtype={forming.dtype}   range=[{forming.min():+.3f}, {forming.max():+.3f}]')
-print(f'center_mm: shape={center_mm.shape}     dtype={center_mm.dtype}   values={center_mm[0]}')
-print(f'scale_mm:  shape={scale_mm.shape}        dtype={scale_mm.dtype}   value={float(scale_mm[0]):.3f}')
+print(f'len(export)    = {len(export)}')
+print(f'export.fields  = {export.fields}')
+print(f'export.sim_ids = {export.sim_ids.tolist()}')
+
+record = export[0]
+for alias, value in record.items():
+    print(f'  {alias:10s} shape={value.shape}  dtype={value.dtype}')
 ```
 
 Output:
 
 ```
-forming:   shape=(1, 11236, 3)   dtype=float32   range=[-0.954, +1.000]
-center_mm: shape=(1, 3)     dtype=float32   values=[47.913727 47.896564 13.933755]
-scale_mm:  shape=(1,)        dtype=float32   value=50.223
+len(export)    = 1
+export.fields  = ('center_mm', 'delta', 'forming', 'scale_mm')
+export.sim_ids = [258864]
+  center_mm  shape=(3,)  dtype=float32
+  delta      shape=(11236, 3)  dtype=float32
+  forming    shape=(11236, 3)  dtype=float32
+  scale_mm   shape=()  dtype=float32
 ```
 
-Round trip back to mm — inverting the normalisation is one numpy expression:
+Round trip back to mm — inverting the normalisation is one numpy expression on the per-record data:
 
 ```python
-forming_mm = forming[0] * scale_mm[0] + center_mm[0]
+record = export[0]
+forming_mm = record['forming'] * record['scale_mm'] + record['center_mm']
 print(f'de-norm forming_mm range: [{forming_mm.min():+.3f}, {forming_mm.max():+.3f}] mm')
 ```
 
@@ -153,6 +160,13 @@ Output:
 
 ```
 de-norm forming_mm range: [+0.000, +98.136] mm
+```
+
+For a PyTorch training loop, pass the same `export` straight into a `DataLoader` — the map-style `Dataset` protocol is just `len + getitem`, which this object provides natively:
+
+```python
+from torch.utils.data import DataLoader
+loader = DataLoader(export, batch_size=16, shuffle=True)
 ```
 
 ## 5. Time the two paths back to back
@@ -169,18 +183,22 @@ for rec in ddacs.streaming.iter_view('my-view', data_dir=DATA_DIR, dataset=ds, s
 t_stream = time.perf_counter() - t0
 
 t0 = time.perf_counter()
-mmap_sum = float(sum(np.abs(delta[i]).sum() for i in range(len(delta))))
+mmap_sum = 0.0
+m = 0
+for record in export:
+    mmap_sum += float(np.abs(record['delta']).sum())
+    m += 1
 t_mmap = time.perf_counter() - t0
 
-print(f'iter_view  : {n} sim in {1000 * t_stream:.2f} ms  ({1000 * t_stream / n:.2f} ms/sim)')
-print(f'numpy mmap : {len(delta)} sim in {1000 * t_mmap:.2f} ms  ({1000 * t_mmap / len(delta):.2f} ms/sim)')
+print(f'iter_view   : {n} sim in {1000 * t_stream:.2f} ms  ({1000 * t_stream / n:.2f} ms/sim)')
+print(f'load_export : {m} sim in {1000 * t_mmap:.2f} ms  ({1000 * t_mmap / m:.2f} ms/sim)')
 ```
 
 Output (single sim on the HDD-backed bundle):
 
 ```
-iter_view  : 1 sim in 184.71 ms  (184.71 ms/sim)
-numpy mmap : 1 sim in 0.13 ms  (0.13 ms/sim)
+iter_view   : 1 sim in 370.03 ms  (370.03 ms/sim)
+load_export : 1 sim in 0.37 ms  (0.37 ms/sim)
 ```
 
 **~1414x faster per record** after a one-time ~470 ms export. The numerical results match to single-precision tolerance (sum |delta| identical between the two paths).
