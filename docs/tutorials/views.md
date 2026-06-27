@@ -101,12 +101,23 @@ Download(106921_109120.zip)
 !!! warning "`ds.records()` does not scale to the full release"
     `mlcroissant` walks every zip referenced by the FileSet at iterator setup, before yielding the first record. With the **small bundle** only `258864.zip` is on disk, so the snippet above raises `GenerationError` immediately. With the **full release** on disk it does *not* abort, but the setup walk has to open and parse the central directory of every zip in the FileSet, which can take **several minutes on spinning disks** and only gets slower as releases grow.
 
-    Either way, this is the wrong path for a training loop. Use [`DDACSDataset`](pytorch.md#8-stream-a-custom-view-add_view-dataset) from the PyTorch tutorial instead: it builds a lazy `sim_id -> local zip` index, opens a zip only when a record is requested, scales to the full release, and silently skips missing zips on a partial download. To stream **this** custom view through `DDACSDataset`, pass the same in-memory `ds` via the `dataset=` kwarg:
+    Either way, this is the wrong path for iteration. Two replacements both work and both scale to the full release without the FileSet setup walk:
 
-    ```python
-    from ddacs.pytorch import DDACSDataset
-    custom_ds = DDACSDataset(view="my-view", data_dir=DATA_DIR, dataset=ds)
-    ```
+    - **[`ddacs.streaming.iter_view`](streaming.md)** is the no-PyTorch generator. Same semantics, same per-record dict, no torch dependency.
+
+      ```python
+      for rec in ddacs.streaming.iter_view("my-view", data_dir=DATA_DIR, dataset=ds):
+          ...
+      ```
+
+    - **[`DDACSDataset`](pytorch.md#8-stream-a-custom-view-add_view-dataset)** wraps the same iteration in a `torch.utils.data.IterableDataset` for `DataLoader` batching, multi-worker sharding and DDP.
+
+      ```python
+      from ddacs.pytorch import DDACSDataset
+      custom_ds = DDACSDataset(view="my-view", data_dir=DATA_DIR, dataset=ds)
+      ```
+
+    Both build a lazy `sim_id -> local zip` index at construction, open a zip only when a record is requested, scale to the full release, and silently skip missing zips on a partial download. The `dataset=` kwarg carries the in-memory `add_view` mutation through.
 
 ## 5. Read other RecordSets
 
@@ -171,6 +182,7 @@ schema_reference      = 'SIM-KAx, doi:10.1007/s11740-026-01441-7'
 
 ## Where to go next
 
+- [Streaming and numpy export](streaming.md) iterates the same view with `ddacs.streaming.iter_view` (no PyTorch) and shows the `export_to_numpy` recipe for sub-millisecond per-record reads after a one-shot conversion.
 - [PyTorch training](pytorch.md) wraps a view (custom or published) in `DDACSDataset` for batched training. The "Stream a custom view" section shows the `add_view` -> `DDACSDataset(dataset=ds)` chain that streams the view you just built without re-parsing the manifest.
 - [Visualization](visualization.md) plots arrays pulled from a record.
 - [Croissant manifest](../croissant.md) explains the schema and the field-map RecordSet that underpins `add_view`.
