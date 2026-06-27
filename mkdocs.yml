@@ -74,11 +74,13 @@ nav:
       - 3. PyTorch training: tutorials/pytorch.md
       - 4. Visualization: tutorials/visualization.md
       - 5. Loose HDF5 recipe: tutorials/loose-h5.md
+      - 6. Streaming and numpy export: tutorials/streaming.md
   - CLI Reference: cli.md
   - API Reference:
       - Overview: api/index.md
       - Croissant: api/croissant.md
       - HDF5: api/h5.md
+      - Streaming: api/streaming.md
       - PyTorch: api/pytorch.md
       - Visualization: api/visualization.md
 

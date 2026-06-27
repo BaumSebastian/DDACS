@@ -7,6 +7,7 @@ These tutorials walk through the typical workflows on top of the `ddacs` Python 
 3. [PyTorch training](pytorch.md): Stream a view through `DDACSDataset`, batching with `DataLoader`, multi worker sharding, DDP, and a reproducibility note. Includes the per simulation read benchmark.
 4. [Visualization](visualization.md): Mesh, point cloud, vector field, and projection plots on top of `ddacs.open_h5`.
 5. [Loose HDF5 recipe](loose-h5.md): Iterate over loose `.h5` files after `ddacs download --extract --remove-zip`.
+6. [Streaming and numpy export](streaming.md): Iterate any view with `ddacs.streaming.iter_view` (no PyTorch, no mlcroissant FileSet walk), and materialise it as flat `.npy` shards with `streaming.export_to_numpy` for ~1000x faster training reads.
 
 ## Prerequisites
 
