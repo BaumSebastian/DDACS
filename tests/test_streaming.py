@@ -1,0 +1,123 @@
+"""Tests for `ddacs.streaming.iter_view`."""
+
+from __future__ import annotations
+
+import zipfile
+
+import pytest
+
+import ddacs
+
+
+class TestIterViewZippedLayout:
+    """The default synthetic fixture stores one `.h5` per zip under `h5/`."""
+
+    def test_yields_one_record_per_sim(self, synthetic_data_dir):
+        records = list(
+            ddacs.streaming.iter_view("springback-minimal", data_dir=str(synthetic_data_dir))
+        )
+        assert len(records) >= 1
+        for rec in records:
+            assert set(rec.keys()) == {
+                "forming",
+                "springback",
+            }
+            assert rec["forming"].shape == (5, 3)
+            assert rec["springback"].shape == (5, 3)
+
+    def test_sim_ids_filter(self, synthetic_data_dir):
+        records = list(
+            ddacs.streaming.iter_view(
+                "springback-minimal",
+                data_dir=str(synthetic_data_dir),
+                sim_ids=[1, 3],
+            )
+        )
+        assert len(records) == 2
+
+    def test_where_filter(self, synthetic_data_dir):
+        records = list(
+            ddacs.streaming.iter_view(
+                "springback-minimal",
+                data_dir=str(synthetic_data_dir),
+                where=lambda row: row["index"] == 1,
+            )
+        )
+        assert len(records) == 1
+
+
+class TestIterViewLooseLayout:
+    """`ddacs download --extract --remove-zip` produces loose `.h5` files."""
+
+    @pytest.fixture
+    def loose_data_dir(self, synthetic_data_dir, tmp_path):
+        """Mirror the synthetic dataset with the h5 files extracted from their zips."""
+        out = tmp_path / "ddacs_loose"
+        (out / "h5").mkdir(parents=True)
+        # Copy manifest + csv unchanged.
+        (out / "metadata.json").write_text((synthetic_data_dir / "metadata.json").read_text())
+        (out / "process_parameters.csv").write_text(
+            (synthetic_data_dir / "process_parameters.csv").read_text()
+        )
+        # Unpack each zip into h5/<sim>.h5.
+        for zp in (synthetic_data_dir / "h5").glob("*.zip"):
+            with zipfile.ZipFile(zp) as zf:
+                zf.extractall(out / "h5")
+        return out
+
+    def test_yields_one_record_per_sim(self, loose_data_dir):
+        records = list(
+            ddacs.streaming.iter_view("springback-minimal", data_dir=str(loose_data_dir))
+        )
+        assert len(records) >= 1
+        for rec in records:
+            assert rec["forming"].shape == (5, 3)
+
+    def test_index_prefers_loose_over_zip(self, loose_data_dir, synthetic_data_dir):
+        """When both layouts exist side by side, loose files win and zips are ignored."""
+        # Copy the original zips into the loose dir so both formats coexist.
+        for zp in (synthetic_data_dir / "h5").glob("*.zip"):
+            (loose_data_dir / "h5" / zp.name).write_bytes(zp.read_bytes())
+
+        index = ddacs.streaming._build_unified_index(loose_data_dir)
+        # Every indexed sim should resolve to a `.h5` file, not a `.zip`.
+        for sim_id, path in index.items():
+            assert path.endswith(
+                ".h5"
+            ), f"sim {sim_id} resolved to {path!r}; loose layout should win"
+
+
+class TestIterViewDatasetKwarg:
+    """`add_view` -> `iter_view(dataset=ds)` is the non-PyTorch equivalent of
+    `DDACSDataset(dataset=ds)`."""
+
+    def test_custom_view_via_dataset_kwarg(self, synthetic_data_dir):
+        ds = ddacs.load(data_dir=str(synthetic_data_dir))
+        ddacs.add_view(
+            ds,
+            "trajectory-only",
+            fields={"trajectory": ("op10_blank_node_displacement", None)},
+        )
+
+        # Without dataset=, the manifest is re-parsed and the custom view is invisible.
+        with pytest.raises(ValueError):
+            list(ddacs.streaming.iter_view("trajectory-only", data_dir=str(synthetic_data_dir)))
+
+        # With dataset=, the in-memory mutation carries through.
+        records = list(
+            ddacs.streaming.iter_view(
+                "trajectory-only",
+                data_dir=str(synthetic_data_dir),
+                dataset=ds,
+            )
+        )
+        assert len(records) >= 1
+        for rec in records:
+            assert "trajectory" in rec
+            assert rec["trajectory"].ndim == 3  # (timesteps, n_nodes, 3)
+
+
+class TestIterViewInvalidView:
+    def test_unknown_view_raises(self, synthetic_data_dir):
+        with pytest.raises(ValueError):
+            list(ddacs.streaming.iter_view("nonexistent", data_dir=str(synthetic_data_dir)))

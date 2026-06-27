@@ -17,6 +17,7 @@ Examples:
 
 __version__ = "3.0.0"
 
+from . import streaming
 from .croissant import add_view, load
 from .h5_tools import inspect_h5, open_h5
 from .visualization import (
@@ -40,6 +41,8 @@ __all__ = [
     # HDF5 helpers
     "open_h5",
     "inspect_h5",
+    # Streaming pipeline (offline iteration + numpy export)
+    "streaming",
     # PyTorch (optional — only available if torch is installed)
     "DDACSDataset",
     # Visualization
