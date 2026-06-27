@@ -1,6 +1,11 @@
 # Loose HDF5 recipe
 
-`ddacs download --extract --remove-zip` unpacks each zip in place and deletes the archive on success. The Croissant manifest path (`ddacs.load`, `ddacs.open_h5`, `DDACSDataset`) requires the zips, so once they are gone the only access path is `pandas` for the index and raw `h5py` for the simulations. That is what this recipe walks through.
+`ddacs download --extract --remove-zip` unpacks each zip in place and deletes the archive on success. After that, the simulations sit as loose `.h5` files instead of zip members.
+
+Two paths work on this layout:
+
+- **View-driven**: [`ddacs.streaming.iter_view`](streaming.md) and `DDACSDataset` both use a unified index that recognises loose `.h5` files alongside zips, so the same view code you wrote against zips keeps working after extraction. This is the path for anyone who already has a view defined.
+- **Manual `h5py.File`**: when you don't have (or don't need) a view, the pandas-plus-`h5py` recipe below gives you full access to every group and dataset in the file. That is what this recipe walks through.
 
 The companion notebook at [`notebooks/05_loose_h5.ipynb`](https://github.com/BaumSebastian/DDACS/tree/main/notebooks/05_loose_h5.ipynb) reproduces every cell below.
 
@@ -100,3 +105,4 @@ opened 1 loose h5 file(s)
 
 - [Build your own view](views.md) and [PyTorch training](pytorch.md) cover the zipped-bundle path that the Croissant API supports.
 - [HDF5 structure reference](../hdf5-structure.md) lists every dataset and attribute available inside each loose `.h5`.
+- [Streaming and numpy export](streaming.md) shows how `ddacs.streaming.iter_view` reads the same loose layout view-driven, without writing the per-record `h5py.File` loop yourself.
