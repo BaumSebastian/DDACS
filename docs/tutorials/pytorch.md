@@ -247,6 +247,8 @@ locally indexed: 1
 
 Same flow with `where=`, `sim_ids=`, and `shuffle=` works against `custom_ds` — the custom view is just another `RecordSet` once it lives on `ds_manifest`.
 
+If you do not need a `DataLoader` or PyTorch at all, `ddacs.streaming.iter_view(view='forming-only', data_dir=DATA_DIR, dataset=ds_manifest)` is the no-torch equivalent that yields the same records one at a time. The [Streaming and numpy export](streaming.md) tutorial covers it and shows the matching `streaming.export_to_numpy` recipe for materialising a view as flat `.npy` shards.
+
 ## Performance
 
 `DDACSDataset.__iter__` is benchmarked against a hand rolled `zipfile + h5py.File` loop computing the same springback delta on the same files. Both paths produce identical numerical output (`sum |delta|` matches to 1e-6), so the timing comparison is purely about read efficiency.
@@ -281,4 +283,5 @@ Records with variable mesh sizes need a custom `collate_fn`. Use `DataLoader(...
 
 - [Build your own view](views.md) explains how the field map and JSONPath transforms drive `DDACSDataset` field selection.
 - [Visualization](visualization.md) plots arrays pulled from a single record.
+- [Streaming and numpy export](streaming.md) covers the no-PyTorch `iter_view` and the one-shot `export_to_numpy` materialisation.
 - [API reference](../api/pytorch.md) lists every constructor argument.
