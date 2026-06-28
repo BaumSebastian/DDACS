@@ -186,5 +186,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-REFACTORING.md
-CHANGELOG.md
+ROADMAP.md
