@@ -6,6 +6,7 @@ nothing is duplicated in the Python package.
 
 from __future__ import annotations
 
+import copy
 import json
 import urllib.request
 from pathlib import Path
@@ -140,13 +141,20 @@ def dataset_name(dataset: mlc.Dataset) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _load_jsonld_dict(source: str) -> dict[str, Any]:
+def _load_jsonld_dict(source: str | Path | dict[str, Any]) -> dict[str, Any]:
     """Return the manifest's JSON-LD as a plain dict.
 
-    Used by :func:`add_view`. We don't go through ``ds.metadata.to_json()``
-    because that round-trip drops the original ``value`` payload on some
-    fields and the rebuilt dataset fails validation.
+    Accepts a path, URL, or an already-parsed dict. The dict case is used
+    by :func:`add_view` to accumulate multiple calls on the same dataset
+    (each call writes the mutated dict back to ``ds.jsonld``); we deep-copy
+    so the caller's later mutations do not leak back into the cached state.
+
+    We don't go through ``ds.metadata.to_json()`` because that round-trip
+    drops the original ``value`` payload on some fields and the rebuilt
+    dataset fails validation.
     """
+    if isinstance(source, dict):
+        return copy.deepcopy(source)
     if str(source).startswith(("http://", "https://")):
         with urllib.request.urlopen(str(source)) as r:
             return json.load(r)
@@ -292,9 +300,12 @@ def add_view(
     manifest on DaRUS is untouched — only the in-memory representation
     grows. ``ds`` is mutated in place and returned for optional chaining.
     """
-    jsonld = _load_jsonld_dict(str(ds.jsonld))
+    jsonld = _load_jsonld_dict(ds.jsonld)
     jsonld.setdefault("recordSet", []).append(_build_record_set(jsonld, name, fields))
     rebuilt = mlc.Dataset(jsonld=jsonld, mapping=ds.mapping)
     ds.metadata = rebuilt.metadata
     ds.operations = rebuilt.operations
+    # Persist the mutated dict so subsequent add_view calls accumulate
+    # instead of clobbering each other.
+    ds.jsonld = jsonld
     return ds
