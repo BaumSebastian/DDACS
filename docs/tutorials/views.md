@@ -49,12 +49,58 @@ Field IDs (such as `op10_blank_node_displacement`) come from the field-map Recor
 
 | Value | Result |
 |-------|--------|
-| `"field_id"` | whole field (shortcut) |
-| `("field_id", None)` | whole field (explicit) |
-| `("field_id", int)` | one timestep |
-| `("field_id", [int, int, ...])` | subset of timesteps |
+| `"field_id"` | whole field-map field (shortcut) |
+| `("field_id", None)` | whole field-map field (explicit) |
+| `("field_id", int)` | one timestep (field-map only) |
+| `("field_id", [int, int, ...])` | subset of timesteps (field-map only) |
+| `"<record-set>/<field>"` | qualified id, pulls from any RecordSet (e.g. `"process-parameters/sheet_metal_thickness"`) |
 
 Behind the scenes a JSONPath transform is attached to each field that requires slicing: `("...", 2)` becomes `$[2]`, `("...", [2, 3])` becomes `$[2,3]`. The transform is applied at iteration time, so memory and IO scale with the timesteps actually requested, not with the full HDF5 array.
+
+## Mix in process-parameters columns
+
+`add_view` also accepts **qualified** field IDs of the form `"<record-set>/<field>"`, which lets a single view combine HDF5 fields from `field-map` with CSV columns from `process-parameters` (or any other RecordSet in the manifest). The two sources are joined on `sim_id` automatically. `mlcroissant` requires an explicit cross-source `references` link to validate the manifest, and `add_view` injects one on the first field-map field for you, so no manual join wiring is needed on the consumer side.
+
+```python
+ddacs.add_view(
+    ds,
+    "my-view-with-params",
+    fields={
+        "forming":            ("op10_blank_node_displacement", 2),
+        "sheet_thickness":    "process-parameters/sheet_metal_thickness",
+        "friction":           "process-parameters/friction_coefficient",
+        "blankholder_force":  "process-parameters/blankholder_force",
+        "geometry":           "process-parameters/geometry",
+        "split":              "process-parameters/split",
+    },
+)
+```
+
+Iterating via [`ddacs.streaming.iter_view`](streaming.md) yields one record per simulation with both kinds of fields side by side: HDF5 arrays and CSV columns appear under their respective aliases.
+
+```python
+for rec in ddacs.streaming.iter_view(
+    "my-view-with-params",
+    data_dir=DATA_DIR,
+    dataset=ds,
+    sim_ids=[sim_id],
+):
+    print(f"forming.shape={rec['forming'].shape}")
+    print(f"sheet_thickness={rec['sheet_thickness']}  friction={rec['friction']}")
+    print(f"blankholder_force={rec['blankholder_force']}  geometry={rec['geometry']!r}")
+    print(f"split={rec['split']!r}")
+```
+
+Output:
+
+```
+forming.shape=(11236, 3)
+sheet_thickness=0.99  friction=0.05
+blankholder_force=250000.0  geometry='concave'
+split='val'
+```
+
+Timestep slicing is rejected for non-`field-map` sources: process-parameters columns are scalar per record and have no time axis to slice.
 
 ## 3. Inspect the new view's fields
 
