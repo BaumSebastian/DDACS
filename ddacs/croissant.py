@@ -192,13 +192,26 @@ def _normalize_field_spec(spec: FieldSpec) -> tuple[str, TimestepSpec]:
     raise TypeError(f"fields value must be a string or (field_id, slicing) tuple, got {spec!r}")
 
 
-def _lookup_data_type(jsonld: dict[str, Any], field_id: str) -> str:
-    """Return the source field's `dataType` from the field-map RecordSet."""
+def _resolve_field_id(field_id: str) -> str:
+    """Return a fully qualified ``<record_set>/<field>`` id.
+
+    Bare ids ("op10_blank_node_displacement") are assumed to live under
+    ``field-map`` for backward compatibility. Already-qualified ids
+    ("process-parameters/sheet_metal_thickness") are returned unchanged.
+    """
+    if "/" in field_id:
+        return field_id
+    return f"{FIELD_MAP_RECORD_SET}/{field_id}"
+
+
+def _lookup_data_type(jsonld: dict[str, Any], qualified_id: str) -> str:
+    """Return the source field's `dataType`, searching across all RecordSets."""
+    rs_id, _, field_name = qualified_id.partition("/")
     for rs in jsonld.get("recordSet", []):
-        if rs.get("@id") != FIELD_MAP_RECORD_SET:
+        if rs.get("@id") != rs_id:
             continue
         for f in rs.get("field", []):
-            if f.get("name") == field_id:
+            if f.get("name") == field_name:
                 dt = f.get("dataType")
                 if isinstance(dt, list):
                     return dt[0]
@@ -209,23 +222,48 @@ def _lookup_data_type(jsonld: dict[str, Any], field_id: str) -> str:
 def _build_record_set(
     jsonld: dict[str, Any], name: str, fields: dict[str, FieldSpec]
 ) -> dict[str, Any]:
-    """Build the JSON-LD fragment for a new RecordSet sourced from field-map."""
+    """Build the JSON-LD fragment for a new RecordSet (mixed sources allowed)."""
     field_entries: list[dict[str, Any]] = []
+    field_map_prefix = f"{FIELD_MAP_RECORD_SET}/"
+    has_field_map = False
+    has_process_params = False
+    first_field_map_entry: dict[str, Any] | None = None
+
     for alias, spec in fields.items():
         field_id, slicing = _normalize_field_spec(spec)
-        source: dict[str, Any] = {"field": {"@id": f"{FIELD_MAP_RECORD_SET}/{field_id}"}}
+        qualified = _resolve_field_id(field_id)
+        is_field_map = qualified.startswith(field_map_prefix)
+        is_process_params = qualified.startswith("process-parameters/")
+        if slicing is not None and not is_field_map:
+            raise ValueError(
+                f"timestep slicing is only supported on {FIELD_MAP_RECORD_SET!r} "
+                f"sources; field {alias!r} -> {field_id!r}"
+            )
+        source: dict[str, Any] = {"field": {"@id": qualified}}
         jsonpath = _slicing_to_jsonpath(slicing)
         if jsonpath is not None:
             source["transform"] = [{"jsonPath": jsonpath}]
-        field_entries.append(
-            {
-                "@type": "cr:Field",
-                "@id": f"{name}/{alias}",
-                "name": alias,
-                "dataType": _lookup_data_type(jsonld, field_id),
-                "source": source,
-            }
-        )
+        entry = {
+            "@type": "cr:Field",
+            "@id": f"{name}/{alias}",
+            "name": alias,
+            "dataType": _lookup_data_type(jsonld, qualified),
+            "source": source,
+        }
+        field_entries.append(entry)
+        if is_field_map:
+            has_field_map = True
+            if first_field_map_entry is None:
+                first_field_map_entry = entry
+        if is_process_params:
+            has_process_params = True
+
+    # mlcroissant requires an explicit cross-source join when a RecordSet pulls
+    # from more than one source. Declare it once on the first field-map field;
+    # streaming.iter_view ignores it and joins via the sim_id internally.
+    if has_field_map and has_process_params and first_field_map_entry is not None:
+        first_field_map_entry["references"] = {"field": {"@id": "process-parameters/index"}}
+
     return {
         "@type": "cr:RecordSet",
         "@id": name,
@@ -241,16 +279,18 @@ def add_view(
 ) -> mlc.Dataset:
     """Add a custom RecordSet to a loaded dataset and rewire it in place.
 
-    Each ``fields`` entry references a field-map field by name:
+    Each ``fields`` entry references a manifest field by name. Bare ids
+    resolve to ``field-map`` (the h5 source); qualified ids of the form
+    ``"<record-set>/<field>"`` can pull from any other RecordSet, e.g.
+    ``"process-parameters/sheet_metal_thickness"``:
 
-    - ``"name": "field_id"``              — whole field
-    - ``"name": ("field_id", None)``       — whole field (explicit)
-    - ``"name": ("field_id", 2)``          — timestep 2 only
-    - ``"name": ("field_id", [2, 3])``     — timesteps 2 and 3
+    - ``"name": "field_id"``                            — whole field-map field
+    - ``"name": ("field_id", None | int | list[int])``   — explicit, with optional timestep slicing
+    - ``"name": "process-parameters/<column>"``          — CSV column from the index
 
-    The published manifest on DaRUS is untouched — only the in-memory
-    representation grows. ``ds`` is mutated in place and returned for
-    optional chaining.
+    Timestep slicing is only valid on field-map sources. The published
+    manifest on DaRUS is untouched — only the in-memory representation
+    grows. ``ds`` is mutated in place and returned for optional chaining.
     """
     jsonld = _load_jsonld_dict(str(ds.jsonld))
     jsonld.setdefault("recordSet", []).append(_build_record_set(jsonld, name, fields))

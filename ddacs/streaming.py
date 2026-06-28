@@ -80,7 +80,7 @@ def iter_view(
         applied; whole fields come out at their full shape.
     """
     ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
-    field_specs = _build_field_specs(ds, view)
+    h5_specs, csv_specs = _build_field_specs(ds, view)
     h5_index = _build_unified_index(Path(data_dir) if data_dir is not None else None)
     final_ids = _resolve_sim_ids(
         Path(data_dir) if data_dir is not None else None,
@@ -88,6 +88,13 @@ def iter_view(
         sim_ids,
         where,
     )
+
+    csv_df: pd.DataFrame | None = None
+    if csv_specs:
+        if data_dir is None:
+            raise ValueError(f"view {view!r} pulls from 'process-parameters'; pass data_dir=")
+        csv_path = Path(data_dir) / PROCESS_PARAMETERS_FILE
+        csv_df = pd.read_csv(csv_path).set_index(ID_COLUMN)
 
     last_zip_path: str | None = None
     last_zf: zipfile.ZipFile | None = None
@@ -100,7 +107,7 @@ def iter_view(
             if path.endswith(".h5"):
                 # Loose file: open directly, no zip indirection.
                 with h5py.File(path, "r") as f:
-                    yield _extract_record(f, field_specs)
+                    record = _extract_record(f, h5_specs)
             elif path.endswith(".zip"):
                 # Cache the zip handle across consecutive sims that land in
                 # the same archive; corner-block zips group ~2200 sims each.
@@ -114,7 +121,17 @@ def iter_view(
                 except KeyError:
                     continue
                 with h5py.File(io.BytesIO(data), "r") as f:
-                    yield _extract_record(f, field_specs)
+                    record = _extract_record(f, h5_specs)
+            else:
+                continue
+            if csv_df is not None:
+                row = csv_df.loc[int(sim_id)]
+                for alias, col in csv_specs.items():
+                    record[alias] = row[col]
+            # Private scratch key for transforms (e.g. per-sim RNG seeding).
+            # export_to_numpy strips it before writing memmaps.
+            record["_sim_id"] = int(sim_id)
+            yield record
     finally:
         if last_zf is not None:
             last_zf.close()
@@ -325,6 +342,7 @@ def export_to_numpy(
         raise ValueError("view yielded no records") from exc
 
     first = _apply_transforms(first, transforms, record_transform)
+    first.pop("_sim_id", None)
     if not first:
         raise ValueError("record_transform returned an empty dict; nothing to write")
 
@@ -343,6 +361,7 @@ def export_to_numpy(
     # Stream the rest.
     for i, rec in enumerate(progress, start=1):
         rec = _apply_transforms(rec, transforms, record_transform)
+        rec.pop("_sim_id", None)
         for alias, val in rec.items():
             if alias not in memmaps:
                 raise ValueError(
@@ -451,12 +470,14 @@ def _build_unified_index(data_dir: Path | None) -> dict[int, str]:
     return index
 
 
-def _build_field_specs(ds, view: str) -> dict[str, tuple[str, Any]]:
-    """For each view-field, return ``(h5_path, slicing)``.
+def _build_field_specs(ds, view: str) -> tuple[dict[str, tuple[str, Any]], dict[str, str]]:
+    """Split a view's fields into HDF5 and process-parameters specs.
 
-    ``slicing`` is ``None``, an ``int`` (single timestep), or a
-    ``list[int]`` (multiple timesteps), parsed from the view-field's
-    JSONPath transform.
+    Returns ``(h5_specs, csv_specs)`` where:
+        ``h5_specs[alias]  = (h5_path, slicing)`` for field-map sources, and
+        ``csv_specs[alias] = csv_column_name`` for process-parameters sources.
+
+    Other source RecordSets raise ``ValueError``.
     """
     view_rs = next((r for r in ds.metadata.record_sets if r.id == view), None)
     if view_rs is None:
@@ -469,17 +490,26 @@ def _build_field_specs(ds, view: str) -> dict[str, tuple[str, Any]]:
         raise ValueError(f"{FIELD_MAP_RECORD_SET!r} RecordSet missing - manifest is malformed")
     fm = {f.name: f for f in fm_rs.fields}
 
-    specs: dict[str, tuple[str, Any]] = {}
+    h5_specs: dict[str, tuple[str, Any]] = {}
+    csv_specs: dict[str, str] = {}
     for f in view_rs.fields:
-        source_field_id = f.source.uuid.split("/", 1)[-1]
-        if source_field_id not in fm:
-            raise ValueError(f"view field {f.name!r} sources unknown field {source_field_id!r}")
-        h5_path = fm[source_field_id].source.transforms[0].regex
-        slicing = None
-        if f.source.transforms:
-            slicing = _parse_jsonpath(f.source.transforms[0].json_path)
-        specs[f.name] = (h5_path, slicing)
-    return specs
+        rs_id, _, source_field_id = f.source.uuid.partition("/")
+        if rs_id == FIELD_MAP_RECORD_SET:
+            if source_field_id not in fm:
+                raise ValueError(f"view field {f.name!r} sources unknown field {source_field_id!r}")
+            h5_path = fm[source_field_id].source.transforms[0].regex
+            slicing = None
+            if f.source.transforms:
+                slicing = _parse_jsonpath(f.source.transforms[0].json_path)
+            h5_specs[f.name] = (h5_path, slicing)
+        elif rs_id == "process-parameters":
+            csv_specs[f.name] = source_field_id
+        else:
+            raise ValueError(
+                f"view field {f.name!r} sources unsupported RecordSet {rs_id!r}; "
+                f"only {FIELD_MAP_RECORD_SET!r} and 'process-parameters' are supported"
+            )
+    return h5_specs, csv_specs
 
 
 def _parse_jsonpath(expr: str | None) -> Any:
