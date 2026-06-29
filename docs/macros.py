@@ -27,13 +27,27 @@ SMALL_DOWNLOAD_SIZE = "~22 MB"  # `ddacs download --small` (sample + CSV + manif
 # ---------------------------------------------------------------------------
 # Croissant manifest helpers (read at build time, not coupled to the values
 # above — they describe the schema, not file sizes / counts).
+#
+# Preference order:
+#   1. docs/metadata.json   — bundled with the docs build; what RTD uses.
+#                             Version-locked to the git tag; refresh on each
+#                             dataset release: cp <data_dir>/metadata.json docs/.
+#   2. data/metadata.json   — local developer copy (the data/ symlink); kept
+#                             for backwards compatibility so existing dev
+#                             workflows keep working.
+#   3. DaRUS URL            — last-resort network fetch; flaky on RTD because
+#                             mlcroissant's URL-load path can raise
+#                             "AssertionError: Found no node in graph".
 # ---------------------------------------------------------------------------
+_DOCS_METADATA = Path(__file__).resolve().parent / METADATA_FILE
 _LOCAL_METADATA = Path(__file__).resolve().parent.parent / "data" / METADATA_FILE
 
 
 def _dataset():
-    src = _LOCAL_METADATA if _LOCAL_METADATA.is_file() else None
-    return _croissant.load(source=src)
+    for candidate in (_DOCS_METADATA, _LOCAL_METADATA):
+        if candidate.is_file():
+            return _croissant.load(source=candidate)
+    return _croissant.load(source=None)
 
 
 def _md_table(headers: list[str], rows: list[list[str]]) -> str:

@@ -1,0 +1,2329 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "containedIn": "cr:containedIn",
+    "cr": "http://mlcommons.org/croissant/",
+    "rai": "http://mlcommons.org/croissant/RAI/",
+    "data": {
+      "@id": "cr:data",
+      "@type": "@json"
+    },
+    "dataType": {
+      "@id": "cr:dataType",
+      "@type": "@vocab"
+    },
+    "dct": "http://purl.org/dc/terms/",
+    "equivalentProperty": "cr:equivalentProperty",
+    "examples": {
+      "@id": "cr:examples",
+      "@type": "@json"
+    },
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileProperty": "cr:fileProperty",
+    "fileObject": "cr:fileObject",
+    "fileSet": "cr:fileSet",
+    "format": "cr:format",
+    "includes": "cr:includes",
+    "isLiveDataset": "cr:isLiveDataset",
+    "jsonPath": "cr:jsonPath",
+    "key": "cr:key",
+    "md5": "cr:md5",
+    "parentField": "cr:parentField",
+    "path": "cr:path",
+    "recordSet": "cr:recordSet",
+    "references": "cr:references",
+    "regex": "cr:regex",
+    "repeated": "cr:repeated",
+    "replace": "cr:replace",
+    "sc": "https://schema.org/",
+    "samplingRate": "cr:samplingRate",
+    "separator": "cr:separator",
+    "source": "cr:source",
+    "subField": "cr:subField",
+    "transform": "cr:transform",
+    "wd": "https://www.wikidata.org/wiki/"
+  },
+  "@type": "sc:Dataset",
+  "name": "DDACS",
+  "description": "Code, quick-start examples and full documentation: <a href=\"https://github.com/BaumSebastian/DDACS\">https://github.com/BaumSebastian/DDACS</a>.\n\nThe benchmark dataset was generated through a comprehensive simulation study of the deep drawing process for DP600 sheet metal, incorporating variations in geometry, material properties, and process parameters. The simulations were based on modified quadratic cups with a length of 210 mm and a drawing depth of 30 mm. Three distinct base geometries (Concave, Convex, and Rectangular) were derived from a rectangular reference shape, with the geometric parameters (curvature radius, bottom radius, wall angle) varied at their minimum and maximum corner values.\n\nFor each geometry corner, the material and process parameters (material scaling factor, friction coefficient, sheet metal thickness, blank holder force) were systematically varied across their full Cartesian product, yielding approximately 32,000 unique simulations. Each simulation captures the forming operation (OP10) and a subsequent cutting operation (OP20), with stress, strain, thickness, and nodal displacement fields at multiple timesteps including the configuration after springback.\n\nEach HDF5 file carries named scalar root attributes (geometry, curvature_radius, material_scaling_factor, friction_coefficient, sheet_metal_thickness, blank holder force, etc.) matching the columns of process_parameters.csv. This CSV is the central index mapping every simulation to its parameters and a recommended ML train, test and val split. A single simulation file (258864.zip) is provided for fast preview without downloading the full corner packages. The dataset also includes a complementary RDDAC study covering intermediate geometric and process parameter combinations.\n\nThe HDF5 files use gzip and shuffle compression for compact downloads while remaining readable by standard tooling (h5py, MATLAB HDF5, Julia HDF5). The structured layout supports surrogate modeling, springback prediction, and machine learning benchmarks for sheet metal forming.\n\nThe simulation provenance fields (program, tool deformability, model symmetries, material model, meshing, contact, etc.) follow the SIM-KAx schema (Schumann et al., Production Engineering, 2026) for cross-institution interoperability of forming-simulation datasets.",
+  "url": "https://doi.org/10.18419/DARUS-4801",
+  "version": "3.0",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "citation": "P. Heinzelmann, S. Baum, K. R. Riedmüller, M. Liewald, M. Weyrich, A comprehensive benchmark dataset for sheet metal forming: Advancing machine learning and surrogate modelling in pro-cess simulations, MATEC Web of Conferences 408 (2025) 01090.",
+  "citeAs": "P. Heinzelmann, S. Baum, K. R. Riedmüller, M. Liewald, M. Weyrich, A comprehensive benchmark dataset for sheet metal forming: Advancing machine learning and surrogate modelling in pro-cess simulations, MATEC Web of Conferences 408 (2025) 01090.",
+  "datePublished": "2025-02-27",
+  "creator": [
+    {
+      "@type": "Person",
+      "name": "Baum, Sebastian",
+      "affiliation": "https://ror.org/04vnq7t77",
+      "identifier": "https://orcid.org/0009-0001-0604-8764"
+    },
+    {
+      "@type": "Person",
+      "name": "Heinzelmann, Pascal",
+      "affiliation": "https://ror.org/04vnq7t77",
+      "identifier": "https://orcid.org/0009-0000-0638-7320"
+    }
+  ],
+  "keywords": [
+    "Finite Element Method",
+    "Finite Element Analysis",
+    "LS-Dyna",
+    "Deep Drawing",
+    "Simulation",
+    "Machine Learning",
+    "Sheet Metal Forming",
+    "Springback",
+    "Surrogate Model"
+  ],
+  "conformsTo": "http://mlcommons.org/croissant/1.1",
+  "distribution": [
+    {
+      "@type": "cr:FileObject",
+      "@id": "106921_109120.zip",
+      "name": "106921_109120.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/106921_109120.zip",
+      "md5": "8503733e5ed5aba7cefdc42db38b2cee"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "111321_112266.zip",
+      "name": "111321_112266.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/111321_112266.zip",
+      "md5": "ba5a5e64aae1bff60ce5792f153185a9"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "256609_258808.zip",
+      "name": "256609_258808.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/256609_258808.zip",
+      "md5": "1f6f37965ca03a067e6ae1f10be9073a"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "258864.zip",
+      "name": "258864.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/258864.zip",
+      "md5": "09ad4ee0c258edda14baf7ec69b96529"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "203149_205348.zip",
+      "name": "203149_205348.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/203149_205348.zip",
+      "md5": "8ca819443f03164d0619e3d7cd4a9cbb"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "205349_207548.zip",
+      "name": "205349_207548.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/205349_207548.zip",
+      "md5": "5715066293efd8dd986c44033cfac8ef"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "20442_21384.zip",
+      "name": "20442_21384.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/20442_21384.zip",
+      "md5": "814138dcc873797ebcbdab2a97c5ab71"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "16039_18240.zip",
+      "name": "16039_18240.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/16039_18240.zip",
+      "md5": "a4f9a5188e6e2931c986f2b41ecc05e7"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "109121_111320.zip",
+      "name": "109121_111320.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/109121_111320.zip",
+      "md5": "eeeada30cb91341919a94d186f023670"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "261011_261954.zip",
+      "name": "261011_261954.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/261011_261954.zip",
+      "md5": "effdecf5059c229e68ac390ea37714df"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "395605_397804.zip",
+      "name": "395605_397804.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/395605_397804.zip",
+      "md5": "30892b5142618b03771ff3ed05598443"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "207549_208494.zip",
+      "name": "207549_208494.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/207549_208494.zip",
+      "md5": "c88bfa033f84c14e9519549ec6ba80b8"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "304723_306922.zip",
+      "name": "304723_306922.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/304723_306922.zip",
+      "md5": "2af0164855400c1efad008e9818b9c10"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "306923_309122.zip",
+      "name": "306923_309122.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/306923_309122.zip",
+      "md5": "4c85078be2fe226a92a8b0401d68ca6b"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "309123_310068.zip",
+      "name": "309123_310068.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/309123_310068.zip",
+      "md5": "885043ca7f80847ebc7064a4dfae8746"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "397805_400005.zip",
+      "name": "397805_400005.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/397805_400005.zip",
+      "md5": "d773914af4c72b2a64c6247dd87d7e71"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "400006_400950.zip",
+      "name": "400006_400950.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/400006_400950.zip",
+      "md5": "7357121c5c423417b9e0e2dd583d5cc2"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "18241_20441.zip",
+      "name": "18241_20441.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/18241_20441.zip",
+      "md5": "b5dd1a0c7279f605a43d5b246e0ad979"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "rddac.zip",
+      "name": "rddac.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/rddac.zip",
+      "md5": "413003856d6f6af398f3b0c21386c53b"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "process_parameters_csv",
+      "name": "process_parameters.csv",
+      "encodingFormat": "text/csv",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/process_parameters.tab",
+      "md5": "3e2ec52775b10779725c9d4bc3bf9610"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "258809_261010.zip",
+      "name": "258809_261010.zip",
+      "encodingFormat": "application/zip",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/258809_261010.zip",
+      "md5": "35affb4df60e8b9132221d09fb541ad7"
+    },
+    {
+      "@type": "cr:FileObject",
+      "@id": "documentation_pdf",
+      "name": "ddacs_documentation.pdf",
+      "encodingFormat": "application/pdf",
+      "contentUrl": "https://darus.uni-stuttgart.de/api/access/datafile/:persistentId?persistentId=doi:10.18419/DARUS-4801/ddacs_documentation.pdf",
+      "md5": "49de179b18408ce6e616289519e500a1"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "all_h5_files",
+      "name": "all_h5_files",
+      "containedIn": [
+        {
+          "@id": "106921_109120.zip"
+        },
+        {
+          "@id": "111321_112266.zip"
+        },
+        {
+          "@id": "256609_258808.zip"
+        },
+        {
+          "@id": "258864.zip"
+        },
+        {
+          "@id": "203149_205348.zip"
+        },
+        {
+          "@id": "205349_207548.zip"
+        },
+        {
+          "@id": "20442_21384.zip"
+        },
+        {
+          "@id": "16039_18240.zip"
+        },
+        {
+          "@id": "109121_111320.zip"
+        },
+        {
+          "@id": "261011_261954.zip"
+        },
+        {
+          "@id": "395605_397804.zip"
+        },
+        {
+          "@id": "207549_208494.zip"
+        },
+        {
+          "@id": "304723_306922.zip"
+        },
+        {
+          "@id": "306923_309122.zip"
+        },
+        {
+          "@id": "309123_310068.zip"
+        },
+        {
+          "@id": "397805_400005.zip"
+        },
+        {
+          "@id": "400006_400950.zip"
+        },
+        {
+          "@id": "18241_20441.zip"
+        },
+        {
+          "@id": "rddac.zip"
+        },
+        {
+          "@id": "258809_261010.zip"
+        }
+      ],
+      "encodingFormat": "application/x-hdf5",
+      "includes": [
+        "**/*.h5"
+      ]
+    }
+  ],
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "@id": "process-parameters",
+      "name": "process_parameters",
+      "description": "Per-simulation parameter row from process_parameters.csv. Use `index` to look up the matching HDF5 file.",
+      "key": {
+        "@id": "process-parameters/index"
+      },
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/index",
+          "name": "index",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "index"
+            }
+          },
+          "description": "Unique simulation identifier; matches the HDF5 filename (e.g. index=16039 -> 16039.h5)."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/geometry",
+          "name": "geometry",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "geometry"
+            }
+          },
+          "description": "Base part geometry. One of 'rectangular', 'concave', 'convex'."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/curvature_radius",
+          "name": "curvature_radius",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "curvature_radius"
+            }
+          },
+          "description": "Geometry-specific curvature / corner radius, in mm."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/bottom_radius",
+          "name": "bottom_radius",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "bottom_radius"
+            }
+          },
+          "description": "Bottom radius of the formed cup, in mm."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/wall_angle",
+          "name": "wall_angle",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "wall_angle"
+            }
+          },
+          "description": "Wall angle of the formed cup, in degrees."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/material_scaling_factor",
+          "name": "material_scaling_factor",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "material_scaling_factor"
+            }
+          },
+          "description": "Scaling factor on the base DP600 flow curve (1.0 = nominal). Dimensionless."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/sheet_metal_thickness",
+          "name": "sheet_metal_thickness",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "sheet_metal_thickness"
+            }
+          },
+          "description": "Initial blank sheet thickness (SHTK), in mm."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/friction_coefficient",
+          "name": "friction_coefficient",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "friction_coefficient"
+            }
+          },
+          "description": "Coulomb friction coefficient between blank and tools (FC). Dimensionless."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/blankholder_force",
+          "name": "blankholder_force",
+          "dataType": "sc:Float",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "blankholder_force"
+            }
+          },
+          "description": "Force applied by the blank holder (BF), in Newtons."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/split",
+          "name": "split",
+          "dataType": "sc:Text",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "split"
+            }
+          },
+          "description": "Recommended ML data split: 'train' (~80%), 'test' (~10%), 'val' (~10%); deterministic, seed=42."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "process-parameters/rddac",
+          "name": "rddac",
+          "dataType": "sc:Boolean",
+          "source": {
+            "fileObject": {
+              "@id": "process_parameters_csv"
+            },
+            "extract": {
+              "column": "rddac"
+            }
+          },
+          "description": "True if the simulation belongs to the RDDAC sub-study (otherwise part of the corner blocks)."
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "field-map",
+      "name": "field-map",
+      "description": "Every HDF5 dataset declared once. Each entry's description encodes the on-disk path, whether the field is time-varying, and the full on-disk shape. Use-case RecordSets reference entries here.",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_binder_element_shell_ids",
+          "name": "op10_binder_element_shell_ids",
+          "description": "OP10 / binder. Unique integer identifiers for each shell element. HDF5 path: OP10/binder/element_shell_ids. Dimensions: (elements) = (134). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/binder/element_shell_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_binder_element_shell_node_indexes",
+          "name": "op10_binder_element_shell_node_indexes",
+          "description": "OP10 / binder. Local node indices of the 4 corners of each quadrilateral element. HDF5 path: OP10/binder/element_shell_node_indexes. Dimensions: (elements, quad_corners) = (134, 4). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/binder/element_shell_node_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_binder_element_shell_part_indexes",
+          "name": "op10_binder_element_shell_part_indexes",
+          "description": "OP10 / binder. Part membership label for each element (0..3 over die/punch/binder/blank). HDF5 path: OP10/binder/element_shell_part_indexes. Dimensions: (elements) = (134). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/binder/element_shell_part_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_binder_node_acceleration",
+          "name": "op10_binder_node_acceleration",
+          "description": "OP10 / binder. Acceleration vectors of nodes. Unit: mm/s^2. HDF5 path: OP10/binder/node_acceleration. Dimensions: (timesteps, nodes, xyz) = (3, 146, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/binder/node_acceleration"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_binder_node_coordinates",
+          "name": "op10_binder_node_coordinates",
+          "description": "OP10 / binder. Initial XYZ positions of nodes. Unit: mm. HDF5 path: OP10/binder/node_coordinates. Dimensions: (nodes, xyz) = (146, 3). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/binder/node_coordinates"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_binder_node_displacement",
+          "name": "op10_binder_node_displacement",
+          "description": "OP10 / binder. Displacement vectors from initial position, per node, per timestep. Unit: mm. HDF5 path: OP10/binder/node_displacement. Dimensions: (timesteps, nodes, xyz) = (3, 146, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/binder/node_displacement"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_binder_node_ids",
+          "name": "op10_binder_node_ids",
+          "description": "OP10 / binder. Unique integer identifiers for each node point. HDF5 path: OP10/binder/node_ids. Dimensions: (nodes) = (146). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/binder/node_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_binder_node_velocity",
+          "name": "op10_binder_node_velocity",
+          "description": "OP10 / binder. Velocity vectors of nodes. Unit: mm/s. HDF5 path: OP10/binder/node_velocity. Dimensions: (timesteps, nodes, xyz) = (3, 146, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/binder/node_velocity"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_bending_moment",
+          "name": "op10_blank_element_shell_bending_moment",
+          "description": "OP10 / blank. Bending moment components (Mxx, Myy, Mxy) per element. Unit: N*mm. HDF5 path: OP10/blank/element_shell_bending_moment. Dimensions: (timesteps, elements, moment_components) = (3, 11025, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_bending_moment"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_effective_plastic_strain",
+          "name": "op10_blank_element_shell_effective_plastic_strain",
+          "description": "OP10 / blank. Effective plastic strain at 3 layers per element. Unit: -. HDF5 path: OP10/blank/element_shell_effective_plastic_strain. Dimensions: (timesteps, elements, layers) = (4, 11025, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_effective_plastic_strain"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_effective_plastic_strain_all_ipt",
+          "name": "op10_blank_element_shell_effective_plastic_strain_all_ipt",
+          "description": "OP10 / blank. Effective plastic strain at all 7 integration points per element. Unit: -. HDF5 path: OP10/blank/element_shell_effective_plastic_strain_all_ipt. Dimensions: (elements, integration_points) = (11025, 7). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_effective_plastic_strain_all_ipt"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_ids",
+          "name": "op10_blank_element_shell_ids",
+          "description": "OP10 / blank. Unique integer identifiers for each shell element. HDF5 path: OP10/blank/element_shell_ids. Dimensions: (elements) = (11025). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_internal_energy",
+          "name": "op10_blank_element_shell_internal_energy",
+          "description": "OP10 / blank. Internal energy stored in each element. Unit: mJ. HDF5 path: OP10/blank/element_shell_internal_energy. Dimensions: (timesteps, elements) = (3, 11025). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_internal_energy"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_node_ids",
+          "name": "op10_blank_element_shell_node_ids",
+          "description": "OP10 / blank. Global node IDs of the 4 corners of each quadrilateral element. HDF5 path: OP10/blank/element_shell_node_ids. Dimensions: (elements, quad_corners) = (11025, 4). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_node_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_node_indexes",
+          "name": "op10_blank_element_shell_node_indexes",
+          "description": "OP10 / blank. Local node indices of the 4 corners of each quadrilateral element. HDF5 path: OP10/blank/element_shell_node_indexes. Dimensions: (elements, quad_corners) = (11025, 4). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_node_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_normal_force",
+          "name": "op10_blank_element_shell_normal_force",
+          "description": "OP10 / blank. In-plane normal force components (Nxx, Nyy, Nxy) per element. Unit: N. HDF5 path: OP10/blank/element_shell_normal_force. Dimensions: (timesteps, elements, force_components) = (3, 11025, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_normal_force"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_part_indexes",
+          "name": "op10_blank_element_shell_part_indexes",
+          "description": "OP10 / blank. Part membership label for each element (0..3 over die/punch/binder/blank). HDF5 path: OP10/blank/element_shell_part_indexes. Dimensions: (elements) = (11025). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_part_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_shear_force",
+          "name": "op10_blank_element_shell_shear_force",
+          "description": "OP10 / blank. Transverse shear force components (Qxz, Qyz) per element. Unit: N. HDF5 path: OP10/blank/element_shell_shear_force. Dimensions: (timesteps, elements, shear_components) = (3, 11025, 2). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_shear_force"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_strain",
+          "name": "op10_blank_element_shell_strain",
+          "description": "OP10 / blank. Strain tensor (6 components) per element, at top and bottom layer. Unit: -. HDF5 path: OP10/blank/element_shell_strain. Dimensions: (timesteps, elements, layers, strain_components) = (4, 11025, 2, 6). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_strain"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_stress",
+          "name": "op10_blank_element_shell_stress",
+          "description": "OP10 / blank. Cauchy stress tensor (6 components: sxx, syy, szz, sxy, syz, szx) per element, evaluated at 3 through-thickness layers. Unit: Pa. HDF5 path: OP10/blank/element_shell_stress. Dimensions: (timesteps, elements, layers, stress_components) = (4, 11025, 3, 6). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_stress"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_stress_all_ipt",
+          "name": "op10_blank_element_shell_stress_all_ipt",
+          "description": "OP10 / blank. Stress at all 7 through-thickness integration points (vs. only 3 layers). Unit: Pa. HDF5 path: OP10/blank/element_shell_stress_all_ipt. Dimensions: (elements, integration_points, stress_components) = (11025, 7, 6). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_stress_all_ipt"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_stress_all_ipt_thickness",
+          "name": "op10_blank_element_shell_stress_all_ipt_thickness",
+          "description": "OP10 / blank. Normalized through-thickness coordinate of each integration point. Unit: -. HDF5 path: OP10/blank/element_shell_stress_all_ipt_thickness. Dimensions: (singleton, integration_points) = (1, 7). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_stress_all_ipt_thickness"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_thickness",
+          "name": "op10_blank_element_shell_thickness",
+          "description": "OP10 / blank. Current shell element thickness, per element, per timestep. Unit: mm. HDF5 path: OP10/blank/element_shell_thickness. Dimensions: (timesteps, elements) = (4, 11025). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_thickness"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_element_shell_unknown_variables",
+          "name": "op10_blank_element_shell_unknown_variables",
+          "description": "OP10 / blank. Additional LS-DYNA element variables (UNV1, UNV2) — solver internal. HDF5 path: OP10/blank/element_shell_unknown_variables. Dimensions: (timesteps, elements, unknown_vars) = (3, 11025, 2). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/element_shell_unknown_variables"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_node_acceleration",
+          "name": "op10_blank_node_acceleration",
+          "description": "OP10 / blank. Acceleration vectors of nodes. Unit: mm/s^2. HDF5 path: OP10/blank/node_acceleration. Dimensions: (timesteps, nodes, xyz) = (3, 11236, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/node_acceleration"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_node_coordinates",
+          "name": "op10_blank_node_coordinates",
+          "description": "OP10 / blank. Initial XYZ positions of nodes. Unit: mm. HDF5 path: OP10/blank/node_coordinates. Dimensions: (nodes, xyz) = (11236, 3). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/node_coordinates"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_node_displacement",
+          "name": "op10_blank_node_displacement",
+          "description": "OP10 / blank. Displacement vectors from initial position, per node, per timestep. Unit: mm. HDF5 path: OP10/blank/node_displacement. Dimensions: (timesteps, nodes, xyz) = (4, 11236, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/node_displacement"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_node_ids",
+          "name": "op10_blank_node_ids",
+          "description": "OP10 / blank. Unique integer identifiers for each node point. HDF5 path: OP10/blank/node_ids. Dimensions: (nodes) = (11236). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/node_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_blank_node_velocity",
+          "name": "op10_blank_node_velocity",
+          "description": "OP10 / blank. Velocity vectors of nodes. Unit: mm/s. HDF5 path: OP10/blank/node_velocity. Dimensions: (timesteps, nodes, xyz) = (3, 11236, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/blank/node_velocity"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_die_element_shell_ids",
+          "name": "op10_die_element_shell_ids",
+          "description": "OP10 / die. Unique integer identifiers for each shell element. HDF5 path: OP10/die/element_shell_ids. Dimensions: (elements) = (2084). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/die/element_shell_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_die_element_shell_node_indexes",
+          "name": "op10_die_element_shell_node_indexes",
+          "description": "OP10 / die. Local node indices of the 4 corners of each quadrilateral element. HDF5 path: OP10/die/element_shell_node_indexes. Dimensions: (elements, quad_corners) = (2084, 4). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/die/element_shell_node_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_die_element_shell_part_indexes",
+          "name": "op10_die_element_shell_part_indexes",
+          "description": "OP10 / die. Part membership label for each element (0..3 over die/punch/binder/blank). HDF5 path: OP10/die/element_shell_part_indexes. Dimensions: (elements) = (2084). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/die/element_shell_part_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_die_node_acceleration",
+          "name": "op10_die_node_acceleration",
+          "description": "OP10 / die. Acceleration vectors of nodes. Unit: mm/s^2. HDF5 path: OP10/die/node_acceleration. Dimensions: (timesteps, nodes, xyz) = (3, 2047, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/die/node_acceleration"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_die_node_coordinates",
+          "name": "op10_die_node_coordinates",
+          "description": "OP10 / die. Initial XYZ positions of nodes. Unit: mm. HDF5 path: OP10/die/node_coordinates. Dimensions: (nodes, xyz) = (2047, 3). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/die/node_coordinates"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_die_node_displacement",
+          "name": "op10_die_node_displacement",
+          "description": "OP10 / die. Displacement vectors from initial position, per node, per timestep. Unit: mm. HDF5 path: OP10/die/node_displacement. Dimensions: (timesteps, nodes, xyz) = (3, 2047, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/die/node_displacement"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_die_node_ids",
+          "name": "op10_die_node_ids",
+          "description": "OP10 / die. Unique integer identifiers for each node point. HDF5 path: OP10/die/node_ids. Dimensions: (nodes) = (2047). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/die/node_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_die_node_velocity",
+          "name": "op10_die_node_velocity",
+          "description": "OP10 / die. Velocity vectors of nodes. Unit: mm/s. HDF5 path: OP10/die/node_velocity. Dimensions: (timesteps, nodes, xyz) = (3, 2047, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/die/node_velocity"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_element_shell_ids",
+          "name": "op10_general_element_shell_ids",
+          "description": "OP10 / general. Unique integer identifiers for each shell element. HDF5 path: OP10/general/element_shell_ids. Dimensions: (elements) = (14355). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/element_shell_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_element_shell_node_indexes",
+          "name": "op10_general_element_shell_node_indexes",
+          "description": "OP10 / general. Local node indices of the 4 corners of each quadrilateral element. HDF5 path: OP10/general/element_shell_node_indexes. Dimensions: (elements, quad_corners) = (14355, 4). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/element_shell_node_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_element_shell_part_indexes",
+          "name": "op10_general_element_shell_part_indexes",
+          "description": "OP10 / general. Part membership label for each element (0..3 over die/punch/binder/blank). HDF5 path: OP10/general/element_shell_part_indexes. Dimensions: (elements) = (14355). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/element_shell_part_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_global_internal_energy",
+          "name": "op10_general_global_internal_energy",
+          "description": "OP10 / general. Total internal energy of the entire system per timestep. Unit: mJ. HDF5 path: OP10/general/global_internal_energy. Dimensions: (timesteps) = (3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/global_internal_energy"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_global_kinetic_energy",
+          "name": "op10_general_global_kinetic_energy",
+          "description": "OP10 / general. Total kinetic energy of the system per timestep. Unit: mJ. HDF5 path: OP10/general/global_kinetic_energy. Dimensions: (timesteps) = (3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/global_kinetic_energy"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_global_timesteps",
+          "name": "op10_general_global_timesteps",
+          "description": "OP10 / general. Simulation time at each output timestep. Unit: s. HDF5 path: OP10/general/global_timesteps. Dimensions: (timesteps) = (3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/global_timesteps"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_global_total_energy",
+          "name": "op10_general_global_total_energy",
+          "description": "OP10 / general. Sum of all energy components in the system per timestep. Unit: mJ. HDF5 path: OP10/general/global_total_energy. Dimensions: (timesteps) = (3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/global_total_energy"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_global_velocity",
+          "name": "op10_general_global_velocity",
+          "description": "OP10 / general. Global system centre-of-mass velocity vector per timestep. Unit: mm/s. HDF5 path: OP10/general/global_velocity. Dimensions: (timesteps, xyz) = (3, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/global_velocity"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_node_ids",
+          "name": "op10_general_node_ids",
+          "description": "OP10 / general. Unique integer identifiers for each node point. HDF5 path: OP10/general/node_ids. Dimensions: (nodes) = (14533). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/node_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_part_hourglass_energy",
+          "name": "op10_general_part_hourglass_energy",
+          "description": "OP10 / general. Hourglass energy per part — indicator of mesh quality / numerical noise. Unit: mJ. HDF5 path: OP10/general/part_hourglass_energy. Dimensions: (timesteps, parts) = (3, 4). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/part_hourglass_energy"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_part_internal_energy",
+          "name": "op10_general_part_internal_energy",
+          "description": "OP10 / general. Internal energy per part (die, punch, binder, blank), per timestep. Unit: mJ. HDF5 path: OP10/general/part_internal_energy. Dimensions: (timesteps, parts) = (3, 4). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/part_internal_energy"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_part_kinetic_energy",
+          "name": "op10_general_part_kinetic_energy",
+          "description": "OP10 / general. Kinetic energy per part, per timestep. Unit: mJ. HDF5 path: OP10/general/part_kinetic_energy. Dimensions: (timesteps, parts) = (3, 4). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/part_kinetic_energy"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_part_mass",
+          "name": "op10_general_part_mass",
+          "description": "OP10 / general. Mass of each part, per timestep. Unit: kg. HDF5 path: OP10/general/part_mass. Dimensions: (timesteps, parts) = (3, 4). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/part_mass"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_part_material_type",
+          "name": "op10_general_part_material_type",
+          "description": "OP10 / general. Field part_material_type (no curated description). HDF5 path: OP10/general/part_material_type. Dimensions: (axis0) = (4). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/part_material_type"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_part_titles",
+          "name": "op10_general_part_titles",
+          "description": "OP10 / general. Field part_titles (no curated description). HDF5 path: OP10/general/part_titles. Dimensions: (axis0) = (4). Not time-varying.",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/part_titles"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_part_titles_ids",
+          "name": "op10_general_part_titles_ids",
+          "description": "OP10 / general. Field part_titles_ids (no curated description). HDF5 path: OP10/general/part_titles_ids. Dimensions: (axis0) = (4). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/part_titles_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_general_part_velocity",
+          "name": "op10_general_part_velocity",
+          "description": "OP10 / general. Field part_velocity (no curated description). HDF5 path: OP10/general/part_velocity. Dimensions: (timesteps, axis1, axis2) = (3, 4, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/general/part_velocity"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_punch_element_shell_ids",
+          "name": "op10_punch_element_shell_ids",
+          "description": "OP10 / punch. Unique integer identifiers for each shell element. HDF5 path: OP10/punch/element_shell_ids. Dimensions: (elements) = (1112). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/punch/element_shell_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_punch_element_shell_node_indexes",
+          "name": "op10_punch_element_shell_node_indexes",
+          "description": "OP10 / punch. Local node indices of the 4 corners of each quadrilateral element. HDF5 path: OP10/punch/element_shell_node_indexes. Dimensions: (elements, quad_corners) = (1112, 4). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/punch/element_shell_node_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_punch_element_shell_part_indexes",
+          "name": "op10_punch_element_shell_part_indexes",
+          "description": "OP10 / punch. Part membership label for each element (0..3 over die/punch/binder/blank). HDF5 path: OP10/punch/element_shell_part_indexes. Dimensions: (elements) = (1112). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/punch/element_shell_part_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_punch_node_acceleration",
+          "name": "op10_punch_node_acceleration",
+          "description": "OP10 / punch. Acceleration vectors of nodes. Unit: mm/s^2. HDF5 path: OP10/punch/node_acceleration. Dimensions: (timesteps, nodes, xyz) = (3, 1104, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/punch/node_acceleration"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_punch_node_coordinates",
+          "name": "op10_punch_node_coordinates",
+          "description": "OP10 / punch. Initial XYZ positions of nodes. Unit: mm. HDF5 path: OP10/punch/node_coordinates. Dimensions: (nodes, xyz) = (1104, 3). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/punch/node_coordinates"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_punch_node_displacement",
+          "name": "op10_punch_node_displacement",
+          "description": "OP10 / punch. Displacement vectors from initial position, per node, per timestep. Unit: mm. HDF5 path: OP10/punch/node_displacement. Dimensions: (timesteps, nodes, xyz) = (3, 1104, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/punch/node_displacement"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_punch_node_ids",
+          "name": "op10_punch_node_ids",
+          "description": "OP10 / punch. Unique integer identifiers for each node point. HDF5 path: OP10/punch/node_ids. Dimensions: (nodes) = (1104). Not time-varying.",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/punch/node_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op10_punch_node_velocity",
+          "name": "op10_punch_node_velocity",
+          "description": "OP10 / punch. Velocity vectors of nodes. Unit: mm/s. HDF5 path: OP10/punch/node_velocity. Dimensions: (timesteps, nodes, xyz) = (3, 1104, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP10/punch/node_velocity"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_effective_plastic_strain",
+          "name": "op20_blank_element_shell_effective_plastic_strain",
+          "description": "OP20 / blank. Effective plastic strain at 3 layers per element. Unit: -. HDF5 path: OP20/blank/element_shell_effective_plastic_strain. Dimensions: (timesteps, elements, layers) = (2, 4026, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_effective_plastic_strain"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_effective_plastic_strain_all_ipt",
+          "name": "op20_blank_element_shell_effective_plastic_strain_all_ipt",
+          "description": "OP20 / blank. Effective plastic strain at all 7 integration points per element. Unit: -. HDF5 path: OP20/blank/element_shell_effective_plastic_strain_all_ipt. Dimensions: (timesteps, elements, integration_points) = (2, 4026, 7). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_effective_plastic_strain_all_ipt"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_ids",
+          "name": "op20_blank_element_shell_ids",
+          "description": "OP20 / blank. Unique integer identifiers for each shell element. HDF5 path: OP20/blank/element_shell_ids. Dimensions: (elements) = (4026). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_node_ids",
+          "name": "op20_blank_element_shell_node_ids",
+          "description": "OP20 / blank. Global node IDs of the 4 corners of each quadrilateral element. HDF5 path: OP20/blank/element_shell_node_ids. Dimensions: (elements, quad_corners) = (4026, 4). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_node_ids"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_node_indexes",
+          "name": "op20_blank_element_shell_node_indexes",
+          "description": "OP20 / blank. Local node indices of the 4 corners of each quadrilateral element. HDF5 path: OP20/blank/element_shell_node_indexes. Dimensions: (elements, quad_corners) = (4026, 4). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_node_indexes"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_strain",
+          "name": "op20_blank_element_shell_strain",
+          "description": "OP20 / blank. Strain tensor (6 components) per element, at top and bottom layer. Unit: -. HDF5 path: OP20/blank/element_shell_strain. Dimensions: (timesteps, elements, layers, strain_components) = (2, 4026, 2, 6). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_strain"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_stress",
+          "name": "op20_blank_element_shell_stress",
+          "description": "OP20 / blank. Cauchy stress tensor (6 components: sxx, syy, szz, sxy, syz, szx) per element, evaluated at 3 through-thickness layers. Unit: Pa. HDF5 path: OP20/blank/element_shell_stress. Dimensions: (timesteps, elements, layers, stress_components) = (2, 4026, 3, 6). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_stress"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_stress_all_ipt",
+          "name": "op20_blank_element_shell_stress_all_ipt",
+          "description": "OP20 / blank. Stress at all 7 through-thickness integration points (vs. only 3 layers). Unit: Pa. HDF5 path: OP20/blank/element_shell_stress_all_ipt. Dimensions: (timesteps, elements, integration_points, stress_components) = (2, 4026, 7, 6). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_stress_all_ipt"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_stress_all_ipt_thickness",
+          "name": "op20_blank_element_shell_stress_all_ipt_thickness",
+          "description": "OP20 / blank. Normalized through-thickness coordinate of each integration point. Unit: -. HDF5 path: OP20/blank/element_shell_stress_all_ipt_thickness. Dimensions: (singleton, integration_points) = (1, 7). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_stress_all_ipt_thickness"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_element_shell_thickness",
+          "name": "op20_blank_element_shell_thickness",
+          "description": "OP20 / blank. Current shell element thickness, per element, per timestep. Unit: mm. HDF5 path: OP20/blank/element_shell_thickness. Dimensions: (timesteps, elements) = (2, 4026). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/element_shell_thickness"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_node_displacement",
+          "name": "op20_blank_node_displacement",
+          "description": "OP20 / blank. Displacement vectors from initial position, per node, per timestep. Unit: mm. HDF5 path: OP20/blank/node_displacement. Dimensions: (timesteps, nodes, xyz) = (2, 4233, 3). Time-varying, axis 0 indexes timesteps.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/node_displacement"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "field-map/op20_blank_node_ids",
+          "name": "op20_blank_node_ids",
+          "description": "OP20 / blank. Unique integer identifiers for each node point. HDF5 path: OP20/blank/node_ids. Dimensions: (nodes) = (4233). Not time-varying.",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "all_h5_files"
+            },
+            "extract": {
+              "fileProperty": "content"
+            },
+            "transform": [
+              {
+                "regex": "OP20/blank/node_ids"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "simulation-provenance",
+      "name": "simulation-provenance",
+      "description": "Dataset-wide FE simulation provenance, with field names matching the SIM-KAx schema (Schumann et al., 2026, doi:10.1007/s11740-026-01441-7) for cross-institution interoperability.",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/description",
+          "name": "description",
+          "dataType": "sc:Text",
+          "value": "Deep drawing of a modified quadratic cup (210 x 210 mm, 30 mm drawing depth) from DP600 dual-phase steel.",
+          "description": "Free-text summary of the simulation campaign."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/program",
+          "name": "program",
+          "dataType": "sc:Text",
+          "value": "LS-DYNA",
+          "description": "Name (and version, if relevant) of the FE solver used to produce the dataset."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/tool_deformability",
+          "name": "tool_deformability",
+          "dataType": "sc:Text",
+          "value": "rigid",
+          "description": "SIM-KAx vocabulary: tool deformability mode. One of 'rigid', 'elastoplastic', 'plastic'."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/tool_movement",
+          "name": "tool_movement",
+          "dataType": "sc:Text",
+          "value": "kinematic",
+          "description": "SIM-KAx vocabulary: method used to drive the tools. One of 'kinematic', 'tabular', 'force-based', 'energy-based', 'other'."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/model_symmetries",
+          "name": "model_symmetries",
+          "dataType": "sc:Text",
+          "value": "none",
+          "description": "SIM-KAx vocabulary: model symmetries exploited. One of 'none', 'half model', 'quarter model', 'angular periodic'."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/meshing",
+          "name": "meshing",
+          "dataType": "sc:Text",
+          "value": "Fully integrated shell elements (ELFORM=16) with 7 integration points; planar regions ~10 mm edge, blank ~1 mm, finer at radii (>= 6 elements across).",
+          "description": "Free-text summary of the mesh: element formulation, integration points, characteristic edge sizes."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/element_size",
+          "name": "element_size",
+          "dataType": "sc:Float",
+          "value": 1.0,
+          "description": "Characteristic minimum finite-element edge length (mm)."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/contact_tolerance",
+          "name": "contact_tolerance",
+          "dataType": "sc:Float",
+          "value": 0.0,
+          "description": "Maximum gap used to detect contact between surfaces (mm). 0.0 means the LS-DYNA default is in effect."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/contact_type",
+          "name": "contact_type",
+          "dataType": "sc:Text",
+          "value": "*CONTACT_FORMING_ONE_WAY_TO_SURFACE",
+          "description": "LS-DYNA contact card identifier governing blank-tool contact."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/material_model",
+          "name": "material_model",
+          "dataType": "sc:Text",
+          "value": "*MAT_125 (Kinematic Hardening Transversely Anisotropic, Yoshida-Uemori, calibrated for DP600)",
+          "description": "Material model used for the deformable blank, including LS-DYNA keyword."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/pre_stage_simulated",
+          "name": "pre_stage_simulated",
+          "dataType": "sc:Boolean",
+          "value": false,
+          "description": "SIM-KAx vocabulary: True if a pre-stage (e.g. forming history) was simulated or imported before the OP10 forming step."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/return_stroke_simulated",
+          "name": "return_stroke_simulated",
+          "dataType": "sc:Boolean",
+          "value": false,
+          "description": "SIM-KAx vocabulary: True if the return stroke (tool retraction) is included as a representative force signal."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "simulation-provenance/schema_reference",
+          "name": "schema_reference",
+          "dataType": "sc:Text",
+          "value": "SIM-KAx, doi:10.1007/s11740-026-01441-7",
+          "description": "Pointer to the schema this provenance block follows (DDACS extension to SIM-KAx)."
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "springback-minimal",
+      "name": "springback-minimal",
+      "description": "Minimal springback view from OP10. The springback displacement is the delta: `springback - forming` (i.e. last timestep minus the one before).",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "springback-minimal/op10_blank_node_displacement_forming",
+          "name": "op10_blank_node_displacement_forming",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_blank_node_displacement"
+            },
+            "transform": [
+              {
+                "jsonPath": "$[2]"
+              }
+            ]
+          },
+          "description": "Blank node displacement at maximum forming depth (OP10 timestep 2)."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "springback-minimal/op10_blank_node_displacement_springback",
+          "name": "op10_blank_node_displacement_springback",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_blank_node_displacement"
+            },
+            "transform": [
+              {
+                "jsonPath": "$[3]"
+              }
+            ]
+          },
+          "description": "Blank node displacement after OP10 springback (timestep 3). Subtract `forming` to get the springback displacement."
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "springback-prediction",
+      "name": "springback-prediction",
+      "description": "Inputs (initial tool geometries + initial blank geometry) and snapshots for springback prediction. Combine with `process-parameters` (via `index`) for the conditioning vector; target = springback - forming.",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "springback-prediction/op10_blank_node_coordinates",
+          "name": "op10_blank_node_coordinates",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_blank_node_coordinates"
+            }
+          },
+          "description": "Initial blank node coordinates."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "springback-prediction/op10_die_node_coordinates",
+          "name": "op10_die_node_coordinates",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_die_node_coordinates"
+            }
+          },
+          "description": "Initial die node coordinates (rigid tool, top)."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "springback-prediction/op10_punch_node_coordinates",
+          "name": "op10_punch_node_coordinates",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_punch_node_coordinates"
+            }
+          },
+          "description": "Initial punch node coordinates (rigid tool, bottom)."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "springback-prediction/op10_binder_node_coordinates",
+          "name": "op10_binder_node_coordinates",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_binder_node_coordinates"
+            }
+          },
+          "description": "Initial binder/blank-holder node coordinates."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "springback-prediction/op10_blank_node_displacement_forming",
+          "name": "op10_blank_node_displacement_forming",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_blank_node_displacement"
+            },
+            "transform": [
+              {
+                "jsonPath": "$[2]"
+              }
+            ]
+          },
+          "description": "Blank displacement at max forming depth (OP10 timestep 2)."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "springback-prediction/op10_blank_node_displacement_springback",
+          "name": "op10_blank_node_displacement_springback",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_blank_node_displacement"
+            },
+            "transform": [
+              {
+                "jsonPath": "$[3]"
+              }
+            ]
+          },
+          "description": "Blank displacement after springback (OP10 timestep 3). Subtract `forming` for the springback delta — common ML target."
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "forming-snapshot",
+      "name": "forming-snapshot",
+      "description": "Snapshot at maximum forming depth: blank node displacement and element shell thickness.",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "forming-snapshot/op10_blank_node_displacement",
+          "name": "op10_blank_node_displacement",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_blank_node_displacement"
+            },
+            "transform": [
+              {
+                "jsonPath": "$[2]"
+              }
+            ]
+          },
+          "description": "Blank node displacement at max forming depth."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "forming-snapshot/op10_blank_element_shell_thickness",
+          "name": "op10_blank_element_shell_thickness",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op10_blank_element_shell_thickness"
+            },
+            "transform": [
+              {
+                "jsonPath": "$[2]"
+              }
+            ]
+          },
+          "description": "Element shell thickness at max forming depth."
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "cutting-view",
+      "name": "cutting-view",
+      "description": "OP20 cutting view. The cutting-induced springback is the delta: `springback - cut` (last timestep minus the one before).",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "cutting-view/op20_blank_node_displacement_cut",
+          "name": "op20_blank_node_displacement_cut",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op20_blank_node_displacement"
+            },
+            "transform": [
+              {
+                "jsonPath": "$[0]"
+              }
+            ]
+          },
+          "description": "Blank node displacement immediately after the cut (OP20 timestep 0)."
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "cutting-view/op20_blank_node_displacement_springback",
+          "name": "op20_blank_node_displacement_springback",
+          "dataType": "sc:Float",
+          "source": {
+            "field": {
+              "@id": "field-map/op20_blank_node_displacement"
+            },
+            "transform": [
+              {
+                "jsonPath": "$[1]"
+              }
+            ]
+          },
+          "description": "Blank node displacement after cutting-induced springback (OP20 timestep 1). Subtract `cut` to get the cutting-induced springback."
+        }
+      ]
+    }
+  ]
+}
