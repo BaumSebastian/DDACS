@@ -64,6 +64,9 @@ docs = [
     "mkdocs-material>=9.5.0",
     "mkdocstrings[python]>=0.24.0",
     "mkdocs-macros-plugin>=1.0.0",
+    # pygments 2.20 + pymdownx.highlight mishandle filename=None in mkdocstrings'
+    # source-code rendering. Pin until pymdownx-extensions ships a fix.
+    "pygments<2.20",
 ]
 torch = ["torch>=2.0"]
 
