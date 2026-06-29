@@ -16,7 +16,7 @@ Zip files are kept by default so they remain readable in place via mlcroissant
 (the Croissant manifest references zip members directly).
 """
 
-__version__ = "3.0.0"
+__version__ = "3.1.0"
 
 import argparse
 import os
