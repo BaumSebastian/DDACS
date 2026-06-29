@@ -39,7 +39,7 @@ from .config import (
     PROCESS_PARAMETERS_FILE,
 )
 
-__all__ = ["iter_view", "export_to_numpy", "load_export"]
+__all__ = ["iter_view", "export_to_numpy", "export_to_numpy_per_sim", "load_export"]
 
 _JSONPATH_RE = re.compile(r"^\$\[(.+)\]$")
 
@@ -368,7 +368,19 @@ def export_to_numpy(
                     f"record {i} produced new alias {alias!r} not present in record 0; "
                     "all records must share the same output keys"
                 )
-            memmaps[alias][i] = _as_array(alias, val)
+            arr = _as_array(alias, val)
+            expected_shape = memmaps[alias].shape[1:]
+            if arr.shape != expected_shape:
+                raise ValueError(
+                    f"record {i}: field {alias!r} has shape {arr.shape} but record 0 "
+                    f"had shape {expected_shape}. export_to_numpy requires every record "
+                    f"to share the same shape per field (it pre-allocates one memmap per "
+                    f"alias from record 0). For variable-shape views (e.g. graph data "
+                    f"with sim-dependent node or edge counts) use "
+                    f"ddacs.streaming.export_to_numpy_per_sim instead, which writes one "
+                    f".npz per simulation and allows shapes to vary."
+                )
+            memmaps[alias][i] = arr
 
     for mm in memmaps.values():
         mm.flush()
@@ -378,6 +390,68 @@ def export_to_numpy(
     paths["sim_ids"] = sim_ids_path
 
     return paths
+
+
+def export_to_numpy_per_sim(
+    view: str,
+    out_dir: str | Path,
+    *,
+    source: str | Path | None = None,
+    data_dir: str | Path | None = DEFAULT_DATA_DIR,
+    dataset=None,
+    sim_ids: list[int] | None = None,
+    where: Callable[[pd.Series], bool] | None = None,
+    transforms: dict[str, Callable[[Any], Any]] | None = None,
+    record_transform: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
+    compressed: bool = False,
+    show_progress: bool = False,
+) -> Path:
+    """Write one ``<sim_id>.npz`` file per simulation under ``out_dir``.
+
+    Same iteration pipeline as :func:`export_to_numpy` but the output is one
+    ``np.savez`` per record, so view fields can have sim-dependent shapes
+    (graphs, ragged tensors). Each ``.npz`` contains the post-transform record
+    as a dict of numpy arrays; consumers reload via ``np.load(path)`` and
+    access by alias.
+
+    Set ``compressed=True`` to use ``np.savez_compressed`` (smaller on disk,
+    slower to load); the default is uncompressed for fast read.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    transforms = transforms or {}
+    save_fn = np.savez_compressed if compressed else np.savez
+
+    ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
+
+    records = iter_view(
+        view=view,
+        source=source,
+        data_dir=data_dir,
+        dataset=ds,
+        sim_ids=sim_ids,
+        where=where,
+    )
+
+    final_ids = _resolve_sim_ids(
+        Path(data_dir) if data_dir is not None else None,
+        _build_unified_index(Path(data_dir) if data_dir is not None else None),
+        sim_ids,
+        where,
+    )
+    if not final_ids:
+        raise ValueError("no simulations matched; nothing to export")
+
+    progress = _progress_iter(records, total=len(final_ids), enabled=show_progress)
+
+    for rec in progress:
+        sim_id = int(rec["_sim_id"])
+        rec = _apply_transforms(rec, transforms, record_transform)
+        rec.pop("_sim_id", None)
+        save_fn(out_dir / f"{sim_id}.npz", **{k: np.asarray(v) for k, v in rec.items()})
+
+    return out_dir
 
 
 # ---------------------------------------------------------------------------
