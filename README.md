@@ -24,7 +24,7 @@ A Croissant-native Python package for accessing the [Deep Drawing and Cutting Si
 
 ## Table of Contents
 
-- [What's new in v3.0](#whats-new-in-v30)
+- [What's new in v3](#whats-new-in-v30)
 - [Installation](#installation)
 - [Download the dataset](#download-the-dataset)
 - [Basic usage](#basic-usage)
@@ -34,9 +34,9 @@ A Croissant-native Python package for accessing the [Deep Drawing and Cutting Si
 - [Citation](#citation)
 - [Development](#development)
 
-## What's new in v3.0
+## What's new in v3
 
-v3.0 is a major release because the dataset itself now ships with a [Croissant 1.1](https://docs.mlcommons.org/croissant/) manifest (`metadata.json`). The manifest is the single source of truth for the dataset schema: every HDF5 field, every CSV column, the SIM-KAx simulation provenance, and a set of task-specific views are declared once and consumed by both the package and external Croissant tools.
+v3 is a major release because the dataset itself now ships with a [Croissant 1.1](https://docs.mlcommons.org/croissant/) manifest (`metadata.json`). The manifest is the single source of truth for the dataset schema: every HDF5 field, every CSV column, the SIM-KAx simulation provenance, and a set of task-specific views are declared once and consumed by both the package and external Croissant tools.
 
 The Python surface was rewritten around it:
 
