@@ -118,7 +118,7 @@ Output:
 
 ## 4. Read the shards back with `load_export`
 
-`ddacs.streaming.load_export(directory)` opens the exported folder behind the standard Python data model (`__len__`, `__getitem__`, `__iter__`, plus `by_sim_id`). Each row is a plain `dict[str, np.ndarray]` backed by `mmap_mode='r'`, so the full release fits even when it is too large for RAM: only the rows you actually access page in.
+`ddacs.streaming.load_export(directory)` opens the exported folder behind the standard Python data model (`__len__`, `__getitem__`, `__iter__`, plus `by_sim_id`). Each row is a plain `dict[str, np.ndarray]` backed by `mmap_mode='r'`, so the full release fits even when it is too large for RAM: only the rows you actually access page in. Reads bypass deserialisation entirely — accessing `arr[i]` becomes a direct virtual-memory read of the relevant disk page, which is why warm-cache reads of an exported shard are sub-millisecond (the OS page cache is shared across processes, so `DataLoader(num_workers=N)` workers all reuse the same loaded pages without an `N`-fold RAM blow-up).
 
 `load_export` deliberately does **not** import torch. It just satisfies the same `len + getitem` protocol PyTorch's map-style `Dataset` uses, so the returned object plugs into `DataLoader`, `tf.data.Dataset.from_generator`, JAX, or a plain Python loop without any adapter. Pass `fields=["forming", "delta"]` to load a subset; unknown names raise `ValueError` so typos surface immediately.
 
@@ -225,6 +225,54 @@ plt.show()
 ```
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/06_streaming_sample.png" width="700">
+
+## 7. When records have variable shapes (`export_to_numpy_per_sim`)
+
+`export_to_numpy` pre-allocates one memmap per alias, sized from record 0 as `(n_sims, *field_shape)`. Every subsequent record must produce the exact same shape per alias; a shape mismatch raises a `ValueError` pointing here. The constraint is the right contract for views where every simulation has the same topology — e.g. the `forming` point cloud above, or any view that ran through a uniform sampling step that pinned `N` to a fixed value. It is **not** the right contract for views whose outputs vary across simulations: a graph view that exposes `edge_index` with sim-dependent edge counts, or a raw vertex set whose `N` differs per geometry corner.
+
+For those cases, use `ddacs.streaming.export_to_numpy_per_sim`. Same iteration pipeline (`iter_view` + per-field `transforms` + whole-record `record_transform`), same `_sim_id` enrichment, but the writer is one `np.savez(<sim_id>.npz)` per record instead of one memmap per alias. Each `.npz` carries all the aliases for one simulation; consumers reload via `np.load(path)` and access by key.
+
+```python
+ddacs.streaming.export_to_numpy_per_sim(
+    "graph-view",
+    "./data/graph_export",
+    dataset=ds,
+    record_transform=my_compose_chain,
+    compressed=False,   # True for np.savez_compressed (smaller, slower load)
+)
+```
+
+Trade-offs vs `export_to_numpy`:
+
+- **No memmap layout.** Each load deserialises a small zip via numpy. For ~10 MB sims that is still sub-millisecond warm, but it loses the OS-page-cache sharing across DataLoader workers that `export_to_numpy` gets for free.
+- **No fixed-shape constraint.** Variable-`N` and ragged tensors are fine.
+- **One file per sim.** Random access by sim id is just `np.load(out_dir / f"{sim_id}.npz")`.
+
+Two ways to make a variable-shape view fit `export_to_numpy` instead — preferable when the data permits, because the mmap path is faster:
+
+1. **Sample to a fixed point count** before export. A uniform / area-weighted barycentric sample (e.g. 4096 points per blank, 2048 per tool) gives every record the same shape per alias.
+2. **Pad to a max shape and emit a mask.** Cheaper to write than to compose; wastes 20-30% of disk if the largest sim is much bigger than the median.
+
+If neither fits, `export_to_numpy_per_sim` is the honest answer.
+
+A minimal random-vertex sampler that pads or truncates every record to a fixed point count:
+
+```python
+def uniform_sample(rec, n_points=4096, seed=0):
+    rng = np.random.RandomState(seed)
+    n_in = rec["forming"].shape[0]
+    idx = rng.choice(n_in, n_points, replace=n_in < n_points)
+    return {**rec, "forming": rec["forming"][idx], "delta": rec["delta"][idx]}
+
+def chained(rec):
+    return uniform_sample(normalize_and_emit(rec))
+```
+
+Pass `chained` as the `record_transform=`; the downstream `export_to_numpy` call now succeeds with `forming` and `delta` shaped `(n_points, 3)` in every record. The example above is naive — it samples vertex indices uniformly, ignoring triangle area, which under-represents large faces. Use it as a baseline; area-weighted barycentric sampling that respects mesh geometry is a separate concern handled by the `ddacs.augment` primitives.
+
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/06_streaming_sampled.png" width="700">
+
+Same simulation rendered from the downsampled export: 4096 points instead of 11236, identical render code. The sparser sampling is visible but the springback gradient is preserved.
 
 ## Where to go next
 
