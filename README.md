@@ -10,10 +10,6 @@
 [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801)
 [![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
 
-A Croissant-native Python package for accessing the [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801). One CLI for the download, one Python module for access, and an optional PyTorch `IterableDataset` for training.
-
-**[Read the full documentation](https://ddacs.readthedocs.io)**
-
 <div align="center">
 
 ![Simulation overview](https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/simulation_overview.gif)
@@ -21,6 +17,21 @@ A Croissant-native Python package for accessing the [Deep Drawing and Cutting Si
 *Simulation with the tool geometries showing sheet metal thinning, stress, and strain.*
 
 </div>
+
+**A large-scale dataset and benchmark for training AI models that replace computationally expensive FEA simulations in industrial sheet metal manufacturing.** Each simulation models a two-stage stamping process (deep drawing in OP10 and trimming with elastic recovery in OP20) for a cup geometry parameterised by 8 input dimensions. Train ML surrogates that predict mesh deformation, stress, strain, and springback in seconds instead of the minutes-to-hours a CAE solver would take.
+
+|  |  |
+|---|---|
+| **Simulations** | 32,466 |
+| **Total size** | ~640 GB (HDF5, lossless) |
+| **Process steps per sim** | 2 (OP10 deep drawing, OP20 trimming) |
+| **Input parameters** | 8 (4 geometric + 4 process) |
+| **Train / val / test** | 25,973 / 3,246 / 3,247 (predefined) |
+| **Mesh-node states** | ~2.1 B across all sims, timesteps, components |
+
+**[Documentation](https://ddacs.readthedocs.io)** · **[Dataset DOI](https://doi.org/10.18419/DARUS-4801)** · **[Paper](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)**
+
+A Croissant-native Python package for accessing the [DDACS Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801) ships with this repo: one CLI for the download, one Python module for access, and an optional PyTorch `IterableDataset` for training.
 
 ## Table of Contents
 

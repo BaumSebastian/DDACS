@@ -9,12 +9,23 @@
 [![DaRUS Repository](https://img.shields.io/badge/repository-DaRUS-green.svg)](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801)
 [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801)
 
-The [Deep Drawing and Cutting Simulations (DDACS) Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801) contains {{ simulation_count() }} sheet metal forming simulations exported from LS DYNA. The `ddacs` package provides a Croissant native interface: one CLI for the download, one Python module for access, and an optional PyTorch `IterableDataset` for training.
-
 <div align="center">
   <img src="images/simulation_overview.gif" alt="Simulation Overview"/>
   <p><em>Simulation with tool geometries showing sheet metal thinning, stress and strain.</em></p>
 </div>
+
+**A large-scale dataset and benchmark for training AI models that replace computationally expensive FEA simulations in industrial sheet metal manufacturing.** Each simulation models a two-stage stamping process (deep drawing in OP10 and trimming with elastic recovery in OP20) for a cup geometry parameterised by 8 input dimensions. Train ML surrogates that predict mesh deformation, stress, strain, and springback in seconds instead of the minutes-to-hours a CAE solver would take.
+
+|  |  |
+|---|---|
+| **Simulations** | {{ simulation_count() }} |
+| **Total size** | {{ total_size() }} (HDF5, lossless) |
+| **Process steps per sim** | 2 (OP10 deep drawing, OP20 trimming) |
+| **Input parameters** | 8 (4 geometric + 4 process) |
+| **Train / val / test** | 25,973 / 3,246 / 3,247 (predefined) |
+| **Mesh-node states** | ~2.1 B across all sims, timesteps, components |
+
+The `ddacs` package ships with the dataset and provides a Croissant native interface: one CLI for the download, one Python module for access, and an optional PyTorch `IterableDataset` for training.
 
 ## Get the data
 

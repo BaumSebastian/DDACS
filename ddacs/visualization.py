@@ -60,6 +60,7 @@ def plot_mesh(
     vmin: float | None = None,
     vmax: float | None = None,
     colorbar_label: str | None = None,
+    colorbar: bool = True,
     title: str | None = None,
     axis_limits: list[float] | None = None,
     mirror: bool = False,
@@ -175,12 +176,15 @@ def plot_mesh(
         collection = Poly3DCollection(face_vertices, **kwargs)
         ax.add_collection3d(collection)
 
-        # Add colorbar
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-        cbar = plt.colorbar(sm, ax=ax, shrink=0.8, pad=0.1)
-        cbar.ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.2f"))
-        if colorbar_label:
-            cbar.set_label(colorbar_label, labelpad=10)
+        # Add colorbar (opt-out for multi-panel figures with a shared colorbar)
+        if colorbar:
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+            cbar = plt.colorbar(sm, ax=ax, shrink=0.8, pad=0.1)
+            cbar.ax.yaxis.set_major_formatter(ticker.FormatStrFormatter("%.2f"))
+            if colorbar_label:
+                cbar.set_label(colorbar_label, labelpad=10)
+        else:
+            cbar = None
 
     else:
         # Set default color if not provided

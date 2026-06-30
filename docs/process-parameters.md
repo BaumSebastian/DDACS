@@ -18,11 +18,17 @@ The `geometry` column takes three values, one per family of corner shapes. The `
 
 `bottom_radius` is sampled at 5 / 7.5 / 10 mm and `wall_angle` at 10 / 20 / 30 deg across all three families.
 
-**OP10 (after forming)**
+The three dimensional parameters are defined on the punch as shown below: `bottom_radius` rounds the floor-to-wall transition, `wall_angle` is measured between the wall and the vertical axis, and `curvature_radius` controls the side / corner arcs that distinguish the geometry families.
+
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_geometry_parameters.png" width="900">
+
+Each family is rendered below as a formed blank at the end of each operation; the three panels per row share a colour scale of vertical height (Z, in mm) so the depth of the cup is directly comparable across families.
+
+**OP10 — after springback**
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_geometries_op10.png" width="700">
 
-**OP20 (after cutting)**
+**OP20 — after cutting**
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_geometries_op20.png" width="700">
 
