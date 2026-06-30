@@ -118,7 +118,10 @@ Output:
 
 ## 4. Read the shards back with `load_export`
 
-`ddacs.streaming.load_export(directory)` opens the exported folder behind the standard Python data model (`__len__`, `__getitem__`, `__iter__`, plus `by_sim_id`). Each row is a plain `dict[str, np.ndarray]` backed by `mmap_mode='r'`, so the full release fits even when it is too large for RAM: only the rows you actually access page in. Reads bypass deserialisation entirely — accessing `arr[i]` becomes a direct virtual-memory read of the relevant disk page, which is why warm-cache reads of an exported shard are sub-millisecond (the OS page cache is shared across processes, so `DataLoader(num_workers=N)` workers all reuse the same loaded pages without an `N`-fold RAM blow-up).
+`ddacs.streaming.load_export(directory)` opens the exported folder behind the standard Python data model (`__len__`, `__getitem__`, `__iter__`, plus `by_sim_id`). Each row is a plain `dict[str, np.ndarray]`. Reads are sub-millisecond after the first access and the full release fits even when it doesn't fit in RAM — only the rows you actually access are loaded from disk.
+
+??? note "Why it is fast: memory-mapped reads in one paragraph (skip if not interested)"
+    The shards are opened with `mmap_mode='r'`, which maps each `.npy` file directly into the process's virtual address space. Accessing `arr[i]` becomes an ordinary memory read; the operating system fetches whatever page that lives on from disk on demand and keeps a copy in its page cache. No pickle, no buffer allocation, no copy on the read path. The same page cache is shared across processes, so a `DataLoader(num_workers=N)` does not multiply the cached data by `N`. Cold reads pay the disk seek + page fault; warm reads are RAM-fast.
 
 `load_export` deliberately does **not** import torch. It just satisfies the same `len + getitem` protocol PyTorch's map-style `Dataset` uses, so the returned object plugs into `DataLoader`, `tf.data.Dataset.from_generator`, JAX, or a plain Python loop without any adapter. Pass `fields=["forming", "delta"]` to load a subset; unknown names raise `ValueError` so typos surface immediately.
 

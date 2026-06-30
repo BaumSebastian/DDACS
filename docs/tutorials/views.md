@@ -7,10 +7,11 @@ The companion notebook at [`notebooks/02_views.ipynb`](https://github.com/BaumSe
 ## 1. Load the dataset
 
 ```python
-DATA_DIR = './data'      # repository root, or '../data' from notebooks/
-sim_id   = 258864
-
 import ddacs
+
+from pathlib import Path
+DATA_DIR = Path('./data')      # repository root, or Path('../data') from notebooks/
+sim_id   = 258864
 
 ds = ddacs.load(data_dir=DATA_DIR)
 print([rs.id for rs in ds.metadata.record_sets])
@@ -47,13 +48,13 @@ Field IDs (such as `op10_blank_node_displacement`) come from the field-map Recor
 
 ## `fields` value shapes
 
-| Value | Result |
-|-------|--------|
-| `"field_id"` | whole field-map field (shortcut) |
-| `("field_id", None)` | whole field-map field (explicit) |
-| `("field_id", int)` | one timestep (field-map only) |
-| `("field_id", [int, int, ...])` | subset of timesteps (field-map only) |
-| `"<record-set>/<field>"` | qualified id, pulls from any RecordSet (e.g. `"process-parameters/sheet_metal_thickness"`) |
+| Value | Meaning | Yielded shape / dtype |
+|-------|---------|------------------------|
+| `"field_id"` | whole field-map field (shortcut) | full HDF5 shape, e.g. `(T, V, 3) float64` for `node_displacement` |
+| `("field_id", None)` | whole field-map field (explicit) | same as above |
+| `("field_id", int)` | one timestep (field-map only) | one axis dropped, e.g. `(V, 3) float64` |
+| `("field_id", [int, int, ...])` | subset of timesteps (field-map only) | subset along axis 0, e.g. `(2, V, 3) float64` |
+| `"<record-set>/<field>"` | qualified id, pulls from any RecordSet (e.g. `"process-parameters/sheet_metal_thickness"`) | depends on the source — scalars for CSV columns (`float64`, `bool`, `str`), full arrays for field-map fields |
 
 Behind the scenes a JSONPath transform is attached to each field that requires slicing: `("...", 2)` becomes `$[2]`, `("...", [2, 3])` becomes `$[2,3]`. The transform is applied at iteration time, so memory and IO scale with the timesteps actually requested, not with the full HDF5 array.
 

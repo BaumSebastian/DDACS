@@ -1,6 +1,6 @@
 # Getting Started
 
-This tutorial walks from installation to a first plot. It uses only the public surface that ships with v3.0.0: `ddacs.load`, `ddacs.open_h5`, `ddacs.inspect_h5`, and the visualization helpers.
+This tutorial walks from installation to a first plot. It uses only the public surface that ships with v{{ ddacs_version() }}: `ddacs.load`, `ddacs.open_h5`, `ddacs.inspect_h5`, and the visualization helpers.
 
 The companion notebook at [`notebooks/01_getting_started.ipynb`](https://github.com/BaumSebastian/DDACS/tree/main/notebooks/01_getting_started.ipynb) reproduces every cell below; open it side by side to run as you read.
 
@@ -18,17 +18,23 @@ pip install ddacs[torch]
 
 For hardware specific PyTorch builds (CUDA, ROCm, MPS) see [pytorch.org](https://pytorch.org/get-started/locally/) and install PyTorch before `ddacs`.
 
-Verify the install:
+Verify the install. From a Python REPL or notebook cell:
 
 ```python
 import ddacs
 print(ddacs.__version__)
 ```
 
+Or as a single shell command (handy on Linux servers where opening a REPL is overkill):
+
+```bash
+python3 -c "import ddacs; print(ddacs.__version__)"
+```
+
 Output:
 
 ```
-3.0.0
+{{ ddacs_version() }}
 ```
 
 ## 2. Download the sample bundle
@@ -41,12 +47,14 @@ ddacs download --small
 
 The command writes `metadata.json`, `process_parameters.csv`, and one sample simulation zip (`258864.zip`) into `./data/`. The zips are not extracted; `mlcroissant` reads them in place.
 
-If the notebook is launched from `notebooks/`, the same data directory resolves to `../data`. The two patterns below all point at the same place; pick the one that matches your working directory.
+If the notebook is launched from `notebooks/`, the same data directory resolves to `../data`. Both point at the same place; pick the line that matches your working directory and comment out the other.
 
 ```python
-DATA_DIR = './data'      # repository root
-DATA_DIR = '../data'     # from inside notebooks/
-sim_id   = 258864        # one bundled sample simulation
+from pathlib import Path
+
+DATA_DIR = Path('./data')      # repository root
+# DATA_DIR = Path('../data')   # uncomment instead when running from inside notebooks/
+sim_id   = 258864              # one bundled sample simulation
 ```
 
 ## 3. Load the dataset
@@ -164,7 +172,7 @@ Three pieces of data are read from the HDF5 file:
 
 A note on three options that drive the plot:
 
-- `FALSE_COLOR_CMAP` is the Falschfarbenbild diverging colormap: red at the lower bound, green at the centre, blue at the upper bound. Pairing it with `vmin = nominal - delta`, `vmax = nominal + delta` places the green band on the nominal sheet thickness, so colour deviations immediately read as thinning (red) or thickening (blue).
+- `FALSE_COLOR_CMAP` is the false-colour diverging colormap: red at the lower bound, green at the centre, blue at the upper bound. Pairing it with `vmin = nominal - delta`, `vmax = nominal + delta` places the green band on the nominal sheet thickness, so colour deviations immediately read as thinning (red) or thickening (blue).
 - **Quarter symmetric model.** OP10 only meshes one quadrant of the cup; the other three are implied by symmetry boundary conditions, so the file contains roughly 11 000 nodes covering a 100 mm x 100 mm patch. To render the full cup, pass `mirror=True`, which reflects the mesh across the `x = 0` and `y = 0` planes and reverses the face winding on each reflection so the lighting stays consistent.
 - ISO 80000-2 axis labels : variables italic, units upright. `plot_mesh` applies this automatically (`$x$ in mm`, etc.).
 

@@ -1,6 +1,6 @@
 # Croissant Manifest
 
-DDACS ships a [Croissant 1.1](https://github.com/mlcommons/croissant) manifest (`metadata.json`) describing the dataset in a machine readable form. The same file is read by [Kaggle](https://www.kaggle.com/), [Hugging Face](https://huggingface.co/), and Google Dataset Search, so any tool that already speaks Croissant can consume DDACS without DDACS specific code.
+DDACS ships a [Croissant 1.1](https://doi.org/10.1145/3650203.3663326) manifest (`metadata.json`) describing the dataset in a machine readable form. The same file is read by [Kaggle](https://www.kaggle.com/), [Hugging Face](https://huggingface.co/), and Google Dataset Search, so any tool that already speaks Croissant can consume DDACS without DDACS specific code.
 
 ## Why Croissant?
 

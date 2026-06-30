@@ -1,6 +1,12 @@
 # PyTorch training
 
-`DDACSDataset` is a `torch.utils.data.IterableDataset` over a Croissant view. It is the iteration path to reach for when training a model: the underlying `mlcroissant.Dataset.records(...)` aborts on the first missing zip, while `DDACSDataset` builds a `sim_id -> local zip` index at construction time and silently skips simulations whose zip is not present. Full constructor signature in the [API reference](../api/pytorch.md).
+`DDACSDataset` is a [`torch.utils.data.IterableDataset`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.IterableDataset) over a Croissant view. It is the iteration path to reach for when training a model: the underlying `mlcroissant.Dataset.records(...)` aborts on the first missing zip, while `DDACSDataset` builds a `sim_id -> local zip` index at construction time and silently skips simulations whose zip is not present. Full constructor signature in the [API reference](../api/pytorch.md).
+
+**Prerequisites.** This tutorial assumes working familiarity with:
+
+- [PyTorch's `torch.utils.data` API](https://docs.pytorch.org/docs/stable/data.html), in particular [`DataLoader`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader) and the `Dataset` / `IterableDataset` protocols.
+- [`pandas.Series`](https://pandas.pydata.org/docs/reference/api/pandas.Series.html) (the `where` filter receives one row of `process_parameters.csv` as a Series).
+- [Croissant 1.1 / `mlcroissant`](https://doi.org/10.1145/3650203.3663326) for the manifest model and the `RecordSet` vocabulary used here.
 
 The companion notebook at [`notebooks/03_pytorch.ipynb`](https://github.com/BaumSebastian/DDACS/tree/main/notebooks/03_pytorch.ipynb) reproduces every cell below.
 
@@ -9,12 +15,13 @@ The companion notebook at [`notebooks/03_pytorch.ipynb`](https://github.com/Baum
 `DDACSDataset(view, data_dir, ...)` loads the manifest the same way `ddacs.load` does, resolves the view's fields to HDF5 paths plus JSONPath transforms, walks `data_dir` to build the local zip index, and reads `process_parameters.csv` to apply optional filters. After construction `ds._sim_ids` is the list of simulation ids the dataset will attempt to iterate, and `ds._h5_index` is the subset for which a zip is actually on disk.
 
 ```python
-DATA_DIR = './data'      # repository root, or '../data' from notebooks/
-sim_id   = 258864
-
 import ddacs
 from ddacs.pytorch import DDACSDataset
 from torch.utils.data import DataLoader
+
+from pathlib import Path
+DATA_DIR = Path('./data')      # repository root, or Path('../data') from notebooks/
+sim_id   = 258864
 
 ds = DDACSDataset(view='springback-minimal', data_dir=DATA_DIR)
 print('view:           ', ds.view)
@@ -35,7 +42,7 @@ locally indexed: 1    (only these will actually stream)
 
 ## 2. Iterate one batch through a `DataLoader`
 
-`DDACSDataset` plugs straight into a `DataLoader`. The default `collate_fn` stacks each field along a new leading batch axis. With the small bundle only `258864.zip` is on disk so the loader yields a single-element "batch"; with the full release `batch_size=16` would fill normally.
+`DDACSDataset` plugs straight into a [`DataLoader`](https://docs.pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader). The default `collate_fn` stacks each field along a new leading batch axis. With the small bundle only `258864.zip` is on disk so the loader yields a single-element "batch"; with the full release `batch_size=16` would fill normally.
 
 ```python
 loader = DataLoader(ds, batch_size=16, num_workers=0)
@@ -60,7 +67,7 @@ The row keys are not magic: they come straight from the Croissant manifest. `met
 
 ### What `where` receives
 
-`DDACSDataset` reads `process_parameters.csv` with `pandas` and runs `where` once per row via `df.apply(where, axis=1)`. The `row` argument is a `pandas.Series` whose index is the CSV column names, so you can read columns with either `row['split']` or `row.split`. Values are native Python types:
+`DDACSDataset` reads `process_parameters.csv` with `pandas` and runs `where` once per row via `df.apply(where, axis=1)`. The `row` argument is a [`pandas.Series`](https://pandas.pydata.org/docs/reference/api/pandas.Series.html) whose index is the CSV column names, so you can read columns with either `row['split']` or `row.split`. Values are native Python types:
 
 | Column | Type | Example |
 |--------|------|---------|

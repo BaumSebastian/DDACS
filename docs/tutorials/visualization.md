@@ -5,14 +5,15 @@
 The companion notebook at [`notebooks/04_visualization.ipynb`](https://github.com/BaumSebastian/DDACS/tree/main/notebooks/04_visualization.ipynb) reproduces every cell below.
 
 ```python
-DATA_DIR = './data'      # repository root, or '../data' from notebooks/
-sim_id   = 258864
-
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import ddacs
 from ddacs.visualization import FALSE_COLOR_CMAP, COMPONENT_COLORS
+
+from pathlib import Path
+DATA_DIR = Path('./data')      # repository root, or Path('../data') from notebooks/
+sim_id   = 258864
 
 ROCKET = sns.color_palette('rocket', as_cmap=True)
 ```

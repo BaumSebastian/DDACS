@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import ddacs as _ddacs
 from ddacs import croissant as _croissant
 from ddacs.config import METADATA_FILE, SMALL_TEST_FILES
 
@@ -106,6 +107,11 @@ def define_env(env):
     def metadata_url() -> str:
         """Permanent DaRUS download URL for `metadata.json`."""
         return _croissant.METADATA_URL
+
+    @env.macro
+    def ddacs_version() -> str:
+        """Live ddacs package version (resolves at docs build time)."""
+        return _ddacs.__version__
 
     # ----- schema tables sourced from metadata.json -----
     @env.macro
