@@ -167,7 +167,7 @@ def plot_mesh(
         vmax = vmax if vmax is not None else values.max()
 
         norm = Normalize(vmin=vmin, vmax=vmax)
-        face_colors = plt.cm.get_cmap(cmap)(norm(values))
+        face_colors = plt.colormaps.get_cmap(cmap)(norm(values))
 
         kwargs.setdefault("facecolors", face_colors)
         kwargs.setdefault("edgecolors", face_colors)
@@ -614,7 +614,7 @@ def plot_2d_projection(
         vmax = vmax if vmax is not None else values.max()
 
         norm = Normalize(vmin=vmin, vmax=vmax)
-        point_colors = plt.cm.get_cmap(cmap)(norm(values))
+        point_colors = plt.colormaps.get_cmap(cmap)(norm(values))
 
         ax.scatter(coords[:, idx1], coords[:, idx2], c=point_colors, **kwargs)
 
