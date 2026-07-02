@@ -3,17 +3,15 @@ name: Publish to PyPI
 on:
   push:
     tags:
-      - "[0-9]+.[0-9]+.[0-9]+"    # matches bumpver tags like 3.1.4 (no "v" prefix)
+      - "[0-9]+.[0-9]+.[0-9]+"    # real release: bumpver tags like 3.1.4 (no "v" prefix)
+  workflow_dispatch:              # dry-run: "Run workflow" button -> publishes to TestPyPI
 
 permissions:
   contents: read
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    environment: pypi              # optional: a GitHub Environment for protection rules
-    permissions:
-      id-token: write              # required for Trusted Publishing (OIDC)
     steps:
       - uses: actions/checkout@v4
 
@@ -26,5 +24,41 @@ jobs:
           python -m pip install --upgrade build
           python -m build
 
-      - name: Publish
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: actions/upload-artifact@v4    # hand the built dist/ to the publish jobs
+        with:
+          name: dist
+          path: dist/
+
+  testpypi:
+    # Dry-run: only runs when you trigger the workflow manually (workflow_dispatch).
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write             # required for Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  pypi:
+    # Real release: only runs when a version tag is pushed.
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write             # required for Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
