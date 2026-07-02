@@ -11,6 +11,7 @@ Usage:
     ddacs download --files a.zip            # Download specific files
     ddacs download --extract                # Also extract zips into their directory
     ddacs download --extract --remove-zip   # Extract and delete the zip afterwards
+    ddacs download --quiet                  # No output/progress; implies --yes
 
 Zip files are kept by default so they remain readable in place via mlcroissant
 (the Croissant manifest references zip members directly).
@@ -46,6 +47,9 @@ from .config import (
 )
 
 console = Console()
+# Errors go to stderr so they remain visible even when --quiet silences the
+# main console (console.quiet).
+err_console = Console(stderr=True)
 
 
 def _dataset_title(version_data: dict) -> str:
@@ -73,7 +77,7 @@ def _api_get(endpoint: str, headers: dict[str, str]) -> dict | None:
         r.raise_for_status()
         return r.json()["data"]
     except Exception as e:
-        console.print(f"[red]API Error:[/red] {e}")
+        err_console.print(f"[red]API Error:[/red] {e}")
         return None
 
 
@@ -228,8 +232,15 @@ def cmd_download(args: argparse.Namespace) -> None:
 
     Args:
         args: Parsed command-line arguments containing version, output path,
-              and download options (files, small, extract, remove_zip, yes).
+              and download options (files, small, extract, remove_zip, yes,
+              quiet).
     """
+    # --quiet silences all decorative output and progress bars and implies
+    # --yes so the download runs unattended (errors still go to stderr).
+    if args.quiet:
+        args.yes = True
+    console.quiet = args.quiet
+
     headers = {"X-Dataverse-key": args.token} if args.token else {}
 
     with console.status("[bold blue]Fetching dataset metadata..."):
@@ -333,6 +344,7 @@ def cmd_download(args: argparse.Namespace) -> None:
         TransferSpeedColumn(),
         TimeRemainingColumn(),
         console=console,
+        disable=args.quiet,
     ) as progress:
         for f in selected_files:
             file_name, _ = _get_file_info(f, original)
@@ -366,7 +378,7 @@ def cmd_download(args: argparse.Namespace) -> None:
                 downloaded_files.append(local_path)
             except Exception as e:
                 failed_downloads.append((file_name, str(e)))
-                console.print(f"[red]Failed to download {file_name}:[/red] {e}")
+                err_console.print(f"[red]Failed to download {file_name}:[/red] {e}")
 
     if args.extract and downloaded_files:
         console.print()
@@ -379,6 +391,7 @@ def cmd_download(args: argparse.Namespace) -> None:
                 TimeRemainingColumn(),
                 TextColumn("{task.fields[current_file]}"),
                 console=console,
+                disable=args.quiet,
             ) as progress:
                 for local_path in zip_files:
                     zip_name = os.path.basename(local_path)
@@ -401,7 +414,7 @@ def cmd_download(args: argparse.Namespace) -> None:
                             console.print(f"[dim]Removed:[/dim] {zip_name}")
                     except Exception as e:
                         failed_extractions.append((zip_name, str(e)))
-                        console.print(f"[red]Failed to extract {zip_name}:[/red] {e}")
+                        err_console.print(f"[red]Failed to extract {zip_name}:[/red] {e}")
 
     console.print()
     success_count = len(downloaded_files)
@@ -466,6 +479,13 @@ def main() -> None:
         help=f"Output directory (default: {DEFAULT_DATA_DIR})",
     )
     dl_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
+    dl_parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Suppress all output and progress display; implies --yes (runs unattended). "
+        "Errors are still reported on stderr.",
+    )
     dl_parser.add_argument(
         "--extract",
         action="store_true",

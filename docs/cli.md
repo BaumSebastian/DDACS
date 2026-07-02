@@ -36,6 +36,7 @@ ddacs download [VERSION] [OPTIONS]
 | `--extract` | Extract zip files in place after download |
 | `--remove-zip` | Delete the zip file after a successful extraction (requires `--extract`) |
 | `-y, --yes` | Skip the confirmation prompt |
+| `-q, --quiet` | Suppress all output and progress display; implies `--yes` (runs unattended). Errors are still reported on stderr |
 
 ### Default behaviour
 
@@ -67,7 +68,12 @@ ddacs download --extract
 
 # Extract and remove the zip after a successful extraction
 ddacs download --extract --remove-zip
+
+# Download unattended with no output or progress (implies -y), e.g. in scripts
+ddacs download --small --quiet
 ```
+
+`--quiet` silences the rich panels, tables and progress bars and skips the confirmation prompt, so it is convenient for scripts and CI. Download or extraction failures are still printed to stderr. It applies to `ddacs download` only; `ddacs info` has no quiet mode.
 
 After `--extract --remove-zip`, the HDF5 files are no longer wrapped in zips and `mlcroissant` cannot resolve the FileSet. See the [Loose HDF5 recipe](tutorials/loose-h5.md) for the appropriate iteration pattern in that case.
 
