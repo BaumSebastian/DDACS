@@ -15,7 +15,7 @@ Examples:
     ...     ddacs.inspect_h5(f)
 """
 
-__version__ = "3.1.3"
+__version__ = "3.1.4"
 
 from . import streaming
 from .croissant import add_view, load
