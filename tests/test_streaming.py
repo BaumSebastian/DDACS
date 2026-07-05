@@ -22,6 +22,7 @@ class TestIterViewZippedLayout:
             assert set(rec.keys()) == {
                 "forming",
                 "springback",
+                "_sim_id",  # private scratch key; stripped by export_to_numpy
             }
             assert rec["forming"].shape == (5, 3)
             assert rec["springback"].shape == (5, 3)

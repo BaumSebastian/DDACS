@@ -243,13 +243,13 @@ def synthetic_data_dir(tmp_path_factory) -> Path:
 def small_data_dir(tmp_path_factory) -> Path:
     """Fresh `ddacs download --small` into a session-scoped tmp dir."""
     out = tmp_path_factory.mktemp("ddacs_small")
-    cmd = ["ddacs"]
+    import sys
+
+    cmd = [sys.executable, "-m", "ddacs.cli"]
     token = os.environ.get("DARUS_API_TOKEN")
     if token:
         cmd += ["--token", token]
     cmd += ["download", "--small", "-y", "--out", str(out)]
-    if token:
-        cmd.append(":draft")
 
     try:
         res = subprocess.run(cmd, capture_output=True, text=True, timeout=120)

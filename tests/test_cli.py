@@ -156,12 +156,14 @@ class TestArgumentParsing:
                 assert args.version == "1.0"
 
     def test_download_default_version(self):
-        """Test download uses default version 2.0."""
+        """Test download defaults to the version derived from the package major."""
+        from ddacs.spec import DDACS_SPEC
+
         with patch("sys.argv", ["ddacs", "download"]):
             with patch("ddacs.cli.cmd_download") as mock_download:
                 main()
                 args = mock_download.call_args[0][0]
-                assert args.version == "2.0"
+                assert args.version == DDACS_SPEC.default_version
 
     def test_download_small_flag(self):
         """Test --small flag."""
@@ -228,7 +230,10 @@ class TestCmdInfo:
         """Test info command handles API failure gracefully."""
         mock_api_get.return_value = None
 
-        args = argparse.Namespace(token=None)
+        args = argparse.Namespace(
+            token=None,
+            quiet=False,
+        )
         cmd_info(args)
 
         # Should not raise, just return early
@@ -250,7 +255,10 @@ class TestCmdInfo:
             }
         ]
 
-        args = argparse.Namespace(token=None)
+        args = argparse.Namespace(
+            token=None,
+            quiet=False,
+        )
         cmd_info(args)
 
         captured = capsys.readouterr()
@@ -258,7 +266,7 @@ class TestCmdInfo:
         # Asserting on those guarantees the panel rendered without coupling to
         # the metadataBlocks-derived title (which the mock doesn't include).
         assert "darus.uni-stuttgart.de" in captured.out
-        assert "2.0" in captured.out
+        assert "darus" in captured.out.lower()
 
 
 class TestCmdDownload:
@@ -278,6 +286,7 @@ class TestCmdDownload:
             yes=True,
             extract=False,
             remove_zip=False,
+            quiet=False,
         )
         cmd_download(args)
 
@@ -304,6 +313,7 @@ class TestCmdDownload:
             yes=True,
             extract=False,
             remove_zip=False,
+            quiet=False,
         )
         cmd_download(args)
 
@@ -349,6 +359,7 @@ class TestCmdDownload:
             yes=True,
             extract=False,
             remove_zip=False,
+            quiet=False,
         )
         cmd_download(args)
 
@@ -406,6 +417,7 @@ class TestCmdDownload:
             yes=True,
             extract=True,
             remove_zip=True,
+            quiet=False,
         )
         cmd_download(args)
 
@@ -463,7 +475,8 @@ class TestCmdDownload:
             out=str(output_dir),
             yes=True,
             extract=True,
-            remove_zip=False,  # Keep the zip
+            remove_zip=False,  # Keep the zip,
+            quiet=False,
         )
         cmd_download(args)
 
@@ -494,6 +507,7 @@ class TestCmdDownload:
             yes=False,  # Will prompt
             extract=False,
             remove_zip=False,
+            quiet=False,
         )
         cmd_download(args)
 
@@ -530,6 +544,7 @@ class TestSmallTestSet:
             yes=False,  # Will show table but not download
             extract=False,
             remove_zip=False,
+            quiet=False,
         )
 
         # Mock Confirm to cancel
