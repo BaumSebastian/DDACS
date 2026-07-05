@@ -271,7 +271,7 @@ def chained(rec):
     return uniform_sample(normalize_and_emit(rec))
 ```
 
-Pass `chained` as the `record_transform=`; the downstream `export_to_numpy` call now succeeds with `forming` and `delta` shaped `(n_points, 3)` in every record. The example above is naive — it samples vertex indices uniformly, ignoring triangle area, which under-represents large faces. Use it as a baseline; area-weighted barycentric sampling that respects mesh geometry is a separate concern handled by the `ddacs.augment` primitives.
+Pass `chained` as the `record_transform=`; the downstream `export_to_numpy` call now succeeds with `forming` and `delta` shaped `(n_points, 3)` in every record. The example above is naive — it samples vertex indices uniformly, ignoring triangle area, which under-represents large faces. Use it as a baseline; area-weighted barycentric sampling that respects mesh geometry is a separate concern beyond this tutorial.
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/06_streaming_sampled.png" width="700">
 
