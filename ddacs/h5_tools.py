@@ -18,7 +18,9 @@ from pathlib import Path
 import h5py
 
 from . import croissant as _croissant
-from .config import DEFAULT_DATA_DIR
+from .spec import DDACS_SPEC, DatasetSpec
+
+DEFAULT_DATA_DIR = DDACS_SPEC.default_data_dir
 
 
 def open_h5(
@@ -26,6 +28,7 @@ def open_h5(
     source: str | Path | None = None,
     data_dir: str | Path | None = DEFAULT_DATA_DIR,
     dataset=None,
+    spec: DatasetSpec = DDACS_SPEC,
 ) -> h5py.File:
     """Return an `h5py.File` for the requested simulation.
 
@@ -37,9 +40,9 @@ def open_h5(
     Args:
         sim_id: The simulation id (matches the h5 filename inside the zip).
         source: Override the Croissant manifest URL / path. Falls back to
-            `ddacs.config.DARUS_BASE_URL` resolution.
+            `ddacs.croissant.resolve_source` resolution.
         data_dir: Override the directory searched for already-downloaded
-            zips. Defaults to `ddacs.config.DEFAULT_DATA_DIR`. Pass `None`
+            zips. Defaults to `ddacs.spec.DDACS_SPEC.default_data_dir`. Pass `None`
             to skip the local lookup entirely.
         dataset: A pre-loaded `mlcroissant.Dataset` (e.g. from `ddacs.load`).
             When given, `source` and `data_dir` are ignored: the manifest is
@@ -50,8 +53,12 @@ def open_h5(
     Raises:
         FileNotFoundError: No locally mapped zip contained the requested h5.
     """
-    ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
-    h5_name = f"{sim_id}.h5"
+    ds = (
+        dataset
+        if dataset is not None
+        else _croissant.load(source=source, data_dir=data_dir, spec=spec)
+    )
+    h5_name = f"{spec.id_format.format(int(sim_id))}.h5"
 
     for zip_path in (ds.mapping or {}).values():
         zip_path = str(zip_path)
@@ -67,7 +74,7 @@ def open_h5(
     hint = (
         " (data_dir lookup was skipped — pass data_dir=...)"
         if data_dir is None
-        else f" under {data_dir!r}. Run `ddacs download` to fetch the dataset first."
+        else f" under {data_dir!r}. Run `{spec.prog} download` to fetch the dataset first."
     )
     raise FileNotFoundError(f"{h5_name} not found in any locally mapped zip{hint}")
 

@@ -32,12 +32,9 @@ import numpy as np
 import pandas as pd
 
 from . import croissant as _croissant
-from .config import (
-    DEFAULT_DATA_DIR,
-    FIELD_MAP_RECORD_SET,
-    ID_COLUMN,
-    PROCESS_PARAMETERS_FILE,
-)
+from .spec import DDACS_SPEC, DatasetSpec
+
+DEFAULT_DATA_DIR = DDACS_SPEC.default_data_dir
 
 __all__ = ["iter_view", "export_to_numpy", "export_to_numpy_per_sim", "load_export"]
 
@@ -52,6 +49,7 @@ def iter_view(
     dataset=None,
     sim_ids: list[int] | None = None,
     where: Callable[[pd.Series], bool] | None = None,
+    spec: DatasetSpec = DDACS_SPEC,
 ) -> Iterator[dict[str, np.ndarray]]:
     """Yield one record per simulation for a Croissant view.
 
@@ -79,22 +77,27 @@ def iter_view(
         aliases. Sliced fields come out with the requested timesteps
         applied; whole fields come out at their full shape.
     """
-    ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
-    h5_specs, csv_specs = _build_field_specs(ds, view)
+    ds = (
+        dataset
+        if dataset is not None
+        else _croissant.load(source=source, data_dir=data_dir, spec=spec)
+    )
+    h5_specs, csv_specs = _build_field_specs(ds, view, spec)
     h5_index = _build_unified_index(Path(data_dir) if data_dir is not None else None)
     final_ids = _resolve_sim_ids(
         Path(data_dir) if data_dir is not None else None,
         h5_index,
         sim_ids,
         where,
+        spec,
     )
 
     csv_df: pd.DataFrame | None = None
     if csv_specs:
         if data_dir is None:
             raise ValueError(f"view {view!r} pulls from 'process-parameters'; pass data_dir=")
-        csv_path = Path(data_dir) / PROCESS_PARAMETERS_FILE
-        csv_df = pd.read_csv(csv_path).set_index(ID_COLUMN)
+        csv_path = Path(data_dir) / spec.process_parameters_file
+        csv_df = pd.read_csv(csv_path).set_index(spec.id_column)
 
     last_zip_path: str | None = None
     last_zf: zipfile.ZipFile | None = None
@@ -117,7 +120,7 @@ def iter_view(
                     last_zf = zipfile.ZipFile(path)
                     last_zip_path = path
                 try:
-                    data = last_zf.read(f"{sim_id}.h5")
+                    data = last_zf.read(f"{spec.id_format.format(int(sim_id))}.h5")
                 except KeyError:
                     continue
                 with h5py.File(io.BytesIO(data), "r") as f:
@@ -266,6 +269,7 @@ def export_to_numpy(
     transforms: dict[str, Callable[[Any], Any]] | None = None,
     record_transform: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     show_progress: bool = False,
+    spec: DatasetSpec = DDACS_SPEC,
 ) -> dict[str, Path]:
     """Materialize a Croissant view as flat ``.npy`` files on disk.
 
@@ -312,7 +316,11 @@ def export_to_numpy(
     transforms = transforms or {}
 
     # Build the manifest + index once so iter_view doesn't redo the work.
-    ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
+    ds = (
+        dataset
+        if dataset is not None
+        else _croissant.load(source=source, data_dir=data_dir, spec=spec)
+    )
 
     records = iter_view(
         view=view,
@@ -321,6 +329,7 @@ def export_to_numpy(
         dataset=ds,
         sim_ids=sim_ids,
         where=where,
+        spec=spec,
     )
 
     # Pre-resolve the sim id order so we can both size the memmaps and
@@ -330,6 +339,7 @@ def export_to_numpy(
         _build_unified_index(Path(data_dir) if data_dir is not None else None),
         sim_ids,
         where,
+        spec,
     )
     if not final_ids:
         raise ValueError("no simulations matched; nothing to export")
@@ -405,6 +415,7 @@ def export_to_numpy_per_sim(
     record_transform: Callable[[dict[str, Any]], dict[str, Any]] | None = None,
     compressed: bool = False,
     show_progress: bool = False,
+    spec: DatasetSpec = DDACS_SPEC,
 ) -> Path:
     """Write one ``<sim_id>.npz`` file per simulation under ``out_dir``.
 
@@ -423,7 +434,11 @@ def export_to_numpy_per_sim(
     transforms = transforms or {}
     save_fn = np.savez_compressed if compressed else np.savez
 
-    ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
+    ds = (
+        dataset
+        if dataset is not None
+        else _croissant.load(source=source, data_dir=data_dir, spec=spec)
+    )
 
     records = iter_view(
         view=view,
@@ -432,6 +447,7 @@ def export_to_numpy_per_sim(
         dataset=ds,
         sim_ids=sim_ids,
         where=where,
+        spec=spec,
     )
 
     final_ids = _resolve_sim_ids(
@@ -439,6 +455,7 @@ def export_to_numpy_per_sim(
         _build_unified_index(Path(data_dir) if data_dir is not None else None),
         sim_ids,
         where,
+        spec,
     )
     if not final_ids:
         raise ValueError("no simulations matched; nothing to export")
@@ -544,7 +561,9 @@ def _build_unified_index(data_dir: Path | None) -> dict[int, str]:
     return index
 
 
-def _build_field_specs(ds, view: str) -> tuple[dict[str, tuple[str, Any]], dict[str, str]]:
+def _build_field_specs(
+    ds, view: str, spec: DatasetSpec = DDACS_SPEC
+) -> tuple[dict[str, tuple[str, Any]], dict[str, str]]:
     """Split a view's fields into HDF5 and process-parameters specs.
 
     Returns ``(h5_specs, csv_specs)`` where:
@@ -557,18 +576,18 @@ def _build_field_specs(ds, view: str) -> tuple[dict[str, tuple[str, Any]], dict[
     if view_rs is None:
         raise ValueError(f"view {view!r} not found in manifest")
     fm_rs = next(
-        (r for r in ds.metadata.record_sets if r.id == FIELD_MAP_RECORD_SET),
+        (r for r in ds.metadata.record_sets if r.id == spec.field_map_record_set),
         None,
     )
     if fm_rs is None:
-        raise ValueError(f"{FIELD_MAP_RECORD_SET!r} RecordSet missing - manifest is malformed")
+        raise ValueError(f"{spec.field_map_record_set!r} RecordSet missing - manifest is malformed")
     fm = {f.name: f for f in fm_rs.fields}
 
     h5_specs: dict[str, tuple[str, Any]] = {}
     csv_specs: dict[str, str] = {}
     for f in view_rs.fields:
         rs_id, _, source_field_id = f.source.uuid.partition("/")
-        if rs_id == FIELD_MAP_RECORD_SET:
+        if rs_id == spec.field_map_record_set:
             if source_field_id not in fm:
                 raise ValueError(f"view field {f.name!r} sources unknown field {source_field_id!r}")
             h5_path = fm[source_field_id].source.transforms[0].regex
@@ -581,7 +600,7 @@ def _build_field_specs(ds, view: str) -> tuple[dict[str, tuple[str, Any]], dict[
         else:
             raise ValueError(
                 f"view field {f.name!r} sources unsupported RecordSet {rs_id!r}; "
-                f"only {FIELD_MAP_RECORD_SET!r} and 'process-parameters' are supported"
+                f"only {spec.field_map_record_set!r} and 'process-parameters' are supported"
             )
     return h5_specs, csv_specs
 
@@ -607,22 +626,23 @@ def _resolve_sim_ids(
     h5_index: dict[int, str],
     sim_ids_arg: list[int] | None,
     where: Callable[[pd.Series], bool] | None,
+    spec: DatasetSpec = DDACS_SPEC,
 ) -> list[int]:
     """Apply ``sim_ids`` + ``where`` to produce the final ordered list of sim ids."""
     if data_dir is not None:
-        csv_path = data_dir / PROCESS_PARAMETERS_FILE
+        csv_path = data_dir / spec.process_parameters_file
         if csv_path.is_file():
             df = pd.read_csv(csv_path)
-            if ID_COLUMN not in df.columns:
-                raise ValueError(f"{csv_path} missing required {ID_COLUMN!r} column")
+            if spec.id_column not in df.columns:
+                raise ValueError(f"{csv_path} missing required {spec.id_column!r} column")
             if sim_ids_arg is not None:
-                df = df[df[ID_COLUMN].isin(set(sim_ids_arg))]
+                df = df[df[spec.id_column].isin(set(sim_ids_arg))]
             if where is not None:
                 df = df[df.apply(where, axis=1)]
-            return [int(x) for x in df[ID_COLUMN].tolist()]
+            return [int(x) for x in df[spec.id_column].tolist()]
 
     if where is not None:
-        raise ValueError(f"`where` filter requires {PROCESS_PARAMETERS_FILE} under data_dir")
+        raise ValueError(f"`where` filter requires {spec.process_parameters_file} under data_dir")
     if sim_ids_arg is not None:
         return [int(x) for x in sim_ids_arg]
     return sorted(h5_index.keys())

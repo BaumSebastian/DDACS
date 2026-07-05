@@ -22,12 +22,9 @@ import numpy as np
 import pandas as pd
 
 from . import croissant as _croissant
-from .config import (
-    DEFAULT_DATA_DIR,
-    FIELD_MAP_RECORD_SET,
-    ID_COLUMN,
-    PROCESS_PARAMETERS_FILE,
-)
+from .spec import DDACS_SPEC, DatasetSpec
+
+DEFAULT_DATA_DIR = DDACS_SPEC.default_data_dir
 
 try:
     from torch.utils.data import IterableDataset, get_worker_info
@@ -58,7 +55,7 @@ class DDACSDataset(IterableDataset):
         source: Override the manifest URL / path. Defaults to the resolution
             chain in `ddacs.croissant.resolve_source`.
         data_dir: Override the local data directory. Defaults to
-            `ddacs.config.DEFAULT_DATA_DIR`. Pass `None` to skip local-file
+            `ddacs.spec.DDACS_SPEC.default_data_dir`. Pass `None` to skip local-file
             discovery.
         dataset: A pre-loaded `mlcroissant.Dataset` (e.g. one mutated by
             `ddacs.add_view`). When supplied, `source`/`data_dir` are ignored
@@ -84,6 +81,7 @@ class DDACSDataset(IterableDataset):
         where: Callable[[pd.Series], bool] | None = None,
         shuffle: bool = False,
         seed: int = 0,
+        spec: DatasetSpec = DDACS_SPEC,
     ):
         super().__init__()
         self.view = view
@@ -92,11 +90,16 @@ class DDACSDataset(IterableDataset):
         self.where = where
         self.shuffle = shuffle
         self.seed = seed
+        self.spec = spec
         self._epoch = 0
 
         # Use a caller-provided `dataset` (e.g. one mutated by `ddacs.add_view`)
         # so the custom view is visible here; otherwise parse the manifest fresh.
-        ds = dataset if dataset is not None else _croissant.load(source=source, data_dir=data_dir)
+        ds = (
+            dataset
+            if dataset is not None
+            else _croissant.load(source=source, data_dir=data_dir, spec=spec)
+        )
         self._field_specs = self._build_field_specs(ds)
         self._h5_index = self._build_h5_index(ds.mapping or {})
         self._sim_ids = self._resolve_sim_ids(sim_ids)
@@ -135,7 +138,7 @@ class DDACSDataset(IterableDataset):
                     last_zf = zipfile.ZipFile(zip_path)
                     last_path = zip_path
                 try:
-                    data = last_zf.read(f"{sim_id}.h5")
+                    data = last_zf.read(f"{self.spec.id_format.format(int(sim_id))}.h5")
                 except KeyError:
                     continue
                 with h5py.File(io.BytesIO(data), "r") as f:
@@ -175,16 +178,25 @@ class DDACSDataset(IterableDataset):
         if view_rs is None:
             raise ValueError(f"view {self.view!r} not found in manifest")
         fm_rs = next(
-            (r for r in ds.metadata.record_sets if r.id == FIELD_MAP_RECORD_SET),
+            (r for r in ds.metadata.record_sets if r.id == self.spec.field_map_record_set),
             None,
         )
         if fm_rs is None:
-            raise ValueError(f"{FIELD_MAP_RECORD_SET!r} RecordSet missing — manifest is malformed")
+            raise ValueError(
+                f"{self.spec.field_map_record_set!r} RecordSet missing — manifest is malformed"
+            )
         fm = {f.name: f for f in fm_rs.fields}
 
         specs: dict[str, tuple[str, Any]] = {}
         for f in view_rs.fields:
-            source_field_id = f.source.uuid.split("/", 1)[-1]
+            rs_id, _, source_field_id = f.source.uuid.partition("/")
+            if rs_id != self.spec.field_map_record_set:
+                raise ValueError(
+                    f"view field {f.name!r} sources RecordSet {rs_id!r}, but this dataset "
+                    f"only streams {self.spec.field_map_record_set!r} (HDF5) fields. For views "
+                    "that include process-parameters metadata columns use streaming.iter_view, "
+                    "or build the view from field-map fields only."
+                )
             if source_field_id not in fm:
                 raise ValueError(f"view field {f.name!r} sources unknown field {source_field_id!r}")
             h5_path = fm[source_field_id].source.transforms[0].regex
@@ -239,19 +251,21 @@ class DDACSDataset(IterableDataset):
         so every shard sees the same ordering.
         """
         if self.data_dir is not None:
-            csv_path = self.data_dir / PROCESS_PARAMETERS_FILE
+            csv_path = self.data_dir / self.spec.process_parameters_file
             if csv_path.is_file():
                 df = pd.read_csv(csv_path)
-                if ID_COLUMN not in df.columns:
-                    raise ValueError(f"{csv_path} missing required {ID_COLUMN!r} column")
+                if self.spec.id_column not in df.columns:
+                    raise ValueError(f"{csv_path} missing required {self.spec.id_column!r} column")
                 if sim_ids_arg is not None:
-                    df = df[df[ID_COLUMN].isin(set(sim_ids_arg))]
+                    df = df[df[self.spec.id_column].isin(set(sim_ids_arg))]
                 if self.where is not None:
                     df = df[df.apply(self.where, axis=1)]
-                return [int(x) for x in df[ID_COLUMN].tolist()]
+                return [int(x) for x in df[self.spec.id_column].tolist()]
 
         if self.where is not None:
-            raise ValueError(f"`where` filter requires {PROCESS_PARAMETERS_FILE} under data_dir")
+            raise ValueError(
+                f"`where` filter requires {self.spec.process_parameters_file} under data_dir"
+            )
         if sim_ids_arg is not None:
             return [int(x) for x in sim_ids_arg]
         return sorted(self._h5_index.keys())

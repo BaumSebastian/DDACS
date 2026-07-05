@@ -38,13 +38,13 @@ from rich.progress import (
 from rich.prompt import Confirm
 from rich.table import Table
 
-from .config import (
-    DARUS_BASE_URL,
-    DATASET_DOI,
-    DEFAULT_DATA_DIR,
-    DEFAULT_VERSION,
-    SMALL_TEST_FILES,
-)
+from .spec import DDACS_SPEC
+
+DARUS_BASE_URL = DDACS_SPEC.darus_base_url
+DATASET_DOI = DDACS_SPEC.dataset_doi
+DEFAULT_DATA_DIR = DDACS_SPEC.default_data_dir
+DEFAULT_VERSION = DDACS_SPEC.default_version
+SMALL_TEST_FILES = list(DDACS_SPEC.small_test_files)
 
 console = Console()
 # Errors go to stderr so they remain visible even when --quiet silences the

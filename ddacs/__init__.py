@@ -20,6 +20,7 @@ __version__ = "3.1.5"
 from . import streaming
 from .croissant import add_view, load
 from .h5_tools import inspect_h5, open_h5
+from .spec import DDACS_SPEC, DatasetSpec
 from .visualization import (
     COMPONENT_COLORS,
     plot_2d_projection,
@@ -35,6 +36,9 @@ except ImportError:
 
 __all__ = [
     "__version__",
+    # Dataset specification (identity knobs for sibling datasets)
+    "DatasetSpec",
+    "DDACS_SPEC",
     # Croissant entry point + helpers
     "load",
     "add_view",

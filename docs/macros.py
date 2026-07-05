@@ -12,7 +12,10 @@ from pathlib import Path
 
 import ddacs as _ddacs
 from ddacs import croissant as _croissant
-from ddacs.config import METADATA_FILE, SMALL_TEST_FILES
+from ddacs.spec import DDACS_SPEC
+
+METADATA_FILE = DDACS_SPEC.metadata_file
+SMALL_TEST_FILES = list(DDACS_SPEC.small_test_files)
 
 # ---------------------------------------------------------------------------
 # Display constants — bump these once per release.

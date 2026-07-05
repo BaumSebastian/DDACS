@@ -14,27 +14,60 @@ from typing import Any
 
 import mlcroissant as mlc
 
-from .config import (
-    DARUS_BASE_URL,
-    DATASET_DOI,
-    DEFAULT_DATA_DIR,
-    DEFAULT_FIELD_DATA_TYPE,
-    FIELD_MAP_RECORD_SET,
-    METADATA_FILE,
-)
+from .spec import DDACS_SPEC, DatasetSpec
+
+DEFAULT_DATA_DIR = DDACS_SPEC.default_data_dir
+# Manifest conventions shared by all sibling datasets (see spec.py).
+FIELD_MAP_RECORD_SET = DDACS_SPEC.field_map_record_set
+DEFAULT_FIELD_DATA_TYPE = DDACS_SPEC.default_field_data_type
 
 # A field-spec value in `add_view(fields=...)`. See `add_view` docstring.
 FieldSpec = str | tuple
 TimestepSpec = None | int | list
 
-# Permanent DaRUS download URL for the published metadata.json.
-METADATA_URL = (
-    f"{DARUS_BASE_URL}/api/access/datafile/:persistentId"
-    f"?persistentId={DATASET_DOI}/{METADATA_FILE}"
-)
+_metadata_url_cache: dict[str, str] = {}
 
 
-def resolve_source(source: str | Path | None = None, data_dir: str | Path | None = None) -> str:
+def metadata_url(spec: DatasetSpec = DDACS_SPEC) -> str:
+    """Return the DaRUS download URL for the published ``metadata.json``.
+
+    DaRUS assigns no per-file persistent ids (the by-name access form does
+    not exist on that server), so the numeric file id is resolved once via
+    the dataset API and cached for the process lifetime.
+    """
+    if spec.dataset_doi not in _metadata_url_cache:
+        api = (
+            f"{spec.darus_base_url}/api/datasets/:persistentId/versions/:latest"
+            f"?persistentId={spec.dataset_doi}"
+        )
+        with urllib.request.urlopen(api) as r:
+            files = json.load(r)["data"].get("files", [])
+        for f in files:
+            if f["dataFile"]["filename"] == spec.metadata_file:
+                _metadata_url_cache[spec.dataset_doi] = (
+                    f"{spec.darus_base_url}/api/access/datafile/{f['dataFile']['id']}"
+                )
+                break
+        else:
+            raise FileNotFoundError(
+                f"{spec.metadata_file} not found in the published dataset {spec.dataset_doi}"
+            )
+    return _metadata_url_cache[spec.dataset_doi]
+
+
+def __getattr__(name: str):
+    # Lazy module attribute (PEP 562): METADATA_URL kept for backward
+    # compatibility, now resolving a URL that actually works on DaRUS.
+    if name == "METADATA_URL":
+        return metadata_url()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def resolve_source(
+    source: str | Path | None = None,
+    data_dir: str | Path | None = None,
+    spec: DatasetSpec = DDACS_SPEC,
+) -> str:
     """Return the source string (path or URL) that :func:`load` would use.
 
     Resolution order:
@@ -45,10 +78,10 @@ def resolve_source(source: str | Path | None = None, data_dir: str | Path | None
     if source is not None:
         return str(source)
     if data_dir is not None:
-        local = Path(data_dir) / METADATA_FILE
+        local = Path(data_dir) / spec.metadata_file
         if local.is_file():
             return str(local)
-    return METADATA_URL
+    return metadata_url(spec)
 
 
 def _build_mapping(jsonld: str, data_dir: str | Path) -> dict[str, str] | None:
@@ -90,6 +123,7 @@ def _build_mapping(jsonld: str, data_dir: str | Path) -> dict[str, str] | None:
 def load(
     source: str | Path | None = None,
     data_dir: str | Path | None = DEFAULT_DATA_DIR,
+    spec: DatasetSpec = DDACS_SPEC,
 ) -> mlc.Dataset:
     """Return an :class:`mlcroissant.Dataset` for the DDACS manifest.
 
@@ -101,7 +135,7 @@ def load(
     Pass ``data_dir=None`` to opt out of local-file discovery and force
     `mlcroissant` to download via its own cache.
     """
-    jsonld = resolve_source(source, data_dir)
+    jsonld = resolve_source(source, data_dir, spec=spec)
     mapping = _build_mapping(jsonld, data_dir) if data_dir is not None else None
     return mlc.Dataset(jsonld=jsonld, mapping=mapping)
 
