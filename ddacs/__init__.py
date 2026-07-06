@@ -21,6 +21,7 @@ from . import streaming
 from .croissant import add_view, load
 from .h5_tools import inspect_h5, open_h5
 from .spec import DDACS_SPEC, DatasetSpec
+from .streaming import MissingDataWarning
 from .visualization import (
     COMPONENT_COLORS,
     plot_2d_projection,
@@ -39,6 +40,7 @@ __all__ = [
     # Dataset specification (identity knobs for sibling datasets)
     "DatasetSpec",
     "DDACS_SPEC",
+    "MissingDataWarning",
     # Croissant entry point + helpers
     "load",
     "add_view",

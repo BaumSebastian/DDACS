@@ -278,3 +278,70 @@ class TestLoadExport:
         assert set(batch.keys()) == set(export.fields)
         for v in batch.values():
             assert v.shape[0] <= 2
+
+
+class TestMissingDataWarning:
+    """Explicitly requested sim_ids that cannot be served must warn, suppressibly."""
+
+    def test_warns_on_id_missing_from_csv(self, synthetic_data_dir):
+        import ddacs
+
+        with pytest.warns(ddacs.MissingDataWarning, match="not present in process_parameters"):
+            records = list(
+                ddacs.streaming.iter_view(
+                    "springback-minimal", data_dir=str(synthetic_data_dir), sim_ids=[1, 999]
+                )
+            )
+        assert [r["_sim_id"] for r in records] == [1]
+
+    def test_no_warning_when_all_ids_available(self, synthetic_data_dir):
+        import warnings as _warnings
+
+        import ddacs
+
+        with _warnings.catch_warnings():
+            _warnings.simplefilter("error", ddacs.MissingDataWarning)
+            records = list(
+                ddacs.streaming.iter_view(
+                    "springback-minimal", data_dir=str(synthetic_data_dir), sim_ids=[1, 3]
+                )
+            )
+        assert [r["_sim_id"] for r in records] == [1, 3]
+
+    def test_warning_is_suppressible(self, synthetic_data_dir):
+        import warnings as _warnings
+
+        import ddacs
+
+        with _warnings.catch_warnings(record=True) as caught:
+            _warnings.simplefilter("always")
+            _warnings.filterwarnings("ignore", category=ddacs.MissingDataWarning)
+            list(
+                ddacs.streaming.iter_view(
+                    "springback-minimal", data_dir=str(synthetic_data_dir), sim_ids=[1, 999]
+                )
+            )
+        assert not [w for w in caught if issubclass(w.category, ddacs.MissingDataWarning)]
+
+    def test_mixed_view_streams_csv_and_h5(self, synthetic_data_dir):
+        """Regression for the fixture @context gap: mixed h5+csv views validate."""
+        import ddacs
+
+        ds = ddacs.load(data_dir=str(synthetic_data_dir))
+        ddacs.add_view(
+            ds,
+            "mixed",
+            fields={
+                "disp": "op10_blank_node_displacement",
+                "geometry": "process-parameters/geometry",
+            },
+        )
+        records = list(
+            ddacs.streaming.iter_view(
+                "mixed", data_dir=str(synthetic_data_dir), dataset=ds, sim_ids=[1, 3]
+            )
+        )
+        assert len(records) == 2
+        assert all(r["geometry"] == "rectangular" for r in records)
+        assert records[0]["disp"].shape == (4, 5, 3)
+        assert {r["_sim_id"] for r in records} == {1, 3}

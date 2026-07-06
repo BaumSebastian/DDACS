@@ -103,6 +103,10 @@ class DDACSDataset(IterableDataset):
         self._field_specs = self._build_field_specs(ds)
         self._h5_index = self._build_h5_index(ds.mapping or {})
         self._sim_ids = self._resolve_sim_ids(sim_ids)
+        if sim_ids is not None:
+            from .streaming import _warn_missing
+
+            _warn_missing(sim_ids, self._sim_ids, self._h5_index, self.data_dir)
 
     # --- public ------------------------------------------------------------
 

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import io
 import re
+import warnings
 import zipfile
 from collections.abc import Callable, Iterator
 from pathlib import Path
@@ -36,7 +37,23 @@ from .spec import DDACS_SPEC, DatasetSpec
 
 DEFAULT_DATA_DIR = DDACS_SPEC.default_data_dir
 
-__all__ = ["iter_view", "export_to_numpy", "export_to_numpy_per_sim", "load_export"]
+__all__ = [
+    "iter_view",
+    "export_to_numpy",
+    "export_to_numpy_per_sim",
+    "load_export",
+    "MissingDataWarning",
+]
+
+
+class MissingDataWarning(UserWarning):
+    """Explicitly requested sim_ids were skipped because their data is not local.
+
+    Suppress with::
+
+        warnings.filterwarnings("ignore", category=ddacs.MissingDataWarning)
+    """
+
 
 _JSONPATH_RE = re.compile(r"^\$\[(.+)\]$")
 
@@ -98,6 +115,9 @@ def iter_view(
             raise ValueError(f"view {view!r} pulls from 'process-parameters'; pass data_dir=")
         csv_path = Path(data_dir) / spec.process_parameters_file
         csv_df = pd.read_csv(csv_path).set_index(spec.id_column)
+
+    if sim_ids is not None:
+        _warn_missing(sim_ids, final_ids, h5_index, data_dir)
 
     last_zip_path: str | None = None
     last_zf: zipfile.ZipFile | None = None
@@ -512,6 +532,28 @@ def _progress_iter(iterable, total: int, enabled: bool):
     except ImportError:
         return iter(iterable)
     return iter(tqdm(iterable, total=total, desc="export_to_numpy", unit="sim"))
+
+
+def _warn_missing(requested, final_ids, h5_index: dict[int, str], data_dir) -> None:
+    """Warn (suppressibly) when explicitly requested sim_ids will be skipped."""
+    requested_set = {int(i) for i in requested}
+    not_in_csv = sorted(requested_set - {int(i) for i in final_ids})
+    if not_in_csv:
+        warnings.warn(
+            f"{len(not_in_csv)} requested sim_id(s) not present in "
+            f"process_parameters.csv and skipped: {not_in_csv[:10]}",
+            MissingDataWarning,
+            stacklevel=3,
+        )
+    no_local = sorted(int(i) for i in final_ids if int(i) not in h5_index)
+    if no_local:
+        warnings.warn(
+            f"{len(no_local)} requested sim_id(s) have no local HDF5 data under "
+            f"{str(data_dir)!r} and are skipped: {no_local[:10]}. "
+            "Download the missing zip(s) first.",
+            MissingDataWarning,
+            stacklevel=3,
+        )
 
 
 def _build_unified_index(data_dir: Path | None) -> dict[int, str]:
