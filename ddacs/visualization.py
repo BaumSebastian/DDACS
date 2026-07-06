@@ -309,6 +309,9 @@ def plot_point_cloud(
 
     kwargs.setdefault("s", 1.0)
     kwargs.setdefault("alpha", 0.8)
+    # matplotlib >=3.10 renders 3D depth shading as alpha fading, washing the
+    # points out; keep the crisp pre-3.10 look unless the caller opts back in.
+    kwargs.setdefault("depthshade", False)
     cbar = None
 
     if values_arr is not None:
