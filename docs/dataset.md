@@ -9,6 +9,7 @@ DDACS contains **{{ simulation_count() }} LS-DYNA simulations** of a dual phase 
 | Total size | {{ total_size() }} |
 | File size | {{ per_sim_size() }} (gzip + shuffle) |
 | Format | HDF5 |
+| License | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 
 ## Version compatibility
 
