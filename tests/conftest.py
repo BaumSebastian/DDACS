@@ -244,7 +244,17 @@ def synthetic_data_dir(tmp_path_factory) -> Path:
 
 @pytest.fixture(scope="session")
 def small_data_dir(tmp_path_factory) -> Path:
-    """Fresh `ddacs download --small` into a session-scoped tmp dir."""
+    """The small bundle — cached at DDACS_SMALL_DATA_DIR (default
+    /mnt/data/datasets/ddacs_small), download-as-update into a tmp dir
+    otherwise. A warm cache means zero network per test run."""
+    cache = Path(os.environ.get("DDACS_SMALL_DATA_DIR", "/mnt/data/datasets/ddacs_small"))
+    required = ["metadata.json", "process_parameters.csv", "h5/258864.zip"]
+    try:
+        if all((cache / name).is_file() for name in required):
+            return cache
+    except OSError:
+        pass  # cache unreadable (permissions/sandbox) -> fresh download below
+
     out = tmp_path_factory.mktemp("ddacs_small")
     import sys
 
