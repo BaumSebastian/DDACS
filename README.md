@@ -18,13 +18,13 @@
 
 </div>
 
-**A large-scale dataset and benchmark for training AI models that replace computationally expensive FEA simulations in industrial sheet metal manufacturing.** Each simulation models a two-stage stamping process (deep drawing in OP10 and trimming with elastic recovery in OP20) for a cup geometry parameterised by 8 input dimensions. Train ML surrogates that predict mesh deformation, stress, strain, and springback in seconds instead of the minutes-to-hours a CAE solver would take.
+**A large-scale dataset and benchmark for training AI models that replace computationally expensive FEA simulations in industrial sheet metal manufacturing.** Each simulation models a two-stage stamping process (deep drawing in OP10 and cutting with elastic recovery in OP20) for a cup geometry parameterised by 8 input dimensions. Train ML surrogates that predict mesh deformation, stress, strain, and springback in seconds instead of the minutes-to-hours a CAE solver would take.
 
 |  |  |
 |---|---|
 | **Simulations** | 32,466 |
 | **Total size** | ~640 GB (HDF5, lossless) |
-| **Process steps per sim** | 2 (OP10 deep drawing, OP20 trimming) |
+| **Process steps per sim** | 2 (OP10 deep drawing, OP20 cutting) |
 | **Input parameters** | 8 (4 geometric + 4 process) |
 | **Train / val / test** | 25,973 / 3,246 / 3,247 (predefined) |
 | **Mesh-node states** | ~2.1 B across all sims, timesteps, components |
