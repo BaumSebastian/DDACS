@@ -62,3 +62,98 @@ jobs:
           path: dist/
 
       - uses: pypa/gh-action-pypi-publish@release/v1
+
+  # ── Discovery surfaces ───────────────────────────────────────────────────
+  # Kernels track every release (they pip-install ddacs at run time on Kaggle);
+  # the teaser datasets only change when the DaRUS data does, i.e. on majors.
+
+  kaggle-kernels:
+    # Every release: refresh the six tutorial notebooks on Kaggle.
+    if: github.event_name == 'push'
+    needs: pypi
+    runs-on: ubuntu-latest
+    environment: kaggle
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Push tutorial kernels
+        env:
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+        run: |
+          python -m pip install --upgrade kaggle
+          ./publish/kaggle/kernels/push.sh
+
+  fetch-teaser:
+    # Major release (X.0.0): the dataset content on DaRUS changed. Download the
+    # small bundle ONCE and hand it to both uploaders as an artifact, so one
+    # release costs one DaRUS download.
+    if: github.event_name == 'push' && endsWith(github.ref_name, '.0.0')
+    needs: pypi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Fetch teaser data from DaRUS
+        run: |
+          python -m pip install --upgrade ddacs
+          ddacs download --small -y --quiet --out data
+          ddacs download --files ddacs_documentation.pdf -y --quiet --out data
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: teaser-data
+          path: data/
+          retention-days: 1
+
+  kaggle-dataset:
+    needs: fetch-teaser
+    runs-on: ubuntu-latest
+    environment: kaggle
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: teaser-data
+          path: data/
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Upload dataset version
+        env:
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+        run: |
+          python -m pip install --upgrade kaggle
+          DDACS_TEASER_SRC="$PWD/data" ./publish/kaggle/upload.sh version
+
+  huggingface:
+    needs: fetch-teaser
+    runs-on: ubuntu-latest
+    environment: huggingface
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: teaser-data
+          path: data/
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Upload teaser to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python -m pip install --upgrade huggingface_hub
+          HF_REPO=BaumSebastian/ddacs-teaser DDACS_TEASER_SRC="$PWD/data" \
+            ./publish/huggingface/upload.sh

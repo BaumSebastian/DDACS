@@ -1,0 +1,49 @@
+{
+  "title": "DDACS Teaser",
+  "id": "baumsebastian/ddacs-teaser",
+  "subtitle": "Deep Drawing and Cutting Simulations (DDACS) Dataset",
+  "description": "A 22 MB sample of the DDACS dataset: one full FEM simulation of a two stage sheet metal stamping process (deep drawing in OP10, trimming with elastic recovery in OP20), the Croissant 1.1 manifest, the process parameter table for all 32,466 simulations, and the dataset documentation PDF.\n\nThe full release (32,466 simulations, roughly 640 GB of lossless HDF5, with a predefined 25,973 / 3,246 / 3,247 train, validation and test split) is hosted on DaRUS with a citable DOI: https://doi.org/10.18419/DARUS-4801\n\nQuickstart:\n\n    pip install ddacs\n    import ddacs\n    ds = ddacs.load(data_dir='data')\n\nRunnable tutorials are in the Code tab. Docs: https://ddacs.readthedocs.io  Package: https://pypi.org/project/ddacs  Source: https://github.com/BaumSebastian/DDACS\n\nLicense: data CC BY 4.0, code MIT. Please cite the dataset DOI and the paper (10.1051/matecconf/202540801090).",
+  "licenses": [{ "name": "CC-BY-4.0" }],
+  "keywords": [
+    "engineering",
+    "manufacturing",
+    "physics"
+  ],
+  "resources": [
+    {
+      "path": "README.md",
+      "description": "Overview, quickstart, and links to the full dataset, docs, and package."
+    },
+    {
+      "path": "ddacs_documentation.pdf",
+      "description": "Full dataset documentation: geometry parameters, the HDF5 field reference, and the process description."
+    },
+    {
+      "path": "data/metadata.json",
+      "description": "Croissant 1.1 manifest: the machine readable schema (every HDF5 field and CSV column) that ddacs.load and mlcroissant consume. Its contentUrls point to DaRUS, so tools can fetch the full data on demand."
+    },
+    {
+      "path": "data/h5/258864.zip",
+      "description": "One complete simulation (id 258864): OP10 deep drawing and OP20 trimming with elastic recovery, all components (blank, binder, die, punch), across timesteps."
+    },
+    {
+      "path": "data/process_parameters.csv",
+      "description": "The 8 input parameters plus split metadata for all 32,466 simulations.",
+      "schema": {
+        "fields": [
+          { "name": "index", "type": "integer", "description": "Unique simulation identifier; matches the HDF5 filename (e.g. 16039 to 16039.h5)." },
+          { "name": "geometry", "type": "string", "description": "Base part geometry: rectangular, concave, or convex." },
+          { "name": "curvature_radius", "type": "number", "description": "Geometry specific curvature / corner radius, in mm." },
+          { "name": "bottom_radius", "type": "number", "description": "Bottom radius of the formed cup, in mm." },
+          { "name": "wall_angle", "type": "number", "description": "Wall angle of the formed cup, in degrees." },
+          { "name": "material_scaling_factor", "type": "number", "description": "Scaling factor on the base DP600 flow curve (1.0 is nominal). Dimensionless." },
+          { "name": "sheet_metal_thickness", "type": "number", "description": "Initial blank sheet thickness (SHTK), in mm." },
+          { "name": "friction_coefficient", "type": "number", "description": "Coulomb friction coefficient between blank and tools (FC). Dimensionless." },
+          { "name": "blankholder_force", "type": "number", "description": "Force applied by the blank holder (BF), in Newtons." },
+          { "name": "split", "type": "string", "description": "Recommended ML split: train (~80%), test (~10%), val (~10%); deterministic." },
+          { "name": "rddac", "type": "boolean", "description": "True if the simulation belongs to the RDDAC sub study." }
+        ]
+      }
+    }
+  ]
+}

@@ -191,5 +191,5 @@ ROADMAP.md
 # Local, untracked overrides
 *.local.*
 
-# Teaser publishing workflow (private ops — cards, upload scripts, staging)
-publish/
+# Teaser publishing: scripts/cards are committed (CI runs them); only staging is local
+publish/.staging/
