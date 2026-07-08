@@ -97,13 +97,23 @@ def adapt(nb: dict, pip_target: str, kind: str) -> dict:
 
     if kind == "loose":
         fetch = (
-            f"![ -e {LOOSE_DIR}/metadata.json ] || "
-            f"ddacs download --small --extract --remove-zip -y --quiet --out {LOOSE_DIR}"
+            "from pathlib import Path\n"
+            "\n"
+            f"LOOSE_DIR = Path('{LOOSE_DIR}')\n"
+            "\n"
+            "# Fetch the 22 MB sample once, extracted to loose .h5 files\n"
+            "if not (LOOSE_DIR / 'metadata.json').exists():\n"
+            "    !ddacs download --small --extract --remove-zip -y --quiet --out {LOOSE_DIR}"
         )
     else:
         fetch = (
-            f"![ -e {DATA_DIR}/metadata.json ] || "
-            f"ddacs download --small -y --quiet --out {DATA_DIR}"
+            "from pathlib import Path\n"
+            "\n"
+            f"DATA_DIR = Path('{DATA_DIR}')\n"
+            "\n"
+            "# Fetch the 22 MB sample once: ddacs download --small\n"
+            "if not (DATA_DIR / 'metadata.json').exists():\n"
+            "    !ddacs download --small -y --quiet --out {DATA_DIR}"
         )
 
     setup = [
