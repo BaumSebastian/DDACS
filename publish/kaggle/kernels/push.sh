@@ -25,8 +25,10 @@ for dir in "$OUT"/*/; do
   for attempt in 1 2 3 4 5; do
     out="$(kaggle kernels push -p "$dir" 2>&1)"; echo "$out"
     echo "$out" | grep -qi "error" || break
+    # only the session cap is transient — anything else will not fix itself
+    echo "$out" | grep -qi "Maximum batch" || { echo "non-retryable push error on $dir" >&2; exit 1; }
     [ "$attempt" -lt 5 ] || { echo "giving up on $dir" >&2; exit 1; }
-    echo "push failed (attempt $attempt) — waiting 180s for a free session slot"
+    echo "session cap hit (attempt $attempt) — waiting 180s for a free slot"
     sleep 180
   done
 done

@@ -170,3 +170,31 @@ jobs:
           python -m pip install --upgrade huggingface_hub
           HF_REPO=BaumSebastian/ddacs-teaser DDACS_TEASER_SRC="$PWD/data" \
             ./publish/huggingface/upload.sh
+
+  zenodo:
+    needs: fetch-teaser
+    runs-on: ubuntu-latest
+    environment: zenodo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: teaser-data
+          path: data/
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Upload teaser to Zenodo (new-version DRAFT — publish manually)
+        env:
+          ZENODO_API_TOKEN: ${{ secrets.ZENODO_API_TOKEN }}
+        run: |
+          python -m pip install --upgrade requests
+          DDACS_TEASER_SRC="$PWD/data" ./publish/stage_teaser.sh
+          # dataset version, not package version: major tag 4.0.0 -> record version 4.0
+          # No --publish: review the draft on zenodo.org (publication date, text),
+          # then publish it there.
+          TAG="${{ github.ref_name }}"
+          python publish/zenodo/upload.py --version "${TAG%.0}"

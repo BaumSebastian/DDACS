@@ -31,6 +31,8 @@
 
 **[Documentation](https://ddacs.readthedocs.io)** · **[Dataset DOI](https://doi.org/10.18419/DARUS-4801)** · **[Paper](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)**
 
+Try the 22 MB teaser (one full simulation, manifest, parameter table, runnable tutorials): **[Kaggle](https://www.kaggle.com/datasets/baumsebastian/ddacs-teaser)** · **[Hugging Face](https://huggingface.co/datasets/BaumSebastian/ddacs-teaser)** · **[Zenodo](https://zenodo.org/records/21272450)**
+
 A Croissant-native Python package for accessing the [DDACS Dataset](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801) ships with this repo: one CLI for the download, one Python module for access, and an optional PyTorch `IterableDataset` for training.
 
 ## Table of Contents

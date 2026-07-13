@@ -1,0 +1,78 @@
+{
+  "record_id": "21272450",
+  "metadata": {
+    "title": "Deep Drawing and Cutting Simulations (DDACS) Dataset - Teaser",
+    "doi": "10.18419/DARUS-4801",
+    "publication_date": "2026-06-30",
+    "description": "<p>A 22 MB sample of the <strong>DDACS</strong> dataset: one full FEM simulation of a two-stage sheet metal stamping process (deep drawing in OP10, trimming with elastic recovery in OP20), the Croissant 1.1 manifest, the process parameter table for all 32,466 simulations, and the dataset documentation PDF.</p><p><strong>This record is a discovery sample.</strong> The full release (32,466 simulations, ~640 GB of lossless HDF5, predefined 25,973/3,246/3,247 train/val/test split) is hosted on DaRUS. Please cite the dataset there: <a href=\"https://doi.org/10.18419/DARUS-4801\">doi:10.18419/DARUS-4801</a>.</p><p>Quickstart: <code>pip install ddacs</code> &middot; Docs: <a href=\"https://ddacs.readthedocs.io\">ddacs.readthedocs.io</a> &middot; Source: <a href=\"https://github.com/BaumSebastian/DDACS\">github.com/BaumSebastian/DDACS</a></p><p>License: data CC BY 4.0, package code MIT.</p><p><em>Layout note: to use this bundle with the <code>ddacs</code> package, place <code>258864.zip</code> under <code>data/h5/</code> next to <code>process_parameters.csv</code> and the manifest. This is the layout that <code>ddacs download --small</code> creates. Zenodo stores files flat, so the folder cannot be preserved here.</em></p>",
+    "access_right": "open",
+    "creators": [
+      {
+        "name": "Baum, Sebastian",
+        "affiliation": "University of Stuttgart"
+      },
+      {
+        "name": "Heinzelmann, Pascal",
+        "affiliation": "University of Stuttgart"
+      }
+    ],
+    "keywords": [
+      "deep drawing",
+      "sheet metal forming",
+      "FEM",
+      "finite element simulation",
+      "surrogate model",
+      "springback",
+      "manufacturing",
+      "scientific machine learning",
+      "benchmark",
+      "croissant",
+      "HDF5",
+      "DP600"
+    ],
+    "related_identifiers": [
+      {
+        "identifier": "10.1051/matecconf/202540801090",
+        "relation": "isSupplementTo",
+        "resource_type": "publication-article",
+        "scheme": "doi"
+      },
+      {
+        "identifier": "https://ddacs.readthedocs.io",
+        "relation": "isDocumentedBy",
+        "resource_type": "publication-softwaredocumentation",
+        "scheme": "url"
+      }
+    ],
+    "dates": [
+      {
+        "type": "collected",
+        "description": "Simulation campaign",
+        "start": "2024-10-01",
+        "end": "2024-10-31"
+      }
+    ],
+    "version": "3.0",
+    "language": "eng",
+    "custom": {
+      "code:codeRepository": "https://github.com/BaumSebastian/DDACS",
+      "code:programmingLanguage": [
+        {
+          "id": "python",
+          "title": {
+            "en": "Python"
+          }
+        }
+      ],
+      "code:developmentStatus": {
+        "id": "active",
+        "title": {
+          "en": "Active"
+        }
+      }
+    },
+    "license": "cc-by-4.0",
+    "method": "<p>All 32,466 simulations were run with LS-DYNA, modeling the two-stage stamping process of a parameterized cup geometry: deep drawing (OP10) followed by trimming with elastic recovery (OP20). Eight input parameters (four geometric, four process) are sampled across the design space; each simulation stores mesh, displacement, stress, strain, and thickness fields per operation and timestep as HDF5. The Croissant 1.1 manifest in this record declares the complete schema.</p>",
+    "upload_type": "dataset"
+  }
+}
