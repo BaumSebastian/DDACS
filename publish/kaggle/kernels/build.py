@@ -48,10 +48,10 @@ NOTEBOOKS = [
 _CTA = """\
 ---
 
-## ⬇️ Get the full dataset — 600+ GB
+## ⬇️ Get the full dataset — ~640 GB
 
 This notebook ran on a **22 MB sample** (a single simulation). The complete
-**DDACS** dataset — **32,466 simulations, 600+ GB of lossless HDF5**, with the
+**DDACS** dataset — **32,466 simulations, ~640 GB of lossless HDF5**, with the
 predefined train / validation / test split — is hosted on DaRUS with a citable DOI:
 
 ### ➡️ [doi.org/10.18419/DARUS-4801](https://doi.org/10.18419/DARUS-4801)
@@ -60,7 +60,7 @@ Everything above scales to the full release unchanged — just fetch it with the
 
 ```bash
 pip install ddacs
-ddacs download        # full 600+ GB release
+ddacs download        # full ~640 GB release
 ```
 
 Docs: https://ddacs.readthedocs.io · Package: https://pypi.org/project/ddacs · Source: https://github.com/BaumSebastian/DDACS

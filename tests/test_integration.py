@@ -1,8 +1,8 @@
 """Integration tests against a real `ddacs download --small` payload.
 
 Skipped automatically if the download can't succeed (no token, no network,
-draft requires auth and `DARUS_API_TOKEN` is unset, …). When the public
-v3.0 ships these will run token-free.
+draft requires auth and `DARUS_API_TOKEN` is unset, …). Against the
+published release they run token-free.
 """
 
 from __future__ import annotations

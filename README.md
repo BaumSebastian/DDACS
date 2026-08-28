@@ -38,6 +38,7 @@ A Croissant-native Python package for accessing the [DDACS Dataset](https://daru
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [What's new in v3](#whats-new-in-v3)
 - [Installation](#installation)
 - [Download the dataset](#download-the-dataset)
@@ -55,7 +56,7 @@ v3 is a major release because the dataset itself now ships with a [Croissant 1.1
 
 The Python surface was rewritten around it:
 
-- `ddacs.load(data_dir)` parses the manifest and exposes published RecordSets (`process-parameters`, `field-map`, `simulation-provenance`, plus task views such as `springback-minimal`, `forming-snapshot`, `cutting-view`).
+- `ddacs.load(data_dir)` parses the manifest and exposes published RecordSets (`process-parameters`, `field-map`, `simulation-provenance`, plus task views such as `springback-minimal`, `springback-prediction`, `forming-snapshot`, `cutting-view`).
 - `ddacs.open_h5(sim_id, data_dir)` reads any simulation by id without needing the zip extracted.
 - `ddacs.add_view(ds, name, fields)` appends a custom view to the in-memory dataset.
 - `ddacs.streaming.iter_view` / `export_to_numpy` / `load_export` iterate any view without PyTorch and materialise it as `.npy` memmap shards; `ddacs.plot_mesh` / `plot_point_cloud` / `plot_vectors` / `plot_2d_projection` plot the results.
@@ -136,15 +137,7 @@ For filtering, train / val / test splits, shuffling, and the partial-download st
 
 ## Tutorials
 
-The tutorials walk through the package end to end. Each one is published on Read the Docs as a [tutorial page](https://ddacs.readthedocs.io/en/latest/tutorials/) and shipped as an executable notebook under [`notebooks/`](./notebooks/) that reproduces every cell:
-
-1. [Getting started](https://ddacs.readthedocs.io/en/latest/tutorials/getting-started/) - [`01_getting_started.ipynb`](./notebooks/01_getting_started.ipynb): install, download, first plot.
-2. [Build your own view](https://ddacs.readthedocs.io/en/latest/tutorials/views/) - [`02_views.ipynb`](./notebooks/02_views.ipynb): `ddacs.add_view`, manifest inspection, SIM-KAx provenance.
-3. [PyTorch training](https://ddacs.readthedocs.io/en/latest/tutorials/pytorch/) - [`03_pytorch.ipynb`](./notebooks/03_pytorch.ipynb): `DDACSDataset`, filters, train/val/test splits.
-4. [Visualization](https://ddacs.readthedocs.io/en/latest/tutorials/visualization/) - [`04_visualization.ipynb`](./notebooks/04_visualization.ipynb): thickness, components, springback, vectors.
-5. [Loose HDF5 recipe](https://ddacs.readthedocs.io/en/latest/tutorials/loose-h5/) - [`05_loose_h5.ipynb`](./notebooks/05_loose_h5.ipynb): pandas + `h5py` after `--extract --remove-zip`.
-6. [Streaming and numpy export](https://ddacs.readthedocs.io/en/latest/tutorials/streaming/) - [`06_streaming.ipynb`](./notebooks/06_streaming.ipynb): `ddacs.streaming.iter_view`, `export_to_numpy` + `load_export`, `export_to_numpy_per_sim`.
-
+The tutorials walk through the package end to end. Each one is published on Read the Docs as a [tutorial page](https://ddacs.readthedocs.io/en/latest/tutorials/) and shipped as an executable notebook under [`notebooks/`](./notebooks/) that reproduces every page.
 See [`notebooks/README.md`](./notebooks/README.md) for prerequisites and run instructions.
 
 ## Version compatibility

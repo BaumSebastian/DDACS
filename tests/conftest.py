@@ -10,7 +10,7 @@ Three tiers of data:
   tests work against the current draft; falls back to the public version
   otherwise. Skipped when the download fails.
 * ``rddac_data_dir`` — a local path expected to contain ``h5/rddac.zip``
-  (the unpacked corner block). Defaults to ``/tmp/ddacs_real`` and can be
+  (the RDDAC sub-study block of simulations). Defaults to ``/tmp/ddacs_real`` and can be
   overridden via ``DDACS_TEST_DATA_DIR``. Skipped when the file is missing.
 """
 
@@ -287,6 +287,6 @@ def rddac_data_dir() -> Path:
     if not rddac.is_file():
         pytest.skip(
             f"rddac.zip not at {rddac}; set DDACS_TEST_DATA_DIR or unpack "
-            f"rddac.zip.zip into {_RDDAC_DATA_DIR}/h5/"
+            f"rddac.zip into {_RDDAC_DATA_DIR}/h5/"
         )
     return _RDDAC_DATA_DIR

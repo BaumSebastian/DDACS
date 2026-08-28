@@ -18,11 +18,6 @@ PUB="$(cd "$HERE/.." && pwd)"                           # publish/
 STAGE="$PUB/.staging"
 
 command -v kaggle >/dev/null 2>&1 || { echo "Kaggle CLI not found. Install: pip install kaggle" >&2; exit 1; }
-if grep -q "INSERT_KAGGLE_USERNAME" "$HERE/dataset-metadata.json"; then
-  echo "Edit publish/kaggle/dataset-metadata.json: set \"id\" to <your-username>/ddacs-teaser" >&2
-  exit 1
-fi
-
 "$PUB/stage_teaser.sh"
 
 ID="$(python3 -c "import json;print(json.load(open('$HERE/dataset-metadata.json'))['id'])")"
