@@ -43,6 +43,10 @@ plugins:
         python:
           options:
             docstring_style: google
+            # Docstrings are not type-annotated (style choice); keep griffe's
+            # 'no type or annotation' notes from failing the strict build.
+            docstring_options:
+              warnings: false
             show_source: true
             show_root_heading: true
             show_root_full_path: false
