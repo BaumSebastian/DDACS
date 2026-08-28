@@ -446,8 +446,8 @@ def cmd_download(args: argparse.Namespace, spec: DatasetSpec = DDACS_SPEC) -> No
         )
 
 
-def main() -> None:
-    """CLI entry point for DDACS dataset commands."""
+def build_parser() -> argparse.ArgumentParser:
+    """The ``ddacs`` argument parser (also used to render the CLI reference)."""
     parser = argparse.ArgumentParser(
         prog="ddacs",
         description="DDACS Dataset CLI - Download simulation data from DaRUS",
@@ -460,7 +460,7 @@ def main() -> None:
     subparsers.add_parser(
         "info",
         help="Show dataset info and versions",
-        description="Display dataset metadata, available versions, and changelog.",
+        description="Display dataset metadata and the available versions with their notes.",
     )
 
     dl_parser = subparsers.add_parser(
@@ -474,7 +474,9 @@ def main() -> None:
         default=DEFAULT_VERSION,
         help=f"Dataset version (default: {DEFAULT_VERSION})",
     )
-    dl_parser.add_argument("--files", nargs="+", help="Specific filenames to download")
+    dl_parser.add_argument(
+        "--files", nargs="+", metavar="FILE", help="Specific filenames to download"
+    )
     dl_parser.add_argument(
         "--small",
         action="store_true",
@@ -482,6 +484,7 @@ def main() -> None:
     )
     dl_parser.add_argument(
         "--out",
+        metavar="PATH",
         default=DEFAULT_DATA_DIR,
         help=f"Output directory (default: {DEFAULT_DATA_DIR})",
     )
@@ -503,7 +506,12 @@ def main() -> None:
         action="store_true",
         help="Delete the zip file after a successful extraction (only with --extract).",
     )
+    return parser
 
+
+def main() -> None:
+    """CLI entry point for DDACS dataset commands."""
+    parser = build_parser()
     args = parser.parse_args()
 
     if args.command == "info":

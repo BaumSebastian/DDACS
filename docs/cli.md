@@ -22,21 +22,11 @@ ddacs download [VERSION] [OPTIONS]
 
 ### Arguments
 
-| Argument | Default | Description |
-|----------|---------|-------------|
-| `VERSION` | `3.0` | Dataset version to download |
+{{ cli_arguments("download") }}
 
 ### Options
 
-| Option | Description |
-|--------|-------------|
-| `--small` | Download the small test set ({{ small_download_size() }}) |
-| `--files FILE...` | Download only the listed files |
-| `--out PATH` | Output directory (default: `./data`) |
-| `--extract` | Extract zip files in place after download |
-| `--remove-zip` | Delete the zip file after a successful extraction (requires `--extract`) |
-| `-y, --yes` | Skip the confirmation prompt |
-| `-q, --quiet` | Suppress all output and progress display; implies `--yes` (runs unattended). Errors are still reported on stderr |
+{{ cli_options("download") }}
 
 ### Default behaviour
 
@@ -47,7 +37,7 @@ The `--out` directory defaults to `./data`. The same value is used by `ddacs.loa
 ### Examples
 
 ```bash
-# Download the small test set (22.38 MB)
+# Download the small test set ({{ small_download_size() }})
 ddacs download --small -y
 ```
 
@@ -79,7 +69,4 @@ After `--extract --remove-zip`, the HDF5 files are no longer wrapped in zips and
 
 ## Global Options
 
-| Option | Description |
-|--------|-------------|
-| `--token TOKEN` | DaRUS API token (used to download draft versions) |
-| `-V, --version` | Show the package version and exit |
+{{ cli_options() }}

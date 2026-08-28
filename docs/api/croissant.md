@@ -21,7 +21,7 @@
 ::: ddacs.croissant
     options:
       members:
-        - METADATA_URL
+        - metadata_url
         - resolve_source
         - field_map
         - process_parameters_descriptions

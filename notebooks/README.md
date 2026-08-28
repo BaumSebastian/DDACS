@@ -1,6 +1,6 @@
 # DDACS notebooks
 
-Five end-to-end Jupyter notebooks that companion the [online tutorials](https://ddacs.readthedocs.io/en/latest/tutorials/). Each notebook is self-contained: it opens with a Walkthrough list and the Assumptions it relies on, then walks through the topic step by step. Reading top to bottom is the intended flow.
+End-to-end Jupyter notebooks that companion the [online tutorials](https://ddacs.readthedocs.io/en/latest/tutorials/). Each notebook is self-contained: it opens with a Walkthrough list and the Assumptions it relies on, then walks through the topic step by step. Reading top to bottom is the intended flow.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ pip install 'ddacs[torch]'
 ddacs download --small -y
 ```
 
-Notebooks 04 and 05 work off the same `./data` directory. Notebook 05 additionally writes a throwaway loose-HDF5 layout into `/tmp/ddacs_loose` so the project-local `./data` stays untouched.
+Notebooks 04 to 06 work off the same `./data` directory. Notebook 05 additionally writes a throwaway loose-HDF5 layout into `/tmp/ddacs_loose` so the project-local `./data` stays untouched.
 
 ## Run
 

@@ -38,7 +38,7 @@ A Croissant-native Python package for accessing the [DDACS Dataset](https://daru
 
 ## Table of Contents
 
-- [What's new in v3](#whats-new-in-v30)
+- [What's new in v3](#whats-new-in-v3)
 - [Installation](#installation)
 - [Download the dataset](#download-the-dataset)
 - [Basic usage](#basic-usage)
@@ -47,6 +47,7 @@ A Croissant-native Python package for accessing the [DDACS Dataset](https://daru
 - [Version compatibility](#version-compatibility)
 - [Citation](#citation)
 - [Development](#development)
+- [License](#license)
 
 ## What's new in v3
 
@@ -57,6 +58,7 @@ The Python surface was rewritten around it:
 - `ddacs.load(data_dir)` parses the manifest and exposes published RecordSets (`process-parameters`, `field-map`, `simulation-provenance`, plus task views such as `springback-minimal`, `forming-snapshot`, `cutting-view`).
 - `ddacs.open_h5(sim_id, data_dir)` reads any simulation by id without needing the zip extracted.
 - `ddacs.add_view(ds, name, fields)` appends a custom view to the in-memory dataset.
+- `ddacs.streaming.iter_view` / `export_to_numpy` / `load_export` iterate any view without PyTorch and materialise it as `.npy` memmap shards; `ddacs.plot_mesh` / `plot_point_cloud` / `plot_vectors` / `plot_2d_projection` plot the results.
 - `DDACSDataset(view=...)` streams records of any view (published or custom) with worker-shard / DDP-safe partitioning, manifest-driven filtering, and graceful skip on partial downloads.
 - The CLI default flipped to keep zips intact (`mlcroissant` reads HDF5 members in place); `--extract` and `--remove-zip` opt in to the loose-HDF5 layout.
 
@@ -89,18 +91,7 @@ ddacs info
 
 Files land in `./data` by default. The same path is the default for `ddacs.load(data_dir=...)` and `DDACSDataset(data_dir=...)`, so no further configuration is needed.
 
-**CLI flags**
-
-| Flag | Description |
-|------|-------------|
-| `VERSION` | Dataset version to download (default: `3.0`). |
-| `--small` | Download the small sample bundle instead of the full release. |
-| `--files FILE...` | Download only the listed files. |
-| `--out PATH` | Output directory (default: `./data`). |
-| `--extract` | Extract zip files in place after download. |
-| `--remove-zip` | Delete the zip file after a successful extraction (requires `--extract`). |
-| `-y, --yes` | Skip the confirmation prompt. |
-| `--token TOKEN` | DaRUS API token (used to access draft versions). |
+All options (`--files`, `--out`, `--extract`, `--remove-zip`, `--quiet`, the global `--token`) are documented in the [CLI reference](https://ddacs.readthedocs.io/en/latest/cli/).
 
 By default zip files are kept on disk and are *not* extracted; `mlcroissant` reads HDF5 members in place. Pass `--extract --remove-zip` to switch to a loose-HDF5 layout instead; see the [Loose HDF5 recipe](https://ddacs.readthedocs.io/en/latest/tutorials/loose-h5/) for the matching iteration pattern.
 
@@ -145,13 +136,14 @@ For filtering, train / val / test splits, shuffling, and the partial-download st
 
 ## Tutorials
 
-Five tutorials walk through the package end to end. Each one is published on Read the Docs as a [tutorial page](https://ddacs.readthedocs.io/en/latest/tutorials/) and shipped as an executable notebook under [`notebooks/`](./notebooks/) that reproduces every cell:
+The tutorials walk through the package end to end. Each one is published on Read the Docs as a [tutorial page](https://ddacs.readthedocs.io/en/latest/tutorials/) and shipped as an executable notebook under [`notebooks/`](./notebooks/) that reproduces every cell:
 
 1. [Getting started](https://ddacs.readthedocs.io/en/latest/tutorials/getting-started/) - [`01_getting_started.ipynb`](./notebooks/01_getting_started.ipynb): install, download, first plot.
 2. [Build your own view](https://ddacs.readthedocs.io/en/latest/tutorials/views/) - [`02_views.ipynb`](./notebooks/02_views.ipynb): `ddacs.add_view`, manifest inspection, SIM-KAx provenance.
 3. [PyTorch training](https://ddacs.readthedocs.io/en/latest/tutorials/pytorch/) - [`03_pytorch.ipynb`](./notebooks/03_pytorch.ipynb): `DDACSDataset`, filters, train/val/test splits.
 4. [Visualization](https://ddacs.readthedocs.io/en/latest/tutorials/visualization/) - [`04_visualization.ipynb`](./notebooks/04_visualization.ipynb): thickness, components, springback, vectors.
 5. [Loose HDF5 recipe](https://ddacs.readthedocs.io/en/latest/tutorials/loose-h5/) - [`05_loose_h5.ipynb`](./notebooks/05_loose_h5.ipynb): pandas + `h5py` after `--extract --remove-zip`.
+6. [Streaming and numpy export](https://ddacs.readthedocs.io/en/latest/tutorials/streaming/) - [`06_streaming.ipynb`](./notebooks/06_streaming.ipynb): `ddacs.streaming.iter_view`, `export_to_numpy` + `load_export`, `export_to_numpy_per_sim`.
 
 See [`notebooks/README.md`](./notebooks/README.md) for prerequisites and run instructions.
 
@@ -200,7 +192,11 @@ If you use this dataset or code in your research, please cite both the dataset a
 ```bash
 git clone https://github.com/BaumSebastian/DDACS.git
 cd DDACS
-pip install -e ".[dev]"
+pip install -e ".[dev,torch]"
 pre-commit install   # set up code formatting hooks
-pytest               # run the full test suite
+pytest               # run the full test suite (PyTorch tests skip without the torch extra)
 ```
+
+## License
+
+The dataset on DaRUS is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The `ddacs` software is licensed under the MIT License, see [LICENSE](LICENSE).
