@@ -23,7 +23,7 @@ keywords = [
     "materials-science",
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "License :: OSI Approved :: MIT License",
@@ -71,7 +71,9 @@ torch = ["torch>=2.0"]
 ddacs = "ddacs.cli:main"
 
 [project.urls]
+Homepage = "https://github.com/BaumSebastian/DDACS"
 Repository = "https://github.com/BaumSebastian/DDACS"
+Changelog = "https://github.com/BaumSebastian/DDACS/blob/main/CHANGELOG.md"
 Documentation = "https://ddacs.readthedocs.io"
 Dataset = "https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801"
 Paper = "https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html"
@@ -90,7 +92,7 @@ addopts = "-v"
 
 [tool.black]
 line-length = 100
-target-version = ["py310", "py311", "py312"]
+target-version = ["py310", "py311", "py312", "py313"]
 
 [tool.ruff]
 line-length = 100
