@@ -7,7 +7,6 @@ The companion notebook at [`notebooks/04_visualization.ipynb`](https://github.co
 ```python
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import ddacs
 from ddacs.visualization import FALSE_COLOR_CMAP, COMPONENT_COLORS
 
@@ -15,7 +14,7 @@ from pathlib import Path
 DATA_DIR = Path('./data')      # repository root, or Path('../data') from notebooks/
 sim_id   = 258864
 
-ROCKET = sns.color_palette('rocket', as_cmap=True)
+CMAP = 'magma'   # perceptually uniform, matplotlib built-in
 ```
 
 ## 1. Thickness mesh
@@ -123,7 +122,7 @@ plt.show()
 
 **Springback** is the elastic recovery of the workpiece after the tools release. Once the load is removed, the part partially snaps back towards its original geometry and a residual displacement field remains. It is the dominant geometric error in stamping and the standard target for ML models trained on this dataset.
 
-OP20 stores two blank timesteps: the state immediately after cutting (still under contact) and the relaxed state after springback. The per-node delta `pos[-1] - pos[-2]` is the springback vector; its magnitude `|delta|` is the standard scalar field for "how much did this node move?". Plotting it on the OP20 mesh (rocket cmap from seaborn) shows where the part deforms most strongly on the actual surface. `shade=False` removes the per-face lighting so each face's rendered colour matches the colorbar exactly.
+OP20 stores two blank timesteps: the state immediately after cutting (still under contact) and the relaxed state after springback. The per-node delta `pos[-1] - pos[-2]` is the springback vector; its magnitude `|delta|` is the standard scalar field for "how much did this node move?". Plotting it on the OP20 mesh (`magma` colormap) shows where the part deforms most strongly on the actual surface. `shade=False` removes the per-face lighting so each face's rendered colour matches the colorbar exactly.
 
 ```python
 with ddacs.open_h5(sim_id, data_dir=DATA_DIR) as f:
@@ -138,7 +137,7 @@ face_magnitude = magnitude[faces20.astype(np.int64)].mean(axis=1)
 ax, cbar = ddacs.plot_mesh(
     pos[-1], faces20,
     values=face_magnitude,
-    cmap=ROCKET,
+    cmap=CMAP,
     vmin=float(magnitude.min()),
     vmax=float(magnitude.max()),
     colorbar_label='Springback in mm',
@@ -163,7 +162,7 @@ ax, cbar = ddacs.plot_vectors(
     values=magnitude,
     step=25,
     scale=10.0,
-    cmap=ROCKET,
+    cmap=CMAP,
     colorbar_label='Springback in mm',
     mirror=True,
 )
@@ -186,7 +185,7 @@ ddacs.plot_mesh(
     pos[-1], faces20,
     values=face_magnitude,
     ax=ax,
-    cmap=ROCKET,
+    cmap=CMAP,
     vmin=float(magnitude.min()),
     vmax=float(magnitude.max()),
     colorbar_label='Springback in mm',

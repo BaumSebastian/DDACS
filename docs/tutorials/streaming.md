@@ -15,14 +15,13 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 
 import ddacs
 
 DATA_DIR      = Path('./data')     # repository root, or '../data' from notebooks/
 EXPORT_DIR    = DATA_DIR / 'tutorial_export'
 SAMPLE_SIM_ID = 258864             # bundled with `ddacs download --small`
-ROCKET        = sns.color_palette('rocket', as_cmap=True)
+CMAP        = 'magma'   # perceptually uniform, matplotlib built-in
 ```
 
 ## 1. Build a custom view
@@ -220,7 +219,7 @@ sample_magnitude = np.linalg.norm(delta[sample_idx], axis=1)
 ax, cbar = ddacs.plot_point_cloud(
     sample_forming,
     values=sample_magnitude,
-    cmap=ROCKET,
+    cmap=CMAP,
     colorbar_label='Springback in mm',
     mirror=False,
 )
