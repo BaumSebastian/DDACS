@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate Kaggle Notebook (kernel) versions of the six DDACS tutorials.
+"""Generate Kaggle Notebook (kernel) versions of the DDACS tutorials.
 
 The repo notebooks in notebooks/ are the single source of truth; the only
 adaptation for Kaggle is a setup cell that `pip install`s ddacs and fetches the
@@ -10,6 +10,7 @@ kernels appear on the dataset's Code tab.
 
 Output: publish/.staging/kernels/<slug>/{notebook, kernel-metadata.json}.
 """
+
 from __future__ import annotations
 
 import json

@@ -1,18 +1,18 @@
 # DDACS — Deep Drawing and Cutting Simulations Dataset
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/) [![Documentation](https://img.shields.io/badge/docs-readthedocs.io-blue.svg)](https://ddacs.readthedocs.io) [![DaRUS Repository](https://img.shields.io/badge/repository-DaRUS-green.svg)](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801) [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801) [![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
+[![Code License: MIT](https://img.shields.io/badge/Code-MIT-yellow.svg)](https://github.com/BaumSebastian/DDACS/blob/main/LICENSE) [![Dataset License: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/) [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/) [![Documentation](https://img.shields.io/badge/docs-readthedocs.io-blue.svg)](https://ddacs.readthedocs.io) [![DaRUS Repository](https://img.shields.io/badge/repository-DaRUS-green.svg)](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801) [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801) [![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
 
 ![Simulation overview](https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/simulation_overview.gif)
 
 *Simulation with the tool geometries showing sheet metal thinning, stress, and strain.*
 
-**A large-scale dataset and benchmark for training AI models that replace computationally expensive FEA simulations in industrial sheet metal manufacturing.** Each simulation models a two-stage stamping process (deep drawing in OP10 and trimming with elastic recovery in OP20) for a cup geometry parameterised by 8 input dimensions. Train ML surrogates that predict mesh deformation, stress, strain, and springback in seconds instead of the minutes-to-hours a CAE solver would take.
+**A large-scale dataset and benchmark for training AI models that replace computationally expensive FEA simulations in industrial sheet metal manufacturing.** Each simulation models a two-stage stamping process (deep drawing in OP10 and cutting with elastic recovery in OP20) for a cup geometry parameterised by 8 input dimensions. Train ML surrogates that predict mesh deformation, stress, strain, and springback in seconds instead of the minutes-to-hours a CAE solver would take.
 
 |  |  |
 |---|---|
 | **Simulations** | 32,466 |
 | **Total size** | ~640 GB (HDF5, lossless) |
-| **Process steps per sim** | 2 (OP10 deep drawing, OP20 trimming) |
+| **Process steps per sim** | 2 (OP10 deep drawing, OP20 cutting) |
 | **Input parameters** | 8 (4 geometric + 4 process) |
 | **Train / val / test** | 25,973 / 3,246 / 3,247 (predefined) |
 | **Mesh-node states** | ~2.1 B across all sims, timesteps, components |
@@ -22,7 +22,7 @@
 ## About this sample
 
 This is a **22 MB teaser** of DDACS — one full simulation plus the Croissant 1.1
-manifest, the complete process-parameter table, and the six tutorial notebooks —
+manifest, the complete process-parameter table, and the dataset documentation —
 so you can explore the schema and run every tutorial in seconds before committing
 to the full download.
 
@@ -32,7 +32,8 @@ data/
   process_parameters.csv    8 input parameters for all 32,466 simulations
   h5/258864.zip             one full simulation (OP10 + OP20, all components)
 ddacs_documentation.pdf     dataset documentation
-notebooks/                  six end-to-end tutorials (see notebooks/README.md)
+notebooks/                  the tutorial notebooks (Hugging Face bundle only; on Kaggle
+                            they are the attached Code notebooks)
 ```
 
 **Croissant manifest.** `data/metadata.json` is the
@@ -85,14 +86,15 @@ for batch in DataLoader(ds, batch_size=1, num_workers=0):
 
 ## Tutorials
 
-Six end-to-end notebooks ship in `notebooks/` and are published on
-[Read the Docs](https://ddacs.readthedocs.io/en/latest/tutorials/):
+The end-to-end tutorial notebooks live in the [GitHub repository](https://github.com/BaumSebastian/DDACS/tree/main/notebooks) and are published on
+[Read the Docs](https://ddacs.readthedocs.io/en/latest/tutorials/); on Hugging Face they are bundled in `notebooks/`, on Kaggle they are the notebooks attached to this dataset:
 
 1. **Getting started** — install, load, first plot.
 2. **Build your own view** — `ddacs.add_view`, manifest inspection, SIM-KAx provenance.
 3. **PyTorch training** — `DDACSDataset`, filters, train/val/test splits.
 4. **Visualization** — thickness, components, springback, vectors.
 5. **Loose HDF5 recipe** — pandas + `h5py` after `--extract --remove-zip`.
+6. **Streaming & numpy export** — `ddacs.streaming.iter_view`, `export_to_numpy`, `load_export`.
 6. **Streaming & numpy export** — `iter_view`, `export_to_numpy`, ~1000× speedup.
 
 ## Version compatibility

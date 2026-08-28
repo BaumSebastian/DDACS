@@ -68,7 +68,7 @@ jobs:
   # the teaser datasets only change when the DaRUS data does, i.e. on majors.
 
   kaggle-kernels:
-    # Every release: refresh the six tutorial notebooks on Kaggle.
+    # Every release: refresh the tutorial notebooks on Kaggle.
     if: github.event_name == 'push'
     needs: pypi
     runs-on: ubuntu-latest

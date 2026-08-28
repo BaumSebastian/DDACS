@@ -24,6 +24,7 @@ Usage:
   python publish/zenodo/upload.py --publish          # draft + publish
   python publish/zenodo/upload.py --publish --version 3.0
 """
+
 from __future__ import annotations
 
 import argparse
@@ -31,6 +32,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 import requests
@@ -103,6 +105,9 @@ def main() -> None:
 
     config = json.loads(CONFIG_FILE.read_text())
     metadata = config["metadata"]
+    metadata["publication_date"] = (
+        date.today().isoformat()
+    )  # the day of this upload, not a fixed date
     if args.version:
         metadata["version"] = args.version
 

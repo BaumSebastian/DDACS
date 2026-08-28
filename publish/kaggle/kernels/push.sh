@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Publish the six DDACS tutorials as Kaggle Notebooks (Code tab), each attached
+# Publish the DDACS tutorials as Kaggle Notebooks (Code tab), each attached
 # to the baumsebastian/ddacs-teaser dataset.
 #
 # Prereqs: the ddacs-teaser dataset already exists on Kaggle, and `kaggle` is on
-# PATH (auth via ~/.kaggle/access_token). Kernels are pushed PRIVATE — review
-# each on the site, then make public.
+# PATH (auth via ~/.kaggle/access_token). Kernels are pushed public (is_private
+# false in build.py) so that release re-pushes keep them visible.
 #
 # Usage:  ./publish/kaggle/kernels/push.sh
 set -euo pipefail
@@ -17,7 +17,7 @@ command -v kaggle >/dev/null 2>&1 || { echo "Kaggle CLI not found. Install it (u
 
 python3 "$HERE/build.py"
 
-# Kaggle caps concurrent batch sessions at 5; pushing 6 kernels back to back can
+# Kaggle caps concurrent batch sessions at 5; pushing all kernels back to back can
 # hit "Maximum batch CPU session count reached". The CLI exits 0 even then, so
 # detect the error in the output and retry with a pause.
 for dir in "$OUT"/*/; do
@@ -33,4 +33,4 @@ for dir in "$OUT"/*/; do
   done
 done
 
-echo "All kernels pushed (private). Review at https://www.kaggle.com/${USER:-baumsebastian}/code and set them public."
+echo "All kernels pushed. Review at https://www.kaggle.com/${USER:-baumsebastian}/code."
