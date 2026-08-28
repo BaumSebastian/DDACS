@@ -5,7 +5,7 @@ All notable changes to the `ddacs` package are documented here. The format follo
 `bumpver` tags. The dataset itself is versioned on DaRUS (doi:10.18419/DARUS-4801)
 independently of the package; the package major version tracks the dataset major.
 
-## [Unreleased]
+## [3.2.3] - 2026-08-28"
 
 ### Changed
 - Runtime dependencies reduced: `seaborn`, `scipy` and `pyvista` were never imported by
@@ -98,7 +98,8 @@ independently of the package; the package major version tracks the dataset major
 
 Earlier releases (1.0.x, 2.x) predate this changelog.
 
-[Unreleased]: https://github.com/BaumSebastian/DDACS/compare/3.2.2...HEAD
+[Unreleased]: https://github.com/BaumSebastian/DDACS/compare/3.2.3...HEAD
+[3.2.3]: https://github.com/BaumSebastian/DDACS/compare/3.2.2...3.2.3
 [3.2.2]: https://github.com/BaumSebastian/DDACS/compare/3.2.1...3.2.2
 [3.2.1]: https://github.com/BaumSebastian/DDACS/compare/3.2.0...3.2.1
 [3.2.0]: https://github.com/BaumSebastian/DDACS/compare/3.1.5...3.2.0
