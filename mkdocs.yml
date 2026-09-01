@@ -79,6 +79,8 @@ nav:
       - 4. Visualization: tutorials/visualization.md
       - 5. Loose HDF5 recipe: tutorials/loose-h5.md
       - 6. Streaming and numpy export: tutorials/streaming.md
+  - Analysis:
+      - Forming Limit Diagram: analysis/fld.md
   - CLI Reference: cli.md
   - API Reference:
       - Overview: api/index.md
