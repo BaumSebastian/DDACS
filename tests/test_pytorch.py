@@ -157,3 +157,46 @@ class TestShuffle:
         # Either order may match by chance, but they should differ for at
         # least one of the synthetic ids (with seed=42 across 3 records).
         assert epoch0 != epoch1
+
+
+class TestSharding:
+    """Worker x DDP-rank partitioning, simulated without a process group."""
+
+    @staticmethod
+    def _fingerprints(ds):
+        return {float(rec["forming"][0, 0]) for rec in ds}
+
+    def test_shard_position_combines_worker_and_rank(self, synthetic_data_dir, monkeypatch):
+        import ddacs.pytorch as mod
+
+        class Worker:
+            id, num_workers = 1, 3
+
+        monkeypatch.setattr(mod, "get_worker_info", lambda: Worker())
+        monkeypatch.setattr(DDACSDataset, "_ddp_info", staticmethod(lambda: (2, 4)))
+        ds = DDACSDataset(view="springback-minimal", data_dir=str(synthetic_data_dir))
+        assert ds._shard_position() == (2 * 3 + 1, 4 * 3)
+
+    def test_ddp_ranks_partition_sims_exactly(self, synthetic_data_dir, monkeypatch):
+        ds = DDACSDataset(view="springback-minimal", data_dir=str(synthetic_data_dir))
+        monkeypatch.setattr(DDACSDataset, "_ddp_info", staticmethod(lambda: (0, 1)))
+        everything = self._fingerprints(ds)
+        assert len(everything) == 3
+
+        shards = []
+        for rank in range(2):
+            monkeypatch.setattr(DDACSDataset, "_ddp_info", staticmethod(lambda r=rank: (r, 2)))
+            shards.append(self._fingerprints(ds))
+        assert shards[0] and shards[1], "every rank gets work"
+        assert shards[0].isdisjoint(shards[1]), "no record is served twice"
+        assert shards[0] | shards[1] == everything, "no record is dropped"
+
+    def test_shuffle_is_deterministic_per_epoch(self, synthetic_data_dir):
+        ds = DDACSDataset(
+            view="springback-minimal", data_dir=str(synthetic_data_dir), shuffle=True, seed=7
+        )
+        ds.set_epoch(0)
+        first = [float(rec["forming"][0, 0]) for rec in ds]
+        ds.set_epoch(0)
+        assert [float(rec["forming"][0, 0]) for rec in ds] == first
+        assert set(first) == self._fingerprints(ds)
