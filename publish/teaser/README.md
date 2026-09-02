@@ -1,4 +1,4 @@
-# DDACS — Deep Drawing and Cutting Simulations Dataset
+# DDACS, Deep Drawing and Cutting Simulations Dataset
 
 [![Code License: MIT](https://img.shields.io/badge/Code-MIT-yellow.svg)](https://github.com/BaumSebastian/DDACS/blob/main/LICENSE) [![Dataset License: CC BY 4.0](https://img.shields.io/badge/Dataset-CC_BY_4.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/) [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/) [![Documentation](https://img.shields.io/badge/docs-readthedocs.io-blue.svg)](https://ddacs.readthedocs.io) [![DaRUS Repository](https://img.shields.io/badge/repository-DaRUS-green.svg)](https://darus.uni-stuttgart.de/dataset.xhtml?persistentId=doi:10.18419/DARUS-4801) [![DOI](https://img.shields.io/badge/DOI-10.18419%2FDARUS--4801-blue.svg)](https://doi.org/10.18419/DARUS-4801) [![Paper](https://img.shields.io/badge/paper-MATEC%20Web%20Conf.-red.svg)](https://www.matec-conferences.org/articles/matecconf/abs/2025/02/matecconf_iddrg2025_01090/matecconf_iddrg2025_01090.html)
 
@@ -24,9 +24,8 @@
 ## About this sample
 
 <!-- desc:sample:start -->
-This is a **22 MB teaser** of DDACS — one full simulation plus the Croissant 1.1
-manifest, the complete process-parameter table, and the dataset documentation —
-so you can explore the schema and run every tutorial in seconds before committing
+This is a **22 MB teaser** of DDACS, one full simulation plus the Croissant 1.1
+manifest, the complete process-parameter table, and the dataset documentation, so you can explore the schema and run every tutorial in seconds before committing
 to the full download.
 <!-- desc:sample:end -->
 
@@ -41,7 +40,7 @@ notebooks/                  the tutorial notebooks (Hugging Face bundle only; on
 ```
 
 **Croissant manifest.** `data/metadata.json` is the
-[Croissant 1.1](https://mlcommons.org/croissant/) manifest — the machine-readable
+[Croissant 1.1](https://mlcommons.org/croissant/) manifest, the machine-readable
 schema (every HDF5 field and CSV column) that `ddacs.load()` and any
 Croissant-aware tool consume. It is the same manifest published with the full
 dataset on DaRUS ([doi:10.18419/DARUS-4801](https://doi.org/10.18419/DARUS-4801)).
@@ -74,7 +73,7 @@ with ddacs.open_h5(258864, data_dir="data") as f:
 
 `DDACSDataset` is a `torch.utils.data.IterableDataset` over a Croissant view. It
 auto-shards across DataLoader workers and DDP ranks, and silently skips
-simulations whose zip is missing — so partial downloads (like this teaser) stream
+simulations whose zip is missing, so partial downloads (like this teaser) stream
 cleanly.
 
 ```python
@@ -93,13 +92,13 @@ for batch in DataLoader(ds, batch_size=1, num_workers=0):
 The end-to-end tutorial notebooks live in the [GitHub repository](https://github.com/BaumSebastian/DDACS/tree/main/notebooks) and are published on
 [Read the Docs](https://ddacs.readthedocs.io/en/latest/tutorials/); on Hugging Face they are bundled in `notebooks/`, on Kaggle they are the notebooks attached to this dataset:
 
-1. **Getting started** — install, load, first plot.
-2. **Build your own view** — `ddacs.add_view`, manifest inspection, SIM-KAx provenance.
-3. **PyTorch training** — `DDACSDataset`, filters, train/val/test splits.
-4. **Visualization** — thickness, components, springback, vectors.
-5. **Loose HDF5 recipe** — pandas + `h5py` after `--extract --remove-zip`.
-6. **Streaming & numpy export** — `ddacs.streaming.iter_view`, `export_to_numpy`, `load_export`.
-6. **Streaming & numpy export** — `iter_view`, `export_to_numpy`, ~1000× speedup.
+1. **Getting started**, install, load, first plot.
+2. **Build your own view**, `ddacs.add_view`, manifest inspection, SIM-KAx provenance.
+3. **PyTorch training**, `DDACSDataset`, filters, train/val/test splits.
+4. **Visualization**, thickness, components, springback, vectors.
+5. **Loose HDF5 recipe**, pandas + `h5py` after `--extract --remove-zip`.
+6. **Streaming & numpy export**, `ddacs.streaming.iter_view`, `export_to_numpy`, `load_export`.
+6. **Streaming & numpy export**, `iter_view`, `export_to_numpy`, ~1000× speedup.
 
 ## Version compatibility
 
@@ -115,13 +114,12 @@ Pin the major to the dataset you target, e.g. `pip install 'ddacs~=3.0'`.
 
 ## ⬇️ Get the full dataset
 
-**This sample contains a single simulation.** The complete DDACS dataset —
-**32,466 simulations, ~640 GB of lossless HDF5**, with the predefined
-25,973 / 3,246 / 3,247 train/val/test split — is hosted on DaRUS with a citable DOI:
+**This sample contains a single simulation.** The complete DDACS dataset, **32,466 simulations, ~640 GB of lossless HDF5**, with the predefined
+25,973 / 3,246 / 3,247 train/val/test split, is hosted on DaRUS with a citable DOI:
 
 ### ➡️ https://doi.org/10.18419/DARUS-4801
 
-Everything you ran here scales to the full release unchanged — just point the same
+Everything you ran here scales to the full release unchanged, just point the same
 code at the full download, or let the package fetch it:
 
 ```bash

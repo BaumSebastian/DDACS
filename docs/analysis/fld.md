@@ -44,7 +44,7 @@ always reflects the active thresholds.
     elements above the FLC). The typical DDACS simulation stays below the FLC
     everywhere.
 
-<img src="../images/fld_diagram.png" width="700">
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/fld_diagram.png" width="700">
 
 ??? example "This plot was created with"
 
@@ -188,7 +188,7 @@ always reflects the active thresholds.
 The same labels drawn on the formed blank: wrinkles sit in the drawn wall and the
 flange transition, the safe zone on the stretched bottom face.
 
-<img src="../images/fld_mesh.png" width="700">
+<img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/fld_mesh.png" width="700">
 
 ??? example "This plot was created with"
 
