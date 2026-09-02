@@ -6,7 +6,9 @@
 
 *Simulation with the tool geometries showing sheet metal thinning, stress, and strain.*
 
+<!-- desc:intro:start -->
 **A large-scale dataset and benchmark for training AI models that replace computationally expensive FEA simulations in industrial sheet metal manufacturing.** Each simulation models a two-stage stamping process (deep drawing in OP10 and cutting with elastic recovery in OP20) for a cup geometry parameterised by 8 input dimensions. Train ML surrogates that predict mesh deformation, stress, strain, and springback in seconds instead of the minutes-to-hours a CAE solver would take.
+<!-- desc:intro:end -->
 
 |  |  |
 |---|---|
@@ -21,10 +23,12 @@
 
 ## About this sample
 
+<!-- desc:sample:start -->
 This is a **22 MB teaser** of DDACS — one full simulation plus the Croissant 1.1
 manifest, the complete process-parameter table, and the dataset documentation —
 so you can explore the schema and run every tutorial in seconds before committing
 to the full download.
+<!-- desc:sample:end -->
 
 ```
 data/
