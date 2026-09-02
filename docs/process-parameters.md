@@ -24,11 +24,11 @@ The three dimensional parameters are defined on the punch as shown below: `botto
 
 Each family is rendered below as a formed blank at the end of each operation; the three panels per row share a colour scale of vertical height (Z, in mm) so the depth of the cup is directly comparable across families.
 
-**OP10 — after springback**
+**OP10, after springback**
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_geometries_op10.png" width="700">
 
-**OP20 — after cutting**
+**OP20, after cutting**
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/example_geometries_op20.png" width="700">
 

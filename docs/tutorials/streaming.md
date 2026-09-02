@@ -117,7 +117,7 @@ Output:
 
 ## 4. Read the shards back with `load_export`
 
-`ddacs.streaming.load_export(directory)` opens the exported folder behind the standard Python data model (`__len__`, `__getitem__`, `__iter__`, plus `by_sim_id`). Each row is a plain `dict[str, np.ndarray]`. Reads are sub-millisecond after the first access and the full release fits even when it doesn't fit in RAM — only the rows you actually access are loaded from disk.
+`ddacs.streaming.load_export(directory)` opens the exported folder behind the standard Python data model (`__len__`, `__getitem__`, `__iter__`, plus `by_sim_id`). Each row is a plain `dict[str, np.ndarray]`. Reads are sub-millisecond after the first access and the full release fits even when it doesn't fit in RAM, since only the rows you actually access are loaded from disk.
 
 ??? note "Why it is fast: memory-mapped reads in one paragraph (skip if not interested)"
     The shards are opened with `mmap_mode='r'`, which maps each `.npy` file directly into the process's virtual address space. Accessing `arr[i]` becomes an ordinary memory read; the operating system fetches whatever page that lives on from disk on demand and keeps a copy in its page cache. No pickle, no buffer allocation, no copy on the read path. The same page cache is shared across processes, so a `DataLoader(num_workers=N)` does not multiply the cached data by `N`. Cold reads pay the disk seek + page fault; warm reads are RAM-fast.
@@ -150,7 +150,7 @@ export.sim_ids = [258864]
   scale_mm   shape=()  dtype=float32
 ```
 
-Round trip back to mm — inverting the normalisation is one numpy expression on the per-record data:
+Round trip back to mm: inverting the normalisation is one numpy expression on the per-record data:
 
 ```python
 record = export[0]
@@ -164,7 +164,7 @@ Output:
 de-norm forming_mm range: [+0.000, +98.136] mm
 ```
 
-For a PyTorch training loop, pass the same `export` straight into a `DataLoader` — the map-style `Dataset` protocol is just `len + getitem`, which this object provides natively:
+For a PyTorch training loop, pass the same `export` straight into a `DataLoader`; the map-style `Dataset` protocol is just `len + getitem`, which this object provides natively:
 
 ```python
 from torch.utils.data import DataLoader
@@ -230,7 +230,7 @@ plt.show()
 
 ## 7. When records have variable shapes (`export_to_numpy_per_sim`)
 
-`export_to_numpy` pre-allocates one memmap per alias, sized from record 0 as `(n_sims, *field_shape)`. Every subsequent record must produce the exact same shape per alias; a shape mismatch raises a `ValueError` pointing here. The constraint is the right contract for views where every simulation has the same topology — e.g. the `forming` point cloud above, or any view that ran through a uniform sampling step that pinned `N` to a fixed value. It is **not** the right contract for views whose outputs vary across simulations: a graph view that exposes `edge_index` with sim-dependent edge counts, or a raw vertex set whose `N` differs per geometry corner.
+`export_to_numpy` pre-allocates one memmap per alias, sized from record 0 as `(n_sims, *field_shape)`. Every subsequent record must produce the exact same shape per alias; a shape mismatch raises a `ValueError` pointing here. The constraint is the right contract for views where every simulation has the same topology, e.g. the `forming` point cloud above, or any view that ran through a uniform sampling step that pinned `N` to a fixed value. It is **not** the right contract for views whose outputs vary across simulations: a graph view that exposes `edge_index` with sim-dependent edge counts, or a raw vertex set whose `N` differs per geometry corner.
 
 For those cases, use `ddacs.streaming.export_to_numpy_per_sim`. Same iteration pipeline (`iter_view` + per-field `transforms` + whole-record `record_transform`), same `_sim_id` enrichment, but the writer is one `np.savez(<sim_id>.npz)` per record instead of one memmap per alias. Each `.npz` carries all the aliases for one simulation; consumers reload via `np.load(path)` and access by key.
 
@@ -250,7 +250,7 @@ Trade-offs vs `export_to_numpy`:
 - **No fixed-shape constraint.** Variable-`N` and ragged tensors are fine.
 - **One file per sim.** Random access by sim id is just `np.load(out_dir / f"{sim_id}.npz")`.
 
-Two ways to make a variable-shape view fit `export_to_numpy` instead — preferable when the data permits, because the mmap path is faster:
+Two ways to make a variable-shape view fit `export_to_numpy` instead, preferable when the data permits, because the mmap path is faster:
 
 1. **Sample to a fixed point count** before export. A uniform / area-weighted barycentric sample (e.g. 4096 points per blank, 2048 per tool) gives every record the same shape per alias.
 2. **Pad to a max shape and emit a mask.** Cheaper to write than to compose; wastes 20-30% of disk if the largest sim is much bigger than the median.
@@ -270,7 +270,7 @@ def chained(rec):
     return uniform_sample(normalize_and_emit(rec))
 ```
 
-Pass `chained` as the `record_transform=`; the downstream `export_to_numpy` call now succeeds with `forming` and `delta` shaped `(n_points, 3)` in every record. The example above is naive — it samples vertex indices uniformly, ignoring triangle area, which under-represents large faces. Use it as a baseline; area-weighted barycentric sampling that respects mesh geometry is a separate concern beyond this tutorial.
+Pass `chained` as the `record_transform=`; the downstream `export_to_numpy` call now succeeds with `forming` and `delta` shaped `(n_points, 3)` in every record. The example above is naive: it samples vertex indices uniformly, ignoring triangle area, which under-represents large faces. Use it as a baseline; area-weighted barycentric sampling that respects mesh geometry is a separate concern beyond this tutorial.
 
 <img src="https://raw.githubusercontent.com/BaumSebastian/DDACS/main/docs/images/06_streaming_sampled.png" width="700">
 

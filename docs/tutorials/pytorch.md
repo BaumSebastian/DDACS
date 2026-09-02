@@ -252,7 +252,7 @@ locally indexed: 1
   forming                        shape=(1, 11236, 3) dtype=torch.float64
 ```
 
-Same flow with `where=`, `sim_ids=`, and `shuffle=` works against `custom_ds` — the custom view is just another `RecordSet` once it lives on `ds_manifest`.
+Same flow with `where=`, `sim_ids=`, and `shuffle=` works against `custom_ds`; the custom view is just another `RecordSet` once it lives on `ds_manifest`.
 
 If you do not need a `DataLoader` or PyTorch at all, `ddacs.streaming.iter_view(view='forming-only', data_dir=DATA_DIR, dataset=ds_manifest)` is the no-torch equivalent that yields the same records one at a time. The [Streaming and numpy export](streaming.md) tutorial covers it and shows the matching `streaming.export_to_numpy` recipe for materialising a view as flat `.npy` shards.
 
