@@ -16,17 +16,17 @@ which applied this analysis to the DDACS simulations.
 With minor strain $\varepsilon_2$ and major strain $\varepsilon_1$ (true strains,
 mid-surface, final OP10 state), evaluated left to right:
 
-| zone | rule | meaning |
-|---|---|---|
-| Wrinkles | $\varepsilon_2 \le -0.01$ and $\varepsilon_1 \le \lvert\varepsilon_2\rvert$ | the sheet thickens (wrinkle slope 1) |
-| Wrinkling tendency | $\varepsilon_2 \le -0.01$ and $\varepsilon_1 \le \frac{1+R}{R}\lvert\varepsilon_2\rvert$, $R = 1.82$ | strong in-plane compression |
-| Inadequate stretch | $\varepsilon_1 + \varepsilon_2 \le 0.02$ | almost no thinning (essential thinning) |
-| Safe | everything else below the FLC margin | |
-| Risk of cracks | above the FLC shifted down by 0.10 | LS-Dyna margin (shift) |
-| Cracks | above the FLC | |
+| zone | rule |
+|---|---|
+| Wrinkles | $\varepsilon_2 \le -0.01$ and $\varepsilon_1 \le \lvert\varepsilon_2\rvert$ |
+| Wrinkling tendency | $\varepsilon_2 \le -0.01$ and $\varepsilon_1 \le \frac{1+R}{R}\lvert\varepsilon_2\rvert$, $R = 1.82$ |
+| Inadequate stretch | $\varepsilon_1 + \varepsilon_2 \le 0.02$ |
+| Safe | everything else below the FLC margin |
+| Risk of cracks | above the FLC reduced by 10 % ($0.9\,\mathrm{FLC}$) |
+| Cracks | above the FLC |
 
 The inadequate-stretch zone is a small wedge at the origin (between the physical limit and the 2 % thinning line); the diagram's zoom inset makes it visible. The zone parameters are the LS-Dyna Formability settings used by Heinzelmann
-(R-value 1.82, essential thinning 0.02, wrinkle slope 1, margin 0.10); the FLC is the
+(R-value 1.82, essential thinning 0.02, wrinkle slope 1, risk margin 10 % of the FLC); the FLC is the
 LS-Dyna calculated curve for the sheet (CRLCS, t = 0.8 mm, n = 0.21, true strains),
 shipped as [`flc_dp600.csv`](flc_dp600.csv) next to this page. Only a small fraction of the simulations reaches the crack zone at all (see the
 note at the figures below). All thresholds are plain constants at the top of
@@ -71,8 +71,8 @@ always reflects the active thresholds.
     s = (p2[1] - p1[1]) / (p2[0] - p1[0])
     x_red = (p2[1] - s * p2[0]) / (1 - s)
     FLC_POINTS = np.vstack([FLC_POINTS, [x_red, x_red]])
-    x_yellow = (p2[1] - 0.10 - s * p2[0]) / (1 - s)   # FLC - margin meets major = minor
-    FLC_MARGIN = 0.10        # risk of cracks: FLC shifted down by the LS-Dyna margin
+    x_yellow = 0.9 * (p2[1] - s * p2[0]) / (1 - 0.9 * s)   # 0.9 * FLC meets major = minor
+    FLC_MARGIN = 0.10        # risk of cracks: FLC reduced by 10 percent (relative, as in the paper)
 
     ZONES = ['Wrinkles', 'Wrinkling tendency', 'Inadequate stretch', 'Safe',
              'Risk of cracks', 'Cracks']
@@ -118,7 +118,7 @@ always reflects the active thresholds.
         zone[left & (major <= WRINKLE_SLOPE * np.abs(minor))] = 0   # Wrinkles
         if FLC_POINTS is not None:
             flc = np.interp(minor, FLC_POINTS[:, 0], FLC_POINTS[:, 1])
-            zone[major > flc - FLC_MARGIN] = 4                      # Risk of cracks
+            zone[major > (1 - FLC_MARGIN) * flc] = 4                # Risk of cracks
             zone[major > flc] = 5                                   # Cracks
         return zone
 
@@ -147,7 +147,7 @@ always reflects the active thresholds.
     ax.plot(xr, xr, color='black', lw=1.2)   # physical limit: major = minor
     if FLC_POINTS is not None:
         ax.plot(FLC_POINTS[:, 0], FLC_POINTS[:, 1], color='red', lw=1.5)
-        yy = FLC_POINTS[:, 1] - FLC_MARGIN
+        yy = (1 - FLC_MARGIN) * FLC_POINTS[:, 1]
         keep = yy >= FLC_POINTS[:, 0]              # clip the margin line at major = minor
         ax.plot(np.append(FLC_POINTS[keep, 0], x_yellow), np.append(yy[keep], x_yellow), color='gold', lw=1.2)
     for k, (name, color) in enumerate(zip(ZONES, ZONE_COLORS)):
@@ -211,14 +211,15 @@ flange transition, the safe zone on the stretched bottom face.
 
 The per-simulation zone shares are a compact formability fingerprint, the same
 aggregation the accompanying paper applies to the full sweep. Each simulation is
-reduced to one vector of zone shares:
+reduced to one vector of zone shares, Eq. (1) in the
+[paper](https://doi.org/10.1051/matecconf/202540801090):
 
-$$ \mathbf{p} = \left(p_{\text{Wrinkles}},\ p_{\text{Tendency}},\ p_{\text{Inadequate}},\ p_{\text{Safe}},\ p_{\text{Risk}},\ p_{\text{Cracks}}\right), \qquad p_k = \frac{n_k}{m}, \qquad \sum_k p_k = 1 $$
+$$ \mathbf{y} \in \mathbb{R}^6, \qquad y_i = \frac{n_i}{N}, \qquad y_i > 0, \qquad \sum_i y_i = 1 $$
 
-with $n_k$ the number of blank elements in zone $k$ and $m$ the total number of
-blank elements. In the paper this vector is the prediction target: a model maps
-the eight process parameters of a simulation to $\mathbf{p}$, instead of
-classifying every element individually. Over all 32,466
+with $n_i$ the number of blank elements in FLD category $i$ and $N$ the total
+number of blank elements. This distribution summarizes a whole simulation in a
+single vector; the paper uses it as the prediction target of a machine learning
+model instead of classifying every element individually. Over all 32,466
 published simulations the trends are monotonic and physically plausible: more
 blankholder force suppresses wrinkling (40 % to 28 %) and inadequate stretch
 (37 % to 20 %) and grows the safe share from 11 % to 37 %. The shaded bands are
