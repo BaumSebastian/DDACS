@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"    # real release: bumpver tags like 3.1.4 (no "v" prefix)
-  workflow_dispatch:              # dry-run: "Run workflow" button -> publishes to TestPyPI
+  workflow_dispatch:              # "Run workflow" button -> TestPyPI dry-run + the teaser chain
 
 permissions:
   contents: read
@@ -46,6 +46,7 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
 
   pypi:
     # Real release: only runs when a version tag is pushed.
@@ -62,6 +63,8 @@ jobs:
           path: dist/
 
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true   # re-runs of a release must not fail on already-published files
 
   # ── Discovery surfaces ───────────────────────────────────────────────────
   # Kernels track every release (they pip-install ddacs at run time on Kaggle);
@@ -103,8 +106,14 @@ jobs:
   fetch-teaser:
     # Major release (X.0.0): the dataset content on DaRUS changed. Download the
     # small bundle ONCE and hand it to both uploaders as an artifact, so one
-    # release costs one DaRUS download.
-    if: github.event_name == 'push' && endsWith(github.ref_name, '.0.0')
+    # release costs one DaRUS download. Also runs on manual dispatch, so the
+    # teaser chain can be repeated without a new tag (expired artifact, fixed
+    # secrets); pypi is skipped on dispatch, hence the always().
+    if: >-
+      always() && (
+        (github.event_name == 'push' && endsWith(github.ref_name, '.0.0') && needs.pypi.result == 'success')
+        || github.event_name == 'workflow_dispatch'
+      )
     needs: pypi
     runs-on: ubuntu-latest
     steps:
@@ -122,10 +131,13 @@ jobs:
         with:
           name: teaser-data
           path: data/
-          retention-days: 1
+          retention-days: 7
 
   kaggle-dataset:
     needs: fetch-teaser
+    # not the implicit success(): that checks the transitive needs chain, in
+    # which pypi is skipped on dispatch
+    if: ${{ !cancelled() && needs.fetch-teaser.result == 'success' }}
     runs-on: ubuntu-latest
     environment: kaggle
     steps:
@@ -149,6 +161,9 @@ jobs:
 
   huggingface:
     needs: fetch-teaser
+    # not the implicit success(): that checks the transitive needs chain, in
+    # which pypi is skipped on dispatch
+    if: ${{ !cancelled() && needs.fetch-teaser.result == 'success' }}
     runs-on: ubuntu-latest
     environment: huggingface
     steps:
@@ -173,6 +188,9 @@ jobs:
 
   zenodo:
     needs: fetch-teaser
+    # not the implicit success(): that checks the transitive needs chain, in
+    # which pypi is skipped on dispatch
+    if: ${{ !cancelled() && needs.fetch-teaser.result == 'success' }}
     runs-on: ubuntu-latest
     environment: zenodo
     steps:
